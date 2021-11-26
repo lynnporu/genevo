@@ -1,6 +1,31 @@
 #pragma once
 
+#include <stdlib.h>
 #include <stdint.h>
+
+#include <sys/mman.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <fcntl.h>
+
+#include "error.h"
+
+
+// Routine =====================================================================
+
+typedef struct file_map_s {
+    int    descriptor;
+    size_t size;
+    void  *data;
+} file_map_t;
+
+typedef enum map_mode_e { OPEN_MODE_READ, OPEN_MODE_WRITE } map_mode_t;
+
+file_map_t * open_file(const char *address, map_mode_t mode);
+void close_file(file_map_t *mapping);
+
+
+// Format ======================================================================
 
 // Even the empty pool file should be at least 64 bits long.
 #define POOL_FILE_MIN_SAFE_BIT_SIZE 64
@@ -51,7 +76,7 @@ This number can be increased with maximizing the number of bits.
 
 */
 
-typedef uint8_t* gene_t;
+typedef uint8_t * gene_t;
 
 /*
 
@@ -88,10 +113,10 @@ typedef struct genome_preamble_s {
 } genome_file_preamble_t;
 
 typedef struct genome_s {
-    uint8_t* metadata;
-    gene_t*  genes;
+    uint8_t *metadata;
+    gene_t  *genes;
     uint16_t residue_size_bits;
-    uint8_t* residue;
+    uint8_t *residue;
 } genome_t;
 
 /*
@@ -129,9 +154,13 @@ typedef struct pool_file_preamble_s {
     uint8_t  weight_part_bit_size;
     uint16_t metadata_byte_size;
     uint8_t  metadata_initial_byte;
+    void    *metadata;
 } pool_file_preamble_t;
 
 typedef struct pool_s {
-    uint8_t*  metadata;
-    genome_t* genomes;
+    uint16_t    metadata_byte_size;
+    uint8_t    *metadata;
+    uint8_t     node_id_part_bit_size;
+    uint8_t     weight_part_bit_size;
+    file_map_t *file_mapping;
 } pool_t;
