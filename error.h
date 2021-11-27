@@ -67,9 +67,30 @@ static inline const char * get_err_string(const uint8_t errcode);
                                             "of the genome metadata was "      \
                                             "not found."
 
+#define ERR_GENM_CORRUPT_START              0x23
+#define ERR_GENM_CORRUPT_START_STR          "Initial byte at the beginning "   \
+                                            "of the genome was not found."
+
+#define ERR_GENM_CORRUPT_END                0x24
+#define ERR_GENM_CORRUPT_END_STR            "Terminal byte at the beginning "  \
+                                            "of the genome was not found."
+
+#define ERR_GENM_CORRUPT_RESIDUE            0x25
+#define ERR_GENM_CORRUPT_RESIDUE_STR        "Residue byte was not found."
+
 
 // Gene ========================================================================
 
 #define ERR_GENE_NOT_ALIGNED                0x31
 #define ERR_GENE_NOT_ALIGNED_STR            "Gene size is not aligned to 8 "   \
                                             "bites."
+
+#define ERR_GENE_OGSB_TOO_LARGE             0x32
+#define ERR_GENE_OGSB_TOO_LARGE_STR         "Node ID part of the gene is "     \
+                                            "bigger than 64 bits. Those are  " \
+                                            "not supported."
+
+#define ERR_GENE_WEIGHT_TOO_LARGE           0x32
+#define ERR_GENE_WEIGHT_TOO_LARGE_STR       "Weight part of the gene is "      \
+                                            "bigger than 64 bits. Those are  " \
+                                            "not supported."

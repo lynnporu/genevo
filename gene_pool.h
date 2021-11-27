@@ -76,7 +76,21 @@ This number can be increased with maximizing the number of bits.
 
 */
 
-typedef uint8_t * gene_t;
+typedef uint8_t gene_byte_t;
+typedef struct gene_s {
+    uint64_t outcome_node_id;
+    uint64_t income_node_id;
+    uint8_t  connection_type;  /* bitmask with following bits meaning
+                                  [0] - 1= outcome node is input neurone
+                                  [1] - 1= outcome node is intermediate neurone
+                                  [2] - 1= outcome node is output neorune
+                                  [3] - 1= income node is input neurone
+                                  [4] - 1= income node is intermediate neurone
+                                  [5] - 1= income node is output neorune
+                               */
+    int64_t  weight_unnormalized;
+    double   weight;           // weight is normalized to [-1; 1]
+} gene_t;
 
 /*
 
@@ -85,11 +99,12 @@ Structure of the genome in the memory is the following:
 Content                               Size         Note
 ----------                            ----------   ----------
 GENOME_INITIAL_BYTE                   8            Start byte of the genome
+[number of genes]                     32
 MNSB                                  16           Size of the metadata which
                                                    describes this genome.
 GENOME_META_INITIAL_BYTE              8            Start byte of the metadata.
 MN                                    MNSb         The metadata itself
-0GENOME_META_TERMINAL_BYTE            8            End byte of the metadata.
+GENOME_META_TERMINAL_BYTE             8            End byte of the metadata.
 [gene #1]                             2*IGSb + WGSb
 [gene #2]                             2*IGSb + WGSb
 ...
@@ -98,7 +113,9 @@ GENOME_RESIDUE_BYTE                   8            Genome residue byte
 ...                                   RSb          Residual genome.
 GENOME_TERMINAL_BYTE                  8            End byte of the genome
 
-* Could be 10 bits, but that would be unconvenient to put into struct.
+* Maximum size of a gene in bits is 255*2 + 255 = 765. Just 10 bits is enough
+  To encode this number, but that would be unconvenient to put into struct, so
+  16 chosen instead.
 
 If the size of the genome cannot be aligned to size of the single gene (i.e.
 genome contains some terminal bits that are not anough to form the new gene),
@@ -107,16 +124,20 @@ the residue can be placed after GENOME_RESIDUE_BYTE.
 */
 
 typedef struct genome_preamble_s {
-    uint8_t  initial_byte;
-    uint16_t metadata_byte_size;
-    uint8_t  metadata_initial_byte;
+    uint8_t   initial_byte;
+    uint32_t  genes_number;
+    uint16_t  metadata_byte_size;
+    uint8_t   metadata_initial_byte;
+    void     *metadata;
 } genome_file_preamble_t;
 
 typedef struct genome_s {
-    uint8_t *metadata;
-    gene_t  *genes;
-    uint16_t residue_size_bits;
-    uint8_t *residue;
+    uint32_t      length;
+    uint8_t      *metadata;
+    uint16_t      metadata_byte_size;
+    gene_byte_t  *genes;
+    uint16_t      residue_size_bits;
+    uint8_t      *residue;
 } genome_t;
 
 /*
@@ -127,6 +148,8 @@ Content                               Size (bits)  Note
 ----------                            ----------   ----------
 POOL_INITIAL_BYTE                     8            Initial byte used to verify
                                                    integrity of the file
+[number of input neurons]             64
+[number of output neurons]            64
 [size of the OG and IG in bits]       8
 [size of the WG in bits]              8
 [size of metadata in bytes = MPSB]    16           Metadata contains desription
@@ -162,5 +185,18 @@ typedef struct pool_s {
     uint8_t    *metadata;
     uint8_t     node_id_part_bit_size;
     uint8_t     weight_part_bit_size;
+    uint8_t     gene_bytes_size;
     file_map_t *file_mapping;
+    void       *first_genome_start_position;
+                // Position of the byte after POOL_META_TERMINAL_BYTE
+    void       *cursor;
 } pool_t;
+
+
+// Bit field ===================================================================
+
+#define BIT_MASK(b)     (1 << ((b) % sizeof(gene_byte_t)))
+#define BIT_SLOT(b)     ((b) / sizeof(gene_byte_t))
+#define BIT_SET(a, b)   ((a)[BIT_SLOT(b)] |= BIT_MASK(b))
+#define BIT_CLEAR(a, b) ((a)[BIT_SLOT(b)] &= ~BIT_MASK(b))
+#define BIT_TEST(a, b)  ((a)[BIT_SLOT(b)] & BIT_MASK(b))
