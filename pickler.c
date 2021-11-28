@@ -1,7 +1,15 @@
-#include "gene_pool.h"
+/*
 
-#define MAPPING_FAIL_CONDITION(condition, err_const) \
-    if(condition) {ERROR_LEVEL = err_const; close_file(mapping); return NULL;}
+This module contains methods for dumping gene pool into file and vice versa.
+
+*/
+
+
+#include "gene_pool.h"
+#include "pickler.h"
+
+#define MAPPING_FAIL_CONDITION(_CONDITION, _ERR_CONST) \
+    if(_CONDITION) {ERROR_LEVEL = _ERR_CONST; close_file(mapping); return NULL;}
 
 file_map_t * open_file(const char *address, map_mode_t mode) {
 
@@ -17,10 +25,9 @@ file_map_t * open_file(const char *address, map_mode_t mode) {
         close(descriptor);
         return NULL;
     }
-    size_t size = st.st_size;
 
     void *data = mmap(
-        NULL, size,
+        NULL, st.st_size,
         PROT_READ, MAP_PRIVATE,    // read options, flags
         descriptor,
         0);                        // offset
@@ -34,12 +41,12 @@ file_map_t * open_file(const char *address, map_mode_t mode) {
     if (mapping == NULL) {
         ERROR_LEVEL = ERR_CANNOT_MALLOC;
         close(descriptor);
-        munmap(data, size);
+        munmap(data, st.st_size);
         return NULL;
     }
 
     mapping->descriptor = descriptor;
-    mapping->size       = size;
+    mapping->size       = st.st_size;
     mapping->data       = data;
 
     return mapping;
@@ -92,6 +99,9 @@ pool_t * read_pool(const char *address) {
 
     pool->metadata_byte_size = preamble->metadata_byte_size;
     pool->metadata = (uint8_t *)preamble->metadata;
+
+    pool->input_neurons_number = preamble->input_neurons_number;
+    pool->output_neurons_number = preamble->output_neurons_number;
 
     pool->node_id_part_bit_size = preamble->node_id_part_bit_size;
     pool->weight_part_bit_size = preamble->weight_part_bit_size;
@@ -164,6 +174,67 @@ genome_t * read_next_genome(pool_t *pool) {
 
 }
 
+#define LEFT_ZERO_UINT8(_NUMBER, _OFFSET) \
+    ((uint8_t)(_NUMBER << _OFFSET) >> _OFFSET)
+    
+#define RIGHT_ZERO_UINT8(_NUMBER, _OFFSET) \
+    ((uint8_t)(_NUMBER >> _OFFSET) << _OFFSET)
+
+/*
+
+Set `number` to 0 and copy bits within given range [start, end] into number.
+`slots` is array of uint8_t, for example: [0b11111010, 0b11111111]
+Result of copy_bitslots_to_uint64(slots, number, 5, 13) will be (13-5=8)
+copied bits into number, so now:
+number == 0b00000000...0000000010101111, sizeof(number) == 64
+
+*/
+void copy_bitslots_to_uint64(
+    uint8_t *slots, uint64_t *number, uint8_t start, uint8_t end
+) {
+
+    *number = 0;
+
+    // right offset of the first bit in `number`
+    uint8_t number_offset = end - start + 1;
+
+    for(
+        uint8_t slot_n = start / 8;
+        slot_n <= end / 8;
+        slot_n++
+    ) {
+
+        uint8_t slot = slots[slot_n];
+        uint16_t offset;
+
+        // there's some left offset in the current slot present
+        if (slot_n * 8 < start) {
+            offset = start - slot_n * 8;
+            *number |=
+                LEFT_ZERO_UINT8(slot, offset) << (number_offset - 8 + offset);
+        }
+
+        // there's right offset
+        else if ((end + 1) < (slot_n + 1) * 8) {
+            offset = (slot_n + 1) * 8 - end - 1;
+            *number |= RIGHT_ZERO_UINT8(slot, offset) >> offset;
+        }
+
+        // copy the whole byte
+        else {
+            offset = 0;
+            *number |= slot << (number_offset - 8);
+        }
+
+        number_offset -= 8 - offset;
+
+    }
+
+}
+
+#define MAX_FOR_BIT(_BIT_SIZE) \
+    (_BIT_SIZE == 64 ? 0xffffffffffff : (1 << _BIT_SIZE) - 1)
+
 gene_t * get_gene_by_index(
     genome_t *genome, uint32_t index, pool_t *pool
 ) {
@@ -175,47 +246,54 @@ gene_t * get_gene_by_index(
 
     uint8_t *gene_start_byte = genome->genes + (gene_byte_size * index);
 
-    // TODO: avoid copying bits
-    // TODO: fill connection_type
-    // copy outcome node id
-    for(
-        uint8_t gene_cursor = 1,
-                number_cursor = 0;
-        gene_cursor <= pool->node_id_part_bit_size;
-        gene_cursor--, number_cursor++
-    )
-        gene->outcome_node_id |= BIT_TEST(
-            gene_start_byte,
-            pool->node_id_part_bit_size - gene_cursor) << number_cursor;
+    copy_bitslots_to_uint64(
+        gene_start_byte,
+        &(gene->outcome_node_id),
+        0,
+        pool->node_id_part_bit_size - 1);
 
-    // copy income node id
-    for(
-        uint8_t gene_cursor = 1,
-                number_cursor = 0;
-        gene_cursor >= pool->node_id_part_bit_size;
-        gene_cursor--, number_cursor++
-    )
-        gene->income_node_id |= BIT_TEST(
-            gene_start_byte + pool->node_id_part_bit_size,
-            pool->node_id_part_bit_size - gene_cursor) << number_cursor;
+    copy_bitslots_to_uint64(
+        gene_start_byte,
+        &(gene->income_node_id),
+        pool->node_id_part_bit_size,
+        pool->node_id_part_bit_size * 2 - 1);
 
-    // copy weight
-    for(
-        uint8_t gene_cursor = 1,
-                number_cursor = 0;
-        gene_cursor >= pool->weight_part_bit_size;
-        gene_cursor--, number_cursor++
-    )
-        gene->weight_unnormalized |= BIT_TEST(
-            gene_start_byte + (pool->node_id_part_bit_size * 2),
-            pool->weight_part_bit_size - gene_cursor) << number_cursor;
+    copy_bitslots_to_uint64(
+        gene_start_byte,
+        // sign of number is not important, just copy all the bits
+        (uint64_t *)&(gene->weight_unnormalized),
+        pool->node_id_part_bit_size * 2,
+        pool->node_id_part_bit_size * 2 + pool->weight_part_bit_size - 1);
 
-    uint64_t normalization =
-        pool->weight_part_bit_size == 64
-        ? 0xffffffffffff
-        : (1 << pool->weight_part_bit_size) - 1;
+    gene->weight =
+        gene->weight_unnormalized / MAX_FOR_BIT(pool->weight_part_bit_size);
 
-    gene->weight = gene->weight_unnormalized / normalization;
+    uint64_t first_output_neuron_id =
+        MAX_FOR_BIT(pool->weight_part_bit_size) - pool->output_neurons_number + 1;
+
+    // type of outcome node
+
+    if (gene->outcome_node_id <= pool->input_neurons_number - 1)
+        gene->connection_type |= GENE_OUTCOME_IS_INPUT;
+
+    else
+    if (gene->outcome_node_id >= first_output_neuron_id)
+        gene->connection_type |= GENE_OUTCOME_IS_OUTPUT;
+
+    else
+        gene->connection_type |= GENE_OUTCOME_IS_INTERMEDIATE;
+
+    // type of income node
+
+    if (gene->income_node_id <= pool->input_neurons_number - 1)
+        gene->connection_type |= GENE_INCOME_IS_INPUT;
+
+    else
+    if (gene->income_node_id >= first_output_neuron_id)
+        gene->connection_type |= GENE_INCOME_IS_OUTPUT;
+
+    else
+        gene->connection_type |= GENE_INCOME_IS_INTERMEDIATE;
 
     return gene;
 

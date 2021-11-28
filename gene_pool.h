@@ -1,31 +1,9 @@
 #pragma once
 
-#include <stdlib.h>
 #include <stdint.h>
 
-#include <sys/mman.h>
-#include <sys/stat.h>
-#include <unistd.h>
-#include <fcntl.h>
+#include "pickler.h"
 
-#include "error.h"
-
-
-// Routine =====================================================================
-
-typedef struct file_map_s {
-    int    descriptor;
-    size_t size;
-    void  *data;
-} file_map_t;
-
-typedef enum map_mode_e { OPEN_MODE_READ, OPEN_MODE_WRITE } map_mode_t;
-
-file_map_t * open_file(const char *address, map_mode_t mode);
-void close_file(file_map_t *mapping);
-
-
-// Format ======================================================================
 
 // Even the empty pool file should be at least 64 bits long.
 #define POOL_FILE_MIN_SAFE_BIT_SIZE 64
@@ -75,6 +53,13 @@ This number can be increased with maximizing the number of bits.
 ! Be sure that GSb % 8 == 0.
 
 */
+
+#define GENE_OUTCOME_IS_INPUT        0b10000000
+#define GENE_OUTCOME_IS_INTERMEDIATE 0b01000000
+#define GENE_OUTCOME_IS_OUTPUT       0b00100000
+#define GENE_INCOME_IS_INPUT         0b00010000
+#define GENE_INCOME_IS_INTERMEDIATE  0b00001000
+#define GENE_INCOME_IS_OUTPUT        0b00000100
 
 typedef uint8_t gene_byte_t;
 typedef struct gene_s {
@@ -173,6 +158,8 @@ POOL_TERMINAL_BYTE                    8            End byte used to verify
 
 typedef struct pool_file_preamble_s {
     uint8_t  initial_byte;
+    uint64_t input_neurons_number;
+    uint64_t output_neurons_number;
     uint8_t  node_id_part_bit_size;
     uint8_t  weight_part_bit_size;
     uint16_t metadata_byte_size;
@@ -181,6 +168,8 @@ typedef struct pool_file_preamble_s {
 } pool_file_preamble_t;
 
 typedef struct pool_s {
+    uint64_t    input_neurons_number;
+    uint64_t    output_neurons_number;
     uint16_t    metadata_byte_size;
     uint8_t    *metadata;
     uint8_t     node_id_part_bit_size;
@@ -191,12 +180,3 @@ typedef struct pool_s {
                 // Position of the byte after POOL_META_TERMINAL_BYTE
     void       *cursor;
 } pool_t;
-
-
-// Bit field ===================================================================
-
-#define BIT_MASK(b)     (1 << ((b) % sizeof(gene_byte_t)))
-#define BIT_SLOT(b)     ((b) / sizeof(gene_byte_t))
-#define BIT_SET(a, b)   ((a)[BIT_SLOT(b)] |= BIT_MASK(b))
-#define BIT_CLEAR(a, b) ((a)[BIT_SLOT(b)] &= ~BIT_MASK(b))
-#define BIT_TEST(a, b)  ((a)[BIT_SLOT(b)] & BIT_MASK(b))
