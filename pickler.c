@@ -235,16 +235,11 @@ void copy_bitslots_to_uint64(
 #define MAX_FOR_BIT(_BIT_SIZE) \
     (_BIT_SIZE == 64 ? 0xffffffffffff : (1 << _BIT_SIZE) - 1)
 
-gene_t * get_gene_by_index(
-    genome_t *genome, uint32_t index, pool_t *pool
-) {
+gene_t * get_gene_by_index(genome_t *genome, uint32_t index, pool_t *pool) {
 
     gene_t *gene = calloc(1, sizeof(gene_t));
 
-    uint8_t gene_byte_size =
-        (pool->node_id_part_bit_size + pool->weight_part_bit_size) / 8;
-
-    uint8_t *gene_start_byte = genome->genes + (gene_byte_size * index);
+    uint8_t *gene_start_byte = genome->genes + (pool->gene_bytes_size * index);
 
     copy_bitslots_to_uint64(
         gene_start_byte,
