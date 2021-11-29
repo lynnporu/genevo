@@ -133,6 +133,7 @@ Content                               Size (bits)  Note
 ----------                            ----------   ----------
 POOL_INITIAL_BYTE                     8            Initial byte used to verify
                                                    integrity of the file
+[number of organisms]                 64
 [number of input neurons]             64
 [number of output neurons]            64
 [size of the OG and IG in bits]       8
@@ -158,6 +159,7 @@ POOL_TERMINAL_BYTE                    8            End byte used to verify
 
 typedef struct pool_file_preamble_s {
     uint8_t  initial_byte;
+    uint64_t organisms_number;
     uint64_t input_neurons_number;
     uint64_t output_neurons_number;
     uint8_t  node_id_part_bit_size;
@@ -168,6 +170,7 @@ typedef struct pool_file_preamble_s {
 } pool_file_preamble_t;
 
 typedef struct pool_s {
+    uint64_t    organisms_number;
     uint64_t    input_neurons_number;
     uint64_t    output_neurons_number;
     uint16_t    metadata_byte_size;

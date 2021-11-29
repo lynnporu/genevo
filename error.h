@@ -29,6 +29,13 @@ static inline const char * get_err_string(const uint8_t errcode);
 #define ERR_FILE_CANNOT_MMAP                0x03
 #define ERR_FILE_CANNOT_MMAP_STR            "Cannot create map of the file."
 
+#define ERR_FILE_CANNOT_LSEEK               0x04
+#define ERR_FILE_CANNOT_LSEEK_STR           "Cannot set cursor - lseek error."
+
+#define ERR_FILE_CANNOT_WRITE               0x05
+#define ERR_FILE_CANNOT_WRITE_STR           "Cannot stretch the file - write " \
+                                            "error."
+
 // Gene pool file errors =======================================================
 
 #define ERR_POOL_CORRUPT_TOO_SMALL          0x11
@@ -77,6 +84,9 @@ static inline const char * get_err_string(const uint8_t errcode);
 
 #define ERR_GENM_CORRUPT_RESIDUE            0x25
 #define ERR_GENM_CORRUPT_RESIDUE_STR        "Residue byte was not found."
+
+#define ERR_GENM_END_ITERATION              0x26
+#define ERR_GENM_END_ITERATION_STR          "End of the pool reached."
 
 
 // Gene ========================================================================

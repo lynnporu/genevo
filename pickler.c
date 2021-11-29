@@ -5,32 +5,65 @@ This module contains methods for dumping gene pool into file and vice versa.
 */
 
 
-#include "gene_pool.h"
 #include "pickler.h"
 
 #define MAPPING_FAIL_CONDITION(_CONDITION, _ERR_CONST) \
     if(_CONDITION) {ERROR_LEVEL = _ERR_CONST; close_file(mapping); return NULL;}
 
-file_map_t * open_file(const char *address, map_mode_t mode) {
+file_map_t * open_file(const char *address, map_mode_t mode, size_t trunc_to_size) {
 
-    int descriptor;
-    if ((descriptor = open(address, O_RDONLY, 0)) < 0) {
+    int descriptor = mode == OPEN_MODE_READ
+        ? open(address, O_RDONLY, 0)
+        : open(address, O_RDWR | O_CREAT | O_TRUNC, (mode_t)0600);
+    if (descriptor < 0) {
         ERROR_LEVEL = ERR_FILE_CANNOT_OPEN;
         return NULL;
     }
 
-    struct stat st;
-    if (fstat(descriptor, &st) < 0) {
-        ERROR_LEVEL = ERR_FILE_CANNOT_FSTAT;
-        close(descriptor);
-        return NULL;
+    size_t file_size;
+    if (trunc_to_size > 0) {
+
+        if (lseek(descriptor, trunc_to_size, SEEK_SET) == -1) {
+            ERROR_LEVEL = ERR_FILE_CANNOT_LSEEK;
+            close(descriptor);
+            return NULL;
+        }
+
+        if (write(descriptor, "", 1) != 1) {
+            ERROR_LEVEL = ERR_FILE_CANNOT_WRITE;
+            close(descriptor);
+            return NULL;
+        }
+
+        file_size = trunc_to_size;
+
+    } else {
+
+        struct stat st;
+        if (fstat(descriptor, &st) < 0) {
+            ERROR_LEVEL = ERR_FILE_CANNOT_FSTAT;
+            close(descriptor);
+            return NULL;
+        }
+
+        file_size = st.st_size;
+
     }
 
-    void *data = mmap(
-        NULL, st.st_size,
-        PROT_READ, MAP_PRIVATE,    // read options, flags
-        descriptor,
-        0);                        // offset
+    void *data = mode == OPEN_MODE_READ
+        ? mmap(
+            NULL, file_size,
+            PROT_READ,
+            MAP_PRIVATE,
+            descriptor,
+            0) // offset
+        : mmap(
+            NULL, file_size,
+            PROT_READ | PROT_WRITE,
+            MAP_SHARED,
+            descriptor,
+            0);
+
     if (data == MAP_FAILED) {
         ERROR_LEVEL = ERR_FILE_CANNOT_MMAP;
         close(descriptor);
@@ -41,12 +74,12 @@ file_map_t * open_file(const char *address, map_mode_t mode) {
     if (mapping == NULL) {
         ERROR_LEVEL = ERR_CANNOT_MALLOC;
         close(descriptor);
-        munmap(data, st.st_size);
+        munmap(data, file_size);
         return NULL;
     }
 
     mapping->descriptor = descriptor;
-    mapping->size       = st.st_size;
+    mapping->size       = file_size;
     mapping->data       = data;
 
     return mapping;
@@ -63,7 +96,7 @@ void close_file(file_map_t *mapping) {
 
 pool_t * read_pool(const char *address) {
 
-    file_map_t *mapping = open_file(address, OPEN_MODE_READ);
+    file_map_t *mapping = open_file(address, OPEN_MODE_READ, 0);
     if (ERROR_LEVEL != ERR_OK) return NULL;
 
     MAPPING_FAIL_CONDITION(
@@ -97,6 +130,8 @@ pool_t * read_pool(const char *address) {
     pool_t *pool = malloc(sizeof(pool_t));
     pool->file_mapping = mapping;
 
+    pool->organisms_number = preamble->organisms_number;
+
     pool->metadata_byte_size = preamble->metadata_byte_size;
     pool->metadata = (uint8_t *)preamble->metadata;
 
@@ -119,12 +154,52 @@ pool_t * read_pool(const char *address) {
 
 }
 
+void write_pool(const char *address, pool_t *pool, genome_t **genomes) {
+
+    size_t file_size =
+        1 +               // initial byte
+        8 + 8 +           // number of input and output neurons
+        1 + 1 +           // size of the OG and WG
+        2 +               // size of the metadata
+        1 +               // metadata initial byte
+        pool->metadata_byte_size +
+        1;                // metadata terminal byte;
+
+    for (uint64_t genome_i = 0; genome_i < pool->organisms_number; genome_i++)
+        file_size +=
+            1 +           // genome initial byte
+            4 +           // number of genes
+            2 +           // size of the metadata
+            1 +           // metadata initial byte
+            genomes[genome_i]->metadata_byte_size +
+            1 +           // metadata terminal byte
+            genomes[genome_i]->length *
+                (pool->weight_part_bit_size + pool->node_id_part_bit_size * 2) +
+            1 +           // genome residue byte
+            (uint16_t)(genomes[genome_i]->residue_size_bits / 8) + 1 +
+            1;            // genome terminal byte
+
+    file_map_t *mapping = open_file(address, OPEN_MODE_WRITE, file_size);
+    if (ERROR_LEVEL != ERR_OK) return;
+
+}
+
 void close_pool(pool_t *pool) {
     close_file(pool->file_mapping);
     free(pool);
 }
 
+void reset_genome_cursor(pool_t *pool) {
+    pool->cursor = pool->first_genome_start_position;
+}
+
+
 genome_t * read_next_genome(pool_t *pool) {
+
+    if (*(uint8_t *)pool->cursor == POOL_TERMINAL_BYTE) {
+        ERROR_LEVEL = ERR_GENM_END_ITERATION;
+        return NULL;
+    }
 
     genome_file_preamble_t *preamble = pool->cursor;
 
