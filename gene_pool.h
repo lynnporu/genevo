@@ -2,7 +2,7 @@
 
 #include <stdint.h>
 
-#include "pickler.h"
+#include "files.h"
 
 
 // Even the empty pool file should be at least 64 bits long.
