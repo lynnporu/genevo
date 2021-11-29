@@ -8,9 +8,14 @@
 #include <unistd.h>
 #include <fcntl.h>
 
+#include <byteswap.h>
+
+#include "gene_pool.h"
 #include "error.h"
 
 #define BYTE_SIZE sizeof(uint8_t)
+
+#define IS_BIG_ENDIAN (!*(unsigned char *)&(uint16_t){1})
 
 typedef struct file_map_s {
     int    descriptor;

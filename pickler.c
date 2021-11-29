@@ -189,57 +189,98 @@ copied bits into number, so now:
 number == 0b00000000...0000000010101111, sizeof(number) == 64
 
 */
+// void copy_bitslots_to_uint64__endianless(
+//     uint8_t *slots, uint64_t *number, uint8_t start, uint8_t end
+// ) {
+
+//     *number = 0;
+
+//     // right offset of the first bit in `number`
+//     uint8_t number_offset = end - start + 1;
+
+//     for(
+//         uint8_t slot_n = start / 8;
+//         slot_n <= end / 8;
+//         slot_n++
+//     ) {
+
+//         uint8_t slot = slots[slot_n];
+//         uint16_t offset;
+
+//         // there's some left offset in the current slot present
+//         if (slot_n * 8 < start) {
+//             offset = start - slot_n * 8;
+//             *number |=
+//                 LEFT_ZERO_UINT8(slot, offset) << (number_offset - 8 + offset);
+//         }
+
+//         // there's right offset
+//         else if ((end + 1) < (slot_n + 1) * 8) {
+//             offset = (slot_n + 1) * 8 - end - 1;
+//             *number |= RIGHT_ZERO_UINT8(slot, offset) >> offset;
+//         }
+
+//         // copy the whole byte
+//         else {
+//             offset = 0;
+//             *number |= slot << (number_offset - 8);
+//         }
+
+//         number_offset -= 8 - offset;
+
+//     }
+
+// }
+
 void copy_bitslots_to_uint64(
     uint8_t *slots, uint64_t *number, uint8_t start, uint8_t end
 ) {
 
-    *number = 0;
+    uint8_t byte_offset = start / 8,
+            bit_offset = start % 8;
+    
+    uint64_t copy_number = *(uint64_t *)(slots + byte_offset);
+    
+    copy_number = 
+        (IS_BIG_ENDIAN ? copy_number : __bswap_64(copy_number)) << bit_offset;
+        
+    *number = copy_number >> (64 - end + start - 1);
 
-    // right offset of the first bit in `number`
-    uint8_t number_offset = end - start + 1;
+}
 
-    for(
-        uint8_t slot_n = start / 8;
-        slot_n <= end / 8;
-        slot_n++
-    ) {
+/*
 
-        uint8_t slot = slots[slot_n];
-        uint16_t offset;
+Does the opposite to copy_bitslots_to_uint64.
 
-        // there's some left offset in the current slot present
-        if (slot_n * 8 < start) {
-            offset = start - slot_n * 8;
-            *number |=
-                LEFT_ZERO_UINT8(slot, offset) << (number_offset - 8 + offset);
-        }
+*/
+void copy_uint64_to_bitslots(
+    uint64_t *number, uint8_t *slots, uint8_t start, uint8_t number_size
+) {
 
-        // there's right offset
-        else if ((end + 1) < (slot_n + 1) * 8) {
-            offset = (slot_n + 1) * 8 - end - 1;
-            *number |= RIGHT_ZERO_UINT8(slot, offset) >> offset;
-        }
-
-        // copy the whole byte
-        else {
-            offset = 0;
-            *number |= slot << (number_offset - 8);
-        }
-
-        number_offset -= 8 - offset;
-
-    }
+    uint8_t byte_offset = start / 8,
+            bit_offset = start % 8;
+    
+    uint64_t copy_number = *number << (64 - bit_offset - number_size);
+    
+    *(uint64_t *)(slots + byte_offset) |=
+        IS_BIG_ENDIAN ? copy_number : __bswap_64(copy_number);
 
 }
 
 #define MAX_FOR_BIT(_BIT_SIZE) \
     (_BIT_SIZE == 64 ? 0xffffffffffff : (1 << _BIT_SIZE) - 1)
 
+inline uint8_t * point_gene_by_index(
+    genome_t *genome, uint32_t index, pool_t *pool
+) {
+    return genome->genes + (pool->gene_bytes_size * index);
+}
+
 gene_t * get_gene_by_index(genome_t *genome, uint32_t index, pool_t *pool) {
 
     gene_t *gene = calloc(1, sizeof(gene_t));
 
-    uint8_t *gene_start_byte = genome->genes + (pool->gene_bytes_size * index);
+    uint8_t *gene_start_byte = point_gene_by_index(genome, index, pool);
 
     copy_bitslots_to_uint64(
         gene_start_byte,
