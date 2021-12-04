@@ -2,6 +2,7 @@
 
 #include <stdlib.h>
 #include <stdint.h>
+#include <string.h>
 
 #include <sys/mman.h>
 #include <sys/stat.h>
@@ -16,7 +17,7 @@
 
 #define BYTE_SIZE sizeof(uint8_t)
 
-#define IS_BIG_ENDIAN (!*(unsigned char *)&(uint16_t){1})
+#define IS_BIG_ENDIAN (!*(uint8_t *)&(uint16_t){1})
 
 void copy_bitslots_to_uint64(
     uint8_t *slots, uint64_t *number,
