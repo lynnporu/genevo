@@ -5,13 +5,19 @@
 __pycache__/
 *.py[cod]
 *$py.class
+*.o
+*.d
 
 # C extensions
 *.so
 
-# Compiled
-*.o
-*.d
+# Notebooks
+
+*.ipynb
+
+# Sublime
+
+*.sublime-*
 
 # Distribution / packaging
 .Python
