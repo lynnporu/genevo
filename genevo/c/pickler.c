@@ -49,7 +49,7 @@ pool_t * read_pool(const char *address) {
     pool->organisms_number = preamble->organisms_number;
 
     pool->metadata_byte_size = preamble->metadata_byte_size;
-    pool->metadata = (uint8_t *)preamble->metadata;
+    pool->metadata = (uint8_t *)(&preamble->metadata_initial_byte + 1);
 
     pool->input_neurons_number = preamble->input_neurons_number;
     pool->output_neurons_number = preamble->output_neurons_number;
@@ -61,7 +61,7 @@ pool_t * read_pool(const char *address) {
         pool->weight_part_bit_size);
 
     pool->first_genome_start_position =
-        preamble->metadata + preamble->metadata_byte_size;
+        &preamble->metadata_initial_byte + 1 + preamble->metadata_byte_size;
 
     pool->cursor = pool->first_genome_start_position;
 
@@ -76,12 +76,14 @@ void write_pool(const char *address, pool_t *pool, genome_t **genomes) {
 
     size_t file_size =
         1 +               // initial byte
+        8 +               // number of organisms
         8 + 8 +           // number of input and output neurons
         1 + 1 +           // size of the OG and WG
         2 +               // size of the metadata
         1 +               // metadata initial byte
         pool->metadata_byte_size +
-        1;                // metadata terminal byte;
+        1 +               // metadata terminal byte
+        1;                // pool terminal byte
 
     for (uint64_t genome_i = 0; genome_i < pool->organisms_number; genome_i++)
         file_size +=
@@ -96,7 +98,7 @@ void write_pool(const char *address, pool_t *pool, genome_t **genomes) {
             (uint16_t)(genomes[genome_i]->residue_size_bits / 8) + 1 +
             1;            // genome terminal byte
 
-    file_map_t *mapping = open_file(address, OPEN_MODE_WRITE, file_size);
+    file_map_t *mapping = open_file(address, OPEN_MODE_WRITE, file_size - 1);
     if (ERROR_LEVEL != ERR_OK) return;
 
     pool_file_preamble_t *pool_preamble = mapping->data;
@@ -107,12 +109,14 @@ void write_pool(const char *address, pool_t *pool, genome_t **genomes) {
     pool_preamble->node_id_part_bit_size = pool->node_id_part_bit_size;
     pool_preamble->weight_part_bit_size = pool->weight_part_bit_size;
     pool_preamble->metadata_byte_size = pool->metadata_byte_size;
+    pool_preamble->metadata_initial_byte = POOL_META_INITIAL_BYTE;
+
+    uint8_t *pool_metadata = &pool_preamble->metadata_initial_byte + 1;
+
     // copy pool meta bytes
-    memcpy(pool_preamble->metadata, pool->metadata, pool->metadata_byte_size);
+    memcpy(pool_metadata, pool->metadata, pool->metadata_byte_size);
 
-    void *pool_meta_terminal_byte =
-        pool_preamble->metadata + pool->metadata_byte_size;
-
+    void *pool_meta_terminal_byte = pool_metadata + pool->metadata_byte_size;
     *(uint8_t *)pool_meta_terminal_byte = POOL_META_TERMINAL_BYTE;
 
     // genome pointer
@@ -121,7 +125,8 @@ void write_pool(const char *address, pool_t *pool, genome_t **genomes) {
     for(
         // genome iterator
         uint64_t genome_itr = 0;
-        genome_itr <= pool->organisms_number; genome_itr++
+        genome_itr < pool->organisms_number;
+        genome_itr++
     ) {
 
         genome_t *current_genome = genomes[genome_itr];
@@ -130,13 +135,16 @@ void write_pool(const char *address, pool_t *pool, genome_t **genomes) {
         genome_preamble->genes_number = current_genome->length;
         genome_preamble->metadata_byte_size = current_genome->metadata_byte_size;
         genome_preamble->metadata_initial_byte = GENOME_META_INITIAL_BYTE;
+
+        uint8_t *genome_metadata = &genome_preamble->metadata_initial_byte + 1;
+
         // copy genome meta bytes
         memcpy(
-            genome_preamble->metadata, current_genome->metadata,
+            genome_metadata, current_genome->metadata,
             current_genome->metadata_byte_size);
 
         void *genome_meta_terminal_byte =
-            genome_preamble->metadata + current_genome->metadata_byte_size;
+            genome_metadata + current_genome->metadata_byte_size;
 
         *(uint8_t *)genome_meta_terminal_byte = GENOME_META_TERMINAL_BYTE;
 
@@ -158,14 +166,14 @@ void write_pool(const char *address, pool_t *pool, genome_t **genomes) {
         memcpy(
             residue_byte + 1, current_genome->residue, residue_size_bytes);
 
-        void *terminal_byte = residue_byte + residue_size_bytes;
+        void *terminal_byte = residue_byte + residue_size_bytes + 1;
         *(uint8_t *)terminal_byte = GENOME_TERMINAL_BYTE;
 
         genome_preamble = terminal_byte + 1;
 
     }
 
-    ((uint8_t *)genome_preamble)[0] = POOL_TERMINAL_BYTE;
+    genome_preamble->initial_byte = POOL_TERMINAL_BYTE;
 
     close_file(mapping);
 
