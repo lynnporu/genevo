@@ -340,11 +340,11 @@ inline uint8_t * point_gene_by_index(
     return genome->genes + (pool->gene_bytes_size * index);
 }
 
-gene_t * get_gene_by_index(genome_t *genome, uint32_t index, pool_t *pool) {
+inline gene_t * get_gene_by_pointer(
+    uint8_t *gene_start_byte, pool_t *pool
+) {
 
     gene_t *gene = calloc(1, sizeof(gene_t));
-
-    uint8_t *gene_start_byte = point_gene_by_index(genome, index, pool);
 
     copy_bitslots_to_uint64(
         gene_start_byte,
@@ -396,5 +396,14 @@ gene_t * get_gene_by_index(genome_t *genome, uint32_t index, pool_t *pool) {
         gene->connection_type |= GENE_INCOME_IS_INTERMEDIATE;
 
     return gene;
+
+}
+
+gene_t * get_gene_by_index(genome_t *genome, uint32_t index, pool_t *pool) {
+
+    return get_gene_by_pointer(
+        point_gene_by_index(genome, index, pool),
+        pool
+    );
 
 }
