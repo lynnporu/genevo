@@ -72,6 +72,8 @@ pool_t * read_pool(const char *address) {
 
 void write_pool(const char *address, pool_t *pool, genome_t **genomes) {
 
+    ERROR_LEVEL = 0;
+
     size_t file_size =
         1 +               // initial byte
         8 + 8 +           // number of input and output neurons
@@ -180,6 +182,8 @@ void reset_genome_cursor(pool_t *pool) {
 
 
 genome_t * read_next_genome(pool_t *pool) {
+
+    ERROR_LEVEL = 0;
 
     if (*(uint8_t *)pool->cursor == POOL_TERMINAL_BYTE) {
         ERROR_LEVEL = ERR_GENM_END_ITERATION;

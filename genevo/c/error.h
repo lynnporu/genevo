@@ -4,8 +4,7 @@
 #include <wchar.h>
 #include <stdint.h>
 
-static uint8_t ERROR_LEVEL = 0;
-static inline const char * get_err_string(const uint8_t errcode);
+extern uint8_t ERROR_LEVEL;
 
 
 #define ERR_OK                              0x00

@@ -2,6 +2,8 @@
 
 file_map_t * open_file(const char *address, map_mode_t mode, size_t trunc_to_size) {
 
+    ERROR_LEVEL = 0;
+
     int descriptor = mode == OPEN_MODE_READ
         ? open(address, O_RDONLY, 0)
         : open(address, O_RDWR | O_CREAT | O_TRUNC, (mode_t)0600);

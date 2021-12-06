@@ -1,5 +1,7 @@
 #include "error.h"
 
+uint8_t ERROR_LEVEL = 0;
+
 static inline const char * get_err_string(const uint8_t errcode) {
 
 	switch (errcode) {
