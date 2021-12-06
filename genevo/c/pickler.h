@@ -40,3 +40,6 @@ void write_pool(const char *address, pool_t *pool, genome_t **genomes);
 
 genome_t * read_next_genome(pool_t *pool);
 void reset_genome_cursor(pool_t *pool);
+
+genome_t ** read_genomes(pool_t *pool);
+void free_genomes_ptrs(genome_t ** genomes);

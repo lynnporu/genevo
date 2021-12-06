@@ -246,6 +246,28 @@ genome_t * read_next_genome(pool_t *pool) {
 
 }
 
+genome_t ** read_genomes(pool_t *pool) {
+
+    genome_t ** genomes = malloc(sizeof(genome_t) * pool->organisms_number);
+
+    uint64_t cursor = 0;
+    for(uint64_t cursor = 0; cursor <= pool->organisms_number; cursor++)
+        genomes[cursor] = read_next_genome(pool);
+
+    reset_genome_cursor(pool);
+    return genomes;
+
+}
+
+/*
+
+Destroys array of pointers to genomes.
+
+*/
+void free_genomes_ptrs(genome_t ** genomes) {
+    free(genomes);
+}
+
 #define LEFT_ZERO_UINT8(_NUMBER, _OFFSET) \
     ((uint8_t)(_NUMBER << _OFFSET) >> _OFFSET)
     
