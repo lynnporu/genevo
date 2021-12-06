@@ -113,8 +113,8 @@ typedef struct genome_preamble_s {
     uint32_t  genes_number;
     uint16_t  metadata_byte_size;
     uint8_t   metadata_initial_byte;
-    void     *metadata;
-} genome_file_preamble_t;
+    void     *metadata; // DEL
+} __attribute__((packed, aligned(1))) genome_file_preamble_t;
 
 typedef struct genome_s {
     uint32_t      length;
@@ -166,8 +166,7 @@ typedef struct pool_file_preamble_s {
     uint8_t  weight_part_bit_size;
     uint16_t metadata_byte_size;
     uint8_t  metadata_initial_byte;
-    void    *metadata;
-} pool_file_preamble_t;
+} __attribute__((packed, aligned(1))) pool_file_preamble_t;
 
 typedef struct pool_s {
     uint64_t    organisms_number;
