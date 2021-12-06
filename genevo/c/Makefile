@@ -2,7 +2,7 @@ CC = gcc
 CFLAGS = -fPIC -Wall -Wextra -O2 -g
 LDFLAGS = -shared
 RM = rm -f
-TARGET_LIB = genevo.so
+TARGET_LIB = bin/genevo.so
 
 SRCS = error.c files.c pickler.c
 OBJS = $(SRCS:.c=.o)
