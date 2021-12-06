@@ -4,6 +4,8 @@
 #include <wchar.h>
 #include <stdint.h>
 
+const char * get_err_string(const uint8_t errcode);
+
 extern uint8_t ERROR_LEVEL;
 
 
