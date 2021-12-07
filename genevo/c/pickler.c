@@ -250,7 +250,6 @@ genome_t ** read_genomes(pool_t *pool) {
 
     genome_t ** genomes = malloc(sizeof(genome_t) * pool->organisms_number);
 
-    uint64_t cursor = 0;
     for(uint64_t cursor = 0; cursor <= pool->organisms_number; cursor++)
         genomes[cursor] = read_next_genome(pool);
 
