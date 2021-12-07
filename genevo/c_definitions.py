@@ -3,7 +3,7 @@ import ctypes
 from ctypes import c_uint8, c_uint16, c_uint32, c_uint64, c_void_p, c_char_p
 c_uint8_p = ctypes.POINTER(c_uint8)  # equal to c_char_p
 
-libc = ctypes.LoadLibrary("genevo.so")
+libc = ctypes.cdll.LoadLibrary("genevo/c/bin/genevo.so")
 
 
 class gene_struct_t(ctypes.Structure):
