@@ -58,7 +58,7 @@ pool_t * read_pool(const char *address) {
     pool->weight_part_bit_size = preamble->weight_part_bit_size;
     pool->gene_bytes_size = (
         pool->node_id_part_bit_size * 2 +
-        pool->weight_part_bit_size);
+        pool->weight_part_bit_size) / 8;
 
     pool->first_genome_start_position =
         &preamble->metadata_initial_byte + 1 + preamble->metadata_byte_size;
