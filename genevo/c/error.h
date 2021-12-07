@@ -101,7 +101,7 @@ extern uint8_t ERROR_LEVEL;
                                             "bigger than 64 bits. Those are  " \
                                             "not supported."
 
-#define ERR_GENE_WEIGHT_TOO_LARGE           0x32
+#define ERR_GENE_WEIGHT_TOO_LARGE           0x33
 #define ERR_GENE_WEIGHT_TOO_LARGE_STR       "Weight part of the gene is "      \
                                             "bigger than 64 bits. Those are  " \
                                             "not supported."
