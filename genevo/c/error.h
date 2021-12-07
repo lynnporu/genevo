@@ -71,7 +71,7 @@ extern uint8_t ERROR_LEVEL;
                                             "not found."
 
 #define ERR_GENM_CORRUPT_METADATA_END       0x22
-#define ERR_GENM_CORRUPT_METADATA_END_STR   "Terminal byte at the beginning "  \
+#define ERR_GENM_CORRUPT_METADATA_END_STR   "Terminal byte at the end "  \
                                             "of the genome metadata was "      \
                                             "not found."
 
@@ -80,7 +80,7 @@ extern uint8_t ERROR_LEVEL;
                                             "of the genome was not found."
 
 #define ERR_GENM_CORRUPT_END                0x24
-#define ERR_GENM_CORRUPT_END_STR            "Terminal byte at the beginning "  \
+#define ERR_GENM_CORRUPT_END_STR            "Terminal byte at the end "  \
                                             "of the genome was not found."
 
 #define ERR_GENM_CORRUPT_RESIDUE            0x25
