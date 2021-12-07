@@ -42,8 +42,8 @@ pool_t * read_pool(const char *address) {
          preamble->node_id_part_bit_size) % 8 != 0,
         ERR_GENE_NOT_ALIGNED);
 
-
     pool_t *pool = malloc(sizeof(pool_t));
+
     pool->file_mapping = mapping;
 
     pool->organisms_number = ntoh64(preamble->organisms_number);
@@ -61,11 +61,10 @@ pool_t * read_pool(const char *address) {
         pool->weight_part_bit_size) / 8;
 
     pool->first_genome_start_position =
-        &preamble->metadata_initial_byte + 1 + preamble->metadata_byte_size;
+        &preamble->metadata_initial_byte + 1 + pool->metadata_byte_size + 1;
 
     pool->cursor = pool->first_genome_start_position;
 
-    free(preamble);
     return pool;
 
 }
@@ -219,14 +218,22 @@ genome_t * read_next_genome(pool_t *pool) {
     genome_t* genome = malloc(sizeof(genome_t));
 
     genome->length = ntoh32(preamble->genes_number);
-    genome->metadata = &preamble->metadata_initial_byte + 1;
     genome->metadata_byte_size = ntoh16(preamble->metadata_byte_size);
-    genome->genes = preamble->metadata + ntoh16(preamble->metadata_byte_size + 1);
+    genome->metadata = &preamble->metadata_initial_byte + 1;
+
+    void *genome_meta_terminal_byte =
+        genome->metadata + genome->metadata_byte_size;
+
+    if (*(uint8_t *)genome_meta_terminal_byte != GENOME_META_TERMINAL_BYTE) {
+        ERROR_LEVEL = ERR_GENM_CORRUPT_METADATA_END;
+        return NULL;
+    }
+
+    genome->genes = genome_meta_terminal_byte + 1;
 
     void * residue_byte = (
         genome->genes +
-        pool->gene_bytes_size * genome->length +
-        1);
+        pool->gene_bytes_size * genome->length);
 
     if (*(uint8_t *)residue_byte != GENOME_RESIDUE_BYTE) {
         ERROR_LEVEL = ERR_GENM_CORRUPT_RESIDUE;
@@ -240,9 +247,10 @@ genome_t * read_next_genome(pool_t *pool) {
     genome->residue =
         residue_byte + sizeof(uint8_t) + sizeof(genome->residue_size_bits);
 
-    void * terminal_byte = residue_byte + 1 + sizeof(genome->residue_size_bits);
+    void * terminal_byte =
+        genome->residue + (genome->residue_size_bits / 8) + 1;
 
-    if (*(uint8_t *)residue_byte != GENOME_TERMINAL_BYTE) {
+    if (*(uint8_t *)terminal_byte != GENOME_TERMINAL_BYTE) {
         ERROR_LEVEL = ERR_GENM_CORRUPT_END;
         free(genome);
         return NULL;
@@ -250,7 +258,6 @@ genome_t * read_next_genome(pool_t *pool) {
 
     pool->cursor = terminal_byte + 1;
 
-    free(preamble);
     return genome;
 
 }
