@@ -113,7 +113,6 @@ typedef struct genome_preamble_s {
     uint32_t  genes_number;
     uint16_t  metadata_byte_size;
     uint8_t   metadata_initial_byte;
-    void     *metadata; // DEL
 } __attribute__((packed, aligned(1))) genome_file_preamble_t;
 
 typedef struct genome_s {
