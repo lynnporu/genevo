@@ -10,7 +10,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 
-#include <byteswap.h>
+#include <arpa/inet.h>
 
 #include "gene_pool.h"
 #include "error.h"
@@ -19,6 +19,13 @@
 #define BYTE_SIZE sizeof(uint8_t)
 
 #define IS_BIG_ENDIAN (!*(uint8_t *)&(uint16_t){1})
+
+#define hton16 htons
+#define ntoh16 ntohs
+#define hton32 htonl
+#define ntoh32 ntohl
+#define hton64(x) ((((uint64_t)htonl(x)) << 32) + htonl((x) >> 32))
+#define ntoh64(x) ((((uint64_t)ntohl(x)) << 32) + ntohl((x) >> 32))
 
 void copy_bitslots_to_uint64(
     uint8_t *slots, uint64_t *number,
