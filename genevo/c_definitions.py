@@ -21,9 +21,9 @@ class genome_struct_t(ctypes.Structure):
         ("length", c_uint32),
         ("metadata", c_char_p),
         ("metadata_byte_size", c_uint16),
-        ("genes", ctypes.POINTER(c_uint8)),
+        ("genes", c_uint8_p),
         ("residue_size_bits", c_uint16),
-        ("residue", ctypes.POINTER(c_uint8))
+        ("residue", c_uint8_p)
     ]
 
 
@@ -64,7 +64,7 @@ write_pool = ctypes.CFUNCTYPE(
 )(libc.write_pool)
 
 point_gene_by_index = ctypes.CFUNCTYPE(
-    ctypes.POINTER(c_uint8),  # restype
+    c_uint8_p,  # restype
     ctypes.POINTER(genome_struct_t),
     ctypes.POINTER(pool_struct_t)
 )(libc.point_gene_by_index)
