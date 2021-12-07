@@ -48,7 +48,6 @@ pool_t * read_pool(const char *address) {
 
     pool->organisms_number = ntoh64(preamble->organisms_number);
 
-    pool->metadata_byte_size = preamble->metadata_byte_size;
     pool->metadata_byte_size = ntoh16(preamble->metadata_byte_size);
     pool->metadata = (uint8_t *)(&preamble->metadata_initial_byte + 1);
 
@@ -109,7 +108,7 @@ void write_pool(const char *address, pool_t *pool, genome_t **genomes) {
     pool_preamble->output_neurons_number = hton64(pool->output_neurons_number);
     pool_preamble->node_id_part_bit_size = pool->node_id_part_bit_size;
     pool_preamble->weight_part_bit_size = pool->weight_part_bit_size;
-    pool_preamble->metadata_byte_size = pool->metadata_byte_size;
+    pool_preamble->metadata_byte_size = hton16(pool->metadata_byte_size);
     pool_preamble->metadata_initial_byte = POOL_META_INITIAL_BYTE;
 
     uint8_t *pool_metadata = &pool_preamble->metadata_initial_byte + 1;
