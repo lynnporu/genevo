@@ -95,6 +95,7 @@ void write_pool(const char *address, pool_t *pool, genome_t **genomes) {
             1 +           // metadata terminal byte
             genomes[genome_i]->length * pool->gene_bytes_size +
             1 +           // genome residue byte
+            2 +           // genome residue size in bits
             (uint16_t)(genomes[genome_i]->residue_size_bits / 8) + 1 +
             1;            // genome terminal byte
 
@@ -163,10 +164,15 @@ void write_pool(const char *address, pool_t *pool, genome_t **genomes) {
         uint8_t residue_size_bytes =
             (uint8_t)(current_genome->residue_size_bits / 8) + 1;
 
-        memcpy(
-            residue_byte + 1, current_genome->residue, residue_size_bytes);
+        *(uint16_t *)(residue_byte + 1) = hton16(current_genome->residue_size_bits);
 
-        void *terminal_byte = residue_byte + residue_size_bytes + 1;
+        void *residue_start =
+            residue_byte + 1 + sizeof(current_genome->residue_size_bits);
+
+        memcpy(
+            residue_start, current_genome->residue, residue_size_bytes);
+
+        void *terminal_byte = residue_start + residue_size_bytes;
         *(uint8_t *)terminal_byte = GENOME_TERMINAL_BYTE;
 
         genome_preamble = terminal_byte + 1;
