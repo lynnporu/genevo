@@ -7,6 +7,8 @@ This module contains methods for dumping gene pool into file and vice versa.
 
 #include "pickler.h"
 
+#define sizeof_member(type, member) sizeof(((type *)0)->member)
+
 #define MAPPING_FAIL_CONDITION(_CONDITION, _ERR_CONST) \
     if(_CONDITION) {ERROR_LEVEL = _ERR_CONST; close_file(mapping); return NULL;}
 
@@ -74,29 +76,21 @@ void write_pool(const char *address, pool_t *pool, genome_t **genomes) {
     ERROR_LEVEL = 0;
 
     size_t file_size =
-        1 +               // initial byte
-        8 +               // number of organisms
-        8 + 8 +           // number of input and output neurons
-        1 + 1 +           // size of the OG and WG
-        2 +               // size of the metadata
-        1 +               // metadata initial byte
+        sizeof(pool_file_preamble_t) +
         pool->metadata_byte_size +
-        1 +               // metadata terminal byte
-        1;                // pool terminal byte
+        sizeof(POOL_META_TERMINAL_BYTE) +
+        sizeof(POOL_TERMINAL_BYTE);
 
     for (uint64_t genome_i = 0; genome_i < pool->organisms_number; genome_i++)
         file_size +=
-            1 +           // genome initial byte
-            4 +           // number of genes
-            2 +           // size of the metadata
-            1 +           // metadata initial byte
+            sizeof(genome_file_preamble_t) +
             genomes[genome_i]->metadata_byte_size +
-            1 +           // metadata terminal byte
+            sizeof(GENOME_META_TERMINAL_BYTE) +
             genomes[genome_i]->length * pool->gene_bytes_size +
-            1 +           // genome residue byte
-            2 +           // genome residue size in bits
+            sizeof(GENOME_RESIDUE_BYTE) +
+            sizeof_member(genome_t, residue_size_bits) +
             (uint16_t)(genomes[genome_i]->residue_size_bits / 8) + 1 +
-            1;            // genome terminal byte
+            sizeof(GENOME_TERMINAL_BYTE);
 
     file_map_t *mapping = open_file(address, OPEN_MODE_WRITE, file_size - 1);
     if (ERROR_LEVEL != ERR_OK) return;
