@@ -36,8 +36,7 @@ void copy_uint64_to_bitslots(
     uint8_t start, uint8_t number_size
 );
 
-inline uint8_t * point_gene_by_index(genome_t *, uint32_t, pool_t *)
-__attribute__((always_inline));
+uint8_t * point_gene_by_index(genome_t *, uint32_t, pool_t *);
 
 gene_t * get_gene_by_index(genome_t *, uint32_t, pool_t *);
 

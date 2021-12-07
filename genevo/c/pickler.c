@@ -365,7 +365,7 @@ void copy_uint64_to_bitslots(
 #define MAX_FOR_BIT(_BIT_SIZE) \
     (_BIT_SIZE == 64 ? 0xffffffffffff : (1 << _BIT_SIZE) - 1)
 
-inline uint8_t * point_gene_by_index(
+uint8_t * point_gene_by_index(
     genome_t *genome, uint32_t index, pool_t *pool
 ) {
     return genome->genes + (pool->gene_bytes_size * index);
