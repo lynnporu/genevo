@@ -29,6 +29,15 @@ class GeneParsingError(FileParsingError):
     pass
 
 
+def get_error_level() -> ctypes.c_uint8:
+    """Returns ERROR_LEVEL variable of the .so.
+
+    Returns:
+        ctypes.c_uint8; Value of the ERROR_LEVEL.
+    """
+    return ctypes.c_uint8.in_dll(c_definitions.libc, "ERROR_LEVEL")
+
+
 def check_errors(raise_immediately: bool = True) -> typing.Optional[Exception]:
     """Check last error level.
 
@@ -41,8 +50,7 @@ def check_errors(raise_immediately: bool = True) -> typing.Optional[Exception]:
         optional Exception; If ERROR_LEVEL is 0, then None will be returned.
     """
 
-    error_level = ctypes.c_uint8 \
-        .in_dll(c_definitions.libc, "ERROR_LEVEL")
+    error_level = get_error_level()
     error_level_int = error_level.value
 
     error = None
