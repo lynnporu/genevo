@@ -33,6 +33,7 @@ class genome_struct_t(ctypes.Structure):
 
 
 genome_struct_p = ctypes.POINTER(genome_struct_t)
+genome_struct_p_p = ctypes.POINTER(genome_struct_p)
 
 
 class file_mapping_struct_t(ctypes.Structure):
@@ -75,57 +76,57 @@ write_pool = libc.write_pool
 write_pool.restype = None
 write_pool.argtypes = [
     c_char_p,  # address
-    ctypes.POINTER(pool_struct_t),  # pool
-    ctypes.POINTER(ctypes.POINTER(genome_struct_t))
+    pool_struct_p,  # pool
+    genome_struct_p_p
 ]
 
 point_gene_by_index = libc.point_gene_by_index
 point_gene_by_index.restype = c_uint8_p
 point_gene_by_index.argtypes = [
-    ctypes.POINTER(genome_struct_t),
-    ctypes.POINTER(pool_struct_t)
+    genome_struct_p,
+    pool_struct_p
 ]
 
 get_gene_by_index = libc.get_gene_by_index
-get_gene_by_index.restype = ctypes.POINTER(gene_struct_t)
+get_gene_by_index.restype = gene_struct_p
 get_gene_by_index.argtypes = [
-    ctypes.POINTER(genome_struct_t),
-    ctypes.POINTER(pool_struct_t)
+    genome_struct_p,
+    pool_struct_p
 ]
 
 get_gene_by_pointer = libc.get_gene_by_pointer
-get_gene_by_pointer.restype = ctypes.POINTER(gene_struct_t)
+get_gene_by_pointer.restype = gene_struct_p
 get_gene_by_pointer.argtypes = [
     gene_p,  # pointer
-    ctypes.POINTER(pool_struct_t)
+    pool_struct_p
 ]
 
 read_pool = libc.read_pool
-read_pool.restype = ctypes.POINTER(pool_struct_t)
+read_pool.restype = pool_struct_p
 read_pool.argtypes = [
     c_char_p  # address
 ]
 
-close_pool = ctypes.CFUNCTYPE(None, ctypes.POINTER(pool_struct_t))
+# close_pool = ctypes.CFUNCTYPE(None, pool_struct_p)
 
 read_next_genome = libc.read_next_genome
-read_next_genome.restype = ctypes.POINTER(genome_struct_t)
+read_next_genome.restype = genome_struct_p
 read_next_genome.argtypes = [
-    ctypes.POINTER(pool_struct_t)
+    pool_struct_p
 ]
 
 read_genomes = libc.read_genomes
-read_genomes.restype = ctypes.POINTER(ctypes.POINTER(genome_struct_t))
+read_genomes.restype = genome_struct_p_p
 read_genomes.argtypes = [
-    ctypes.POINTER(pool_struct_t)
+    pool_struct_p
 ]
 
 reset_genome_cursor = libc.reset_genome_cursor
 reset_genome_cursor.restype = None
-reset_genome_cursor.argtypes = [ctypes.POINTER(pool_struct_t)]
+reset_genome_cursor.argtypes = [pool_struct_p]
 
 free_genomes_ptrs = libc.free_genomes_ptrs
 free_genomes_ptrs.restype = None
 free_genomes_ptrs.argtypes = [
-    ctypes.POINTER(ctypes.POINTER(genome_struct_t))
+    genome_struct_p_p
 ]
