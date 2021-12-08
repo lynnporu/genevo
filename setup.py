@@ -11,11 +11,11 @@ setuptools.setup(
     author_email="p.tymoshen@gmail.com",
     description="Framework for evolutional neural networks",
     long_description=long_description,
-    python_requires=">=3.5",
+    python_requires=">=3.9",
     long_description_content_type="text/markdown",
     url="https://github.com/lynnporu/genevo",
     classifiers=[
-        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.9",
         "Development Status :: 1 - Planning",
         "Intended Audience :: Information Technology",
         "Intended Audience :: Science/Research",

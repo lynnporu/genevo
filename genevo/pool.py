@@ -1,4 +1,3 @@
-import typing
 import enum
 
 from . import c_definitions
@@ -35,7 +34,7 @@ class Gene:
         income_node_type: NodeConnectionType,
         weight_unnormalized: int = None,
         weight: int = None,
-        struct: c_definitions.gene_struct_t = None,
+        struct: c_definitions.gene_struct_p = None,
         gene_bytes: c_definitions.gene_p = None
     ):
 
@@ -71,15 +70,15 @@ class Gene:
         return self._weight_unnormalized
 
     @property
-    def outcome_node(self) -> typing.Tuple[NodeConnectionType, int]:
+    def outcome_node(self) -> tuple[NodeConnectionType, int]:
         return (self._outcome_node_id, self._outocome_node_type)
 
     @property
-    def income_node(self) -> typing.Tuple[NodeConnectionType, int]:
+    def income_node(self) -> tuple[NodeConnectionType, int]:
         return (self._income_node_id, self._income_node_type)
 
     @property
-    def struct(self) -> c_definitions.gene_struct_t:
+    def struct(self) -> c_definitions.gene_struct_p:
         return self._struct
 
     @property
@@ -94,7 +93,7 @@ class Gene:
 
     @classmethod
     def from_struct(
-        pool: "GenePool", self, struct: c_definitions.gene_struct_t
+        pool: "GenePool", self, struct: c_definitions.gene_struct_p
     ):
         raise NotImplementedError
 
@@ -124,7 +123,7 @@ class GenePool:
         metadata: str,
         node_id_part_bit_size: int,
         weight_part_bit_size: int,
-        genomes: typing.List[Genome] = None,
+        genomes: list[Genome] = None,
         file_address: str = None
     ):
         self.input_neurons_number = input_neurons_number
