@@ -37,8 +37,8 @@ void copy_uint64_to_bitslots(
 );
 
 uint8_t * point_gene_by_index(genome_t *, uint32_t, pool_t *);
-
 gene_t * get_gene_by_index(genome_t *, uint32_t, pool_t *);
+gene_t * get_gene_by_pointer(uint8_t *gene_start_byte, pool_t *);
 
 pool_t * read_pool(const char *address);
 void close_pool(pool_t *pool);

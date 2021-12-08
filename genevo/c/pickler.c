@@ -377,7 +377,7 @@ uint8_t * point_gene_by_index(
     return genome->genes + (pool->gene_bytes_size * index);
 }
 
-inline gene_t * get_gene_by_pointer(
+gene_t * get_gene_by_pointer(
     uint8_t *gene_start_byte, pool_t *pool
 ) {
 

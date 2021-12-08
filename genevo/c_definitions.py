@@ -5,6 +5,8 @@ c_uint8_p = ctypes.POINTER(c_uint8)  # equal to c_char_p
 
 libc = ctypes.cdll.LoadLibrary("genevo/c/bin/genevo.so")
 
+gene_p = c_uint8_p
+
 
 class gene_struct_t(ctypes.Structure):
     _fields_ = [
@@ -76,6 +78,13 @@ get_gene_by_index = libc.get_gene_by_index
 get_gene_by_index.restype = ctypes.POINTER(gene_struct_t)
 get_gene_by_index.argtypes = [
     ctypes.POINTER(genome_struct_t),
+    ctypes.POINTER(pool_struct_t)
+]
+
+get_gene_by_pointer = libc.get_gene_by_pointer
+get_gene_by_pointer.restype = ctypes.POINTER(gene_struct_t)
+get_gene_by_pointer.argtypes = [
+    gene_p,  # pointer
     ctypes.POINTER(pool_struct_t)
 ]
 
