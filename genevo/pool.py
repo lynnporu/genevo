@@ -5,13 +5,13 @@ import itertools
 from . import c_definitions
 
 
-def max_for_bit(size: int) -> int:
+def _max_for_bit(size: int) -> int:
     """Returns a number which has all `size` bits set to 1.
 
     Examples:
-        >>> bin(max_for_bit(3))
+        >>> bin(_max_for_bit(3))
         <<< 0b111
-        >>> bin(max_for_bit(0))
+        >>> bin(_max_for_bit(0))
         <<< 0b0
     """
     if size >= 0:
@@ -24,6 +24,30 @@ class NodeConnectionType(enum.Enum):
     is_input = 0b10000000
     is_intermediate = 0b01000000
     is_output = 0b00100000
+
+
+class _IterableContainer:
+    """Implements slice indexing for container. Requires single _get_by_index
+    to be implemented.
+    """
+
+    def _get_by_index(self, index: int):
+        pass
+
+    def __getitem__(self, key: int | slice):
+
+        if isinstance(key, slice):
+            # map list of indices with a such function which extracts an item
+            # by its index
+            return list(map(
+                self._get_by_index,
+                itertools.islice(  # produce indices for extraction
+                    range(len(self)),
+                    key.start, key.stop, key.step)
+            ))
+
+        else:
+            return self._get_by_index(key)
 
 
 class Gene:
@@ -105,7 +129,7 @@ class _GroupingType(enum.Enum):
     group_by_byte = 8
 
 
-class _BitField:
+class _BitField(_IterableContainer):
 
     def __init__(
         self,
@@ -202,22 +226,7 @@ class _BitField:
         if bit_start < 0:
             raise IndexError
 
-        return self._number & (max_for_bit(self._grouping_size) << bit_start)
-
-    def __getitem__(self, key: int | slice) -> Gene | list[Gene]:
-
-        if isinstance(key, slice):
-            # map list of indices with a such function which extracts an item
-            # by its index
-            return list(map(
-                self._get_by_index,
-                itertools.islice(  # produce indices for extraction
-                    range(self.groups_length),
-                    key.start, key.stop, key.step)
-            ))
-
-        else:
-            return self._get_by_index(key)
+        return self._number & (_max_for_bit(self._grouping_size) << bit_start)
 
 
 class GenomeResidue(_BitField):
@@ -245,7 +254,7 @@ class GenomeResidue(_BitField):
         )
 
 
-class Genome:
+class Genome(_IterableContainer):
     def __init__(
         self,
         metadata: str,
@@ -273,6 +282,9 @@ class Genome:
     def from_struct(self, string: c_definitions.genome_t):
         pass
 
+    def _get_by_index(self, index: int) -> Gene:
+        return self.genes[index]
+
     @property
     def genes(self) -> list[Gene]:
         return self._genes
@@ -295,7 +307,7 @@ class Genome:
         pass
 
 
-class GenePool:
+class GenePool(_IterableContainer):
 
     def __init__(
         self,
@@ -338,7 +350,14 @@ class GenePool:
         """A coefficient, which satisfies the following condition:
         > weight_unnormalized / COEFF = weight.
         """
-        return max_for_bit(self.gene_bits_size)
+        return _max_for_bit(self.gene_bits_size)
+
+    def __getitem__(self, index: int) -> Genome:
+        return self.genomes[index]
+
+    @property
+    def genomes(self):
+        return self._genomes
 
     def eliminate(self, eliminator: typing.Callable[Genome, bool]):
         pass
