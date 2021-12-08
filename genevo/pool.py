@@ -1,4 +1,6 @@
 import enum
+import itertools
+import typing
 
 from . import c_definitions
 
@@ -53,6 +55,10 @@ class Gene:
         self._gene_bytes = gene_bytes
 
     @property
+    def struct(self) -> c_definitions.gene_struct_p:
+        return self._struct
+
+    @property
     def weight(self) -> float:
         if self._weight is None:
             self._weight = (
@@ -78,10 +84,6 @@ class Gene:
         return (self._income_node_id, self._income_node_type)
 
     @property
-    def struct(self) -> c_definitions.gene_struct_p:
-        return self._struct
-
-    @property
     def gene_bytes(self) -> c_definitions.gene_p:
         return self._gene_bytes
 
@@ -98,19 +100,89 @@ class Gene:
         raise NotImplementedError
 
 
+class _GroupingType(enum.Enum):
+    group_by_bit = 1
+    group_by_byte = 8
+
+
+class _BitField:
+
+    def __init__(
+        self,
+        grouping: _GroupingType | int = _GroupingType.group_by_byte,
+        skip_last_bits: int = 0
+    ):
+        raise NotImplementedError
+
+    def __getitem__(self, key: int | slice) -> Gene:
+        raise NotImplementedError
+
+
+class GenomeResidue(_BitField):
+    def __init__(
+        self,
+        bytes: list[int] | c_definitions.gene_p,
+        bit_size: int
+    ):
+        super().__init__()
+        raise NotImplementedError
+
+
+class GeneSequence(_BitField):
+    def __init__(
+        self,
+        bytes: list[Gene] | c_definitions.gene_p,
+        gene_byte_size: int
+    ):
+        super().__init__()
+        raise NotImplementedError
+
+
 class Genome:
     def __init__(
         self,
         metadata: str,
-        genes: typing.Union[typing.List[Gene], typing.List[int]],
-        residue: typing.List[int]
+        genes: GeneSequence,
+        genes_residue: GenomeResidue = None,
+        struct: c_definitions.genome_struct_p = None
     ):
-        self.metadata = metadata
-        self.genes = genes
-        self.residue = residue
+        self._metadata = metadata
+        self._genes = genes
+        self._residue = genes_residue
+        self._struct = struct
+
+    @property
+    def struct(self) -> c_definitions.gene_struct_p:
+        return self._struct
 
     @classmethod
     def from_struct(self, string: c_definitions.genome_t):
+        pass
+
+    @property
+    def genes(self) -> GeneSequence:
+        return self._genes
+
+    @property
+    def genes_residue(self) -> GenomeResidue:
+        return self._residue
+
+    @property
+    def bit_iter(self) -> typing.Generator[int]:
+        yield from self._genes.bit_iter
+        yield from self._residue.bit_iter
+
+    def mutate(self):
+        pass
+
+    def copulate_with(self, other: "Genome") -> "Genome":
+        pass
+
+    def __add__(self, other: "Genome") -> "Genome":
+        pass
+
+    @staticmethod
+    def copulate(*genomes: "Genome") -> "Genome":
         pass
 
 
@@ -124,27 +196,44 @@ class GenePool:
         node_id_part_bit_size: int,
         weight_part_bit_size: int,
         genomes: list[Genome] = None,
-        file_address: str = None
+        file_address: str = None,
+        struct: c_definitions.pool_struct_p = None
     ):
-        self.input_neurons_number = input_neurons_number
-        self.output_neurons_number = output_neurons_number
-        self.metadata = metadata
-        self.node_id_part_bit_size = node_id_part_bit_size
-        self.weight_part_bit_size = weight_part_bit_size
-        self.genomes = genomes or []
-        self.file_address = file_address
+        self._input_neurons_number = input_neurons_number
+        self._output_neurons_number = output_neurons_number
+        self._metadata = metadata
+        self._node_id_part_bit_size = node_id_part_bit_size
+        self._weight_part_bit_size = weight_part_bit_size
+        self._genomes = genomes or []
+        self._file_address = file_address
+        self._struct = struct
 
     @property
-    def gene_bits_size(self):
+    def struct(self) -> c_definitions.gene_struct_p:
+        return self._struct
+
+    @property
+    def gene_bits_size(self) -> int:
         raise NotImplementedError
 
     @property
-    def gene_bytes_size(self):
+    def gene_bytes_size(self) -> int:
         raise NotImplementedError
 
     @property
-    def _weight_normalization_coeff(self):
+    def _weight_normalization_coeff(self) -> int:
         """A coefficient, which satisfies the following condition:
         > weight_unnormalized / COEFF = weight.
         """
         return max_for_bit(self.gene_bits_size)
+
+    def eliminate(self, eliminator: typing.Callable[Genome, bool]):
+        pass
+
+    def reproduce(self, kill_parents: float = 0) -> "GenePool":
+        pass
+
+
+# Convenient aliases
+Organism = Genome
+Population = GenePool
