@@ -3,6 +3,7 @@ import typing
 import itertools
 
 from . import c_definitions
+from . import errors
 
 
 def _max_for_bit(size: int) -> int:
@@ -48,6 +49,22 @@ class _IterableContainer:
 
         else:
             return self._get_by_index(key)
+
+
+class _HasStructBackend:
+    """Base class for all the classes that have C struct as underlying data
+    storage.
+    """
+
+    def _generate_struct(self) -> c_definitions.ctypes.Structure:
+        pass
+
+    @property
+    def struct(self) -> c_definitions.ctypes.Structure:
+        if not self._struct:
+            self._struct = self._generate_struct()
+        return self._struct
+
 
 
 class Gene:
@@ -254,7 +271,7 @@ class GenomeResidue(_BitField):
         )
 
 
-class Genome(_IterableContainer):
+class Genome(_IterableContainer, _HasStructBackend):
     def __init__(
         self,
         metadata: str,
@@ -267,12 +284,10 @@ class Genome(_IterableContainer):
         self._residue = genes_residue
         self._struct = struct
 
-    @property
-    def struct(self) -> c_definitions.gene_struct_p:
-        if not self._struct:
-            raise NotImplementedError(
-                "struct generation is not implemented yet")
-        return self._struct
+    def _generate_struct(self):
+        super()._generate_struct()
+        raise NotImplementedError(
+            "struct generation for genomes is not implemented yet")
 
     @property
     def residue_bit_size(self):
@@ -281,6 +296,9 @@ class Genome(_IterableContainer):
     @classmethod
     def from_struct(self, string: c_definitions.genome_t):
         pass
+
+    def __len__(self) -> int:
+        return len(self.genes)
 
     def _get_by_index(self, index: int) -> Gene:
         return self.genes[index]
@@ -317,7 +335,6 @@ class GenePool(_IterableContainer):
         node_id_part_bit_size: int,
         weight_part_bit_size: int,
         genomes: list[Genome] = None,
-        file_address: str = None,
         struct: c_definitions.pool_struct_p = None
     ):
         self._input_neurons_number = input_neurons_number
@@ -326,16 +343,65 @@ class GenePool(_IterableContainer):
         self._node_id_part_bit_size = node_id_part_bit_size
         self._weight_part_bit_size = weight_part_bit_size
         self._genomes = genomes or []
-        self._file_address = file_address
         self._struct = struct
 
     @classmethod
     def from_file_dump(cls, address: str) -> "GenePool":
-        pass
+        """Read pool from file dump.
+        """
+        pool_struct_p = c_definitions.read_pool(address.encode("utf-8"))
+        errors.check_errors()
+        pool_struct = pool_struct_p.contents
+
+        genomes = []
+
+        try:
+            genome_struct = c_definitions.read_next_genome(pool_struct_p)
+            errors.check_errors()
+            genomes.append(Genome.from_struct(genome_struct))
+
+        except StopIteration:
+            pass
+
+        finally:
+            c_definitions.reset_genome_cursor(pool_struct_p)
+
+        return cls(
+            input_neurons_number=pool_struct.input_neurons_number.value,
+            output_neurons_number=pool_struct.output_neurons_number.value,
+            metadata=bytes(
+                pool_struct.metadata[:pool_struct.metadata_byte_size.value]
+            ).decode("utf-8"),
+            node_id_part_bit_size=pool_struct.node_id_part_bit_size.value,
+            weight_part_bit_size=pool_struct.weight_part_bit_size.value,
+            genomes=genomes,
+            struct=pool_struct_p
+        )
+
+    def _generate_struct(self) -> c_definitions.pool_struct_p:
+        """Generate C struct pool_struct_p for this gene pool.
+        """
+        metadata = self.metadata.encode("utf-8")
+        return c_definitions.pointer(c_definitions.pool_struct_t(
+            len(self),  # organisms_number
+            self._input_neurons_number,
+            self._output_neurons_number,
+            len(metadata),
+            metadata,
+            self._node_id_part_bit_size,
+            self._weight_part_bit_size,
+            (self._node_id_part_bit_size * 2 + self._weight_part_bit_size),
+            None,
+            None,
+            None
+        ))
 
     @property
-    def struct(self) -> c_definitions.gene_struct_p:
-        return self._struct
+    def genome_structs_vector(self) -> c_definitions.genome_struct_p:
+        return (c_definitions.genome_struct_p * len(self))(*[
+            genome.struct
+            for genome in self.genomes
+        ])
 
     @property
     def gene_bits_size(self) -> int:
@@ -352,7 +418,10 @@ class GenePool(_IterableContainer):
         """
         return _max_for_bit(self.gene_bits_size)
 
-    def __getitem__(self, index: int) -> Genome:
+    def __len__(self) -> int:
+        return len(self.genomes)
+
+    def _get_by_index(self, index: int) -> Genome:
         return self.genomes[index]
 
     @property
