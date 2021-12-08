@@ -18,6 +18,9 @@ class gene_struct_t(ctypes.Structure):
     ]
 
 
+gene_struct_p = ctypes.POINTER(gene_struct_t)
+
+
 class genome_struct_t(ctypes.Structure):
     _fields_ = [
         ("length", c_uint32),
@@ -29,12 +32,18 @@ class genome_struct_t(ctypes.Structure):
     ]
 
 
+genome_struct_p = ctypes.POINTER(genome_struct_t)
+
+
 class file_mapping_struct_t(ctypes.Structure):
     _fields_ = [
         ("descriptor", ctypes.c_int),
         ("size", ctypes.c_size_t),
         ("data", c_void_p)
     ]
+
+
+file_mapping_struct_p = ctypes.POINTER(file_mapping_struct_t)
 
 
 class pool_struct_t(ctypes.Structure):
@@ -51,6 +60,9 @@ class pool_struct_t(ctypes.Structure):
         ("first_genome_start_position", c_void_p),
         ("cursor", c_void_p)
     ]
+
+
+pool_struct_p = ctypes.POINTER(pool_struct_t)
 
 
 get_err_string = libc.get_err_string
