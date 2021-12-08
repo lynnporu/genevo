@@ -405,11 +405,12 @@ class GenePool(_IterableContainer):
         ))
 
     @property
-    def genome_structs_vector(self) -> c_definitions.genome_struct_p:
-        return (c_definitions.genome_struct_p * len(self))(*[
-            genome.struct
-            for genome in self.genomes
-        ])
+    def genome_structs_vector(self) -> c_definitions.genome_struct_p_p:
+        return c_definitions.ctypes.pointer(
+            (c_definitions.genome_struct_p * len(self))(*[
+                genome.struct for genome in self.genomes
+            ])
+        )
 
     @property
     def gene_bits_size(self) -> int:
