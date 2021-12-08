@@ -378,6 +378,14 @@ class GenePool(_IterableContainer):
             struct=pool_struct_p
         )
 
+    def dump_to_file(self, address: str):
+        """Dump the pool into the file with given address.
+        """
+        c_definitions.write_pool(
+            address.encode("utf-8"),
+            self.struct, self.genome_structs_vector)
+        errors.check_errors()
+
     def _generate_struct(self) -> c_definitions.pool_struct_p:
         """Generate C struct pool_struct_p for this gene pool.
         """
