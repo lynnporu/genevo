@@ -40,7 +40,7 @@ class Gene:
 
         if weight_unnormalized is None and weight is None:
             raise ValueError(
-                "bot `weight_unnormalized` and `weight` cannot be None")
+                "both `weight_unnormalized` and `weight` cannot be None")
 
         self._pool = pool
         self._outcome_node_id = outcome_node_id
