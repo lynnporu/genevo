@@ -66,7 +66,6 @@ class _HasStructBackend:
         return self._struct
 
 
-
 class Gene:
     def __init__(
         self,
@@ -151,6 +150,7 @@ class _BitField(_IterableContainer):
     def __init__(
         self,
         bytes: iter[int],
+        bytes_size: int = None,
         skip_last_bits: int = 0,
         grouping: _GroupingType | int = _GroupingType.group_by_byte,
         skip_byte_size_checking: bool = False
@@ -158,6 +158,10 @@ class _BitField(_IterableContainer):
         """Creates BitField.
 
         Arguments:
+            bytes_size: int, default = None; If None, then bytes size will be
+                calculated by `len(bytes)`. It is convenient to set this
+                parameter in case `bytes` is a pointer to dynamic array which
+                size cannot be calculated manually.
             skip_last_bits: int, default = 0; Last given number of bits of the
                 last byte wont be considered as the part of the current bit
                 field.
@@ -189,7 +193,8 @@ class _BitField(_IterableContainer):
         if not (self._grouping_size >= 1):
             raise ValueError("grouping size cannot be less than 1")
 
-        self._bit_size = len(bytes) * 8 - skip_last_bits
+        self._bytes_len = bytes_size or len(bytes)
+        self._bit_size = self._bytes_len * 8 - skip_last_bits
 
         if self._bit_size % self._grouping_size:  # != 0
             raise ValueError(
@@ -206,6 +211,35 @@ class _BitField(_IterableContainer):
         self._bytes = bytes
         self._number = None
         self._skip_last_bits = skip_last_bits
+
+    @classmethod
+    def from_dynamic_array(
+        cls,
+        bytes: c_definitions.c_uint8_p,
+        bytes_size: int,
+        copy_bytes: bool = False,
+        *args, **kwargs
+    ):
+        """Creates a bit field from pointer to uint8_t.
+
+        Arguments:
+            copy_bytes: bool, default = False; Set this to True in case the
+                memory behind `bytes` will be freed soon.
+            *args, **kwargs; The rest of the parameters which will be passed
+                into standard constructor.
+        """
+        if copy_bytes:
+            bytes = [
+                byte.value
+                for _, byte
+                # zip will break after range exhaustion
+                in zip(range(bytes_size), bytes)
+            ]
+
+        return cls(
+            bytes=bytes,
+            bytes_size=bytes_size,
+            *args, **kwargs
         )
 
     def to_dynamic_array(self) -> c_definitions.c_uint8_p:
