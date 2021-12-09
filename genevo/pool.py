@@ -243,17 +243,26 @@ class _BitField(_IterableContainer):
             *args, **kwargs
         )
 
-    def to_dynamic_array(self) -> tuple[int, c_definitions.c_uint8_p]:
+    def to_dynamic_array(
+        self,
+        realloc: bool = False
+    ) -> tuple[int, c_definitions.c_uint8_p]:
         """Allocates dynamic array (if wasn't allocated yet) for the bytes
         inside this bit field.
+
+        Arguments:
+            realloc: bool, default = False; If True then new array will be
+                allocated.
 
         Returns:
             tuple[0], int; Size of the array.
             tuple[1], c_uint8_p; The array itself.
-
         """
 
-        if isinstance(self._byte_array, c_definitions.c_uint8_p):
+        if (
+            isinstance(self._byte_array, c_definitions.c_uint8_p) and
+            not realloc
+        ):
             return self._bytes_len, self._byte_array
 
         return self._bytes_len, (c_definitions.c_uint8_p * self._bytes_len)(
