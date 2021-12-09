@@ -263,6 +263,16 @@ class _BitField(_IterableContainer):
         self._number = None
         self._skip_last_bits = skip_last_bits
 
+    @staticmethod
+    def _copy_bytes(
+        byte_array: c_definitions.c_uint8_p, bytes_size: int
+    ) -> list[int]:
+        return [
+            byte.value
+            for _, byte
+            in zip(range(bytes_size), byte_array)
+        ]
+
     @classmethod
     def from_dynamic_array(
         cls,
@@ -280,12 +290,7 @@ class _BitField(_IterableContainer):
                 into standard constructor.
         """
         if copy_bytes:
-            byte_array = [
-                byte.value
-                for _, byte
-                # zip will break after range exhaustion
-                in zip(range(bytes_size), byte_array)
-            ]
+            byte_array = _BitField._copy_bytes(byte_array, bytes_size)
 
         return cls(
             byte_array=byte_array,
@@ -353,24 +358,22 @@ class _BitField(_IterableContainer):
 
 
 class GenomeResidue(_BitField):
-    def __init__(
-        self,
-        byte_array: list[int] | c_definitions.gene_p,
-        bit_size: int
+
+    @classmethod
+    def from_dynamic_array(
+        cls,
+        byte_array: c_definitions.c_uint8_p,
+        bit_size: int,
+        copy_bytes: bool = False,
+        *args, **kwargs
     ):
+
         full_bytes_size = (bit_size // 8) + 1
 
-        if isinstance(byte_array, c_definitions.gene_p):
-            bytes_list = [
-                byte_array[index].value
-                for index in range(full_bytes_size)
-            ]
-
-        else:
-            bytes_list = byte_array
-
-        super().__init__(
-            byte_array=bytes_list,
+        return super().from_dynamic_array(
+            byte_array=byte_array,
+            copy_bytes=copy_bytes,
+            bytes_size=full_bytes_size,
             skip_last_bits=(full_bytes_size * 8 - bit_size),
             grouping=_GroupingType.group_by_bit,
             skip_byte_size_checking=True
@@ -422,8 +425,33 @@ class Genome(_IterableContainer, _HasStructBackend):
         return self._residue.bit_length
 
     @classmethod
-    def from_struct(self, string: c_definitions.genome_t):
-        pass
+    def from_struct(
+        cls,
+        genome_struct_ref: c_definitions.genome_struct_p,
+        pool_struct_ref: c_definitions.pool_struct_p
+    ):
+        genome_struct = genome_struct_ref.contents
+        gene_structs = [
+            c_definitions.get_gene_by_index(
+                genome_struct_ref,
+                index,
+                pool_struct_ref)
+            for index in range(genome_struct.length.value)
+        ]
+
+        return cls(
+            metadata=bytes(
+                genome_struct.metadata[:genome_struct.metadata_byte_size.value]
+            ).decode("utf-8"),
+            genes=list(map(Gene.from_struct, gene_structs)),
+            genes_residue=GenomeResidue.from_dynamic_array(
+                byte_array=genome_struct.residue,
+                bit_size=genome_struct.residue_size_bits,
+                copy_bytes=False
+
+            ),
+            struct=genome_struct_ref
+        )
 
     def __len__(self) -> int:
         return len(self.genes)

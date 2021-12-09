@@ -19,6 +19,7 @@ class gene_struct_t(ctypes.Structure):
 
 
 gene_struct_p = ctypes.POINTER(gene_struct_t)
+gene_struct_p_p = ctypes.POINTER(gene_struct_p)
 
 
 class genome_struct_t(ctypes.Structure):
@@ -87,6 +88,7 @@ point_gene_by_index = ctypes.CFUNCTYPE(
 get_gene_by_index = ctypes.CFUNCTYPE(
     gene_struct_p,
     genome_struct_p,
+    c_uint32,
     pool_struct_p
 )(('get_gene_by_index', libc))
 
@@ -95,6 +97,11 @@ get_gene_by_pointer = ctypes.CFUNCTYPE(
     gene_p,  # pointer
     pool_struct_p
 )(('get_gene_by_pointer', libc))
+
+generate_genes_byte_array = ctypes.CFUNCTYPE(
+    gene_p,
+    gene_struct_p_p
+)(('generate_genes_byte_array', libc))
 
 read_pool = ctypes.CFUNCTYPE(
     pool_struct_p,
