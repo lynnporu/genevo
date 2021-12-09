@@ -66,12 +66,12 @@ class _HasStructBackend:
         return self._struct
 
 
-class Gene:
+class Gene(_HasStructBackend):
     def __init__(
         self,
         pool: "GenePool",
         outcome_node_id: int,
-        outocome_node_type: NodeConnectionType,
+        outcome_node_type: NodeConnectionType,
         income_node_id: int,
         income_node_type: NodeConnectionType,
         weight_unnormalized: int = None,
@@ -86,7 +86,7 @@ class Gene:
 
         self._pool = pool
         self._outcome_node_id = outcome_node_id
-        self._outocome_node_type = outocome_node_type
+        self._outcome_node_type = outcome_node_type
         self._income_node_id = income_node_id
         self._income_node_type = income_node_type
         self._weight_unnormalized = weight_unnormalized
@@ -94,9 +94,20 @@ class Gene:
         self._struct = struct
         self._gene_bytes = gene_bytes
 
-    @property
-    def struct(self) -> c_definitions.gene_struct_p:
-        return self._struct
+    def _generate_struct(self) -> c_definitions.gene_struct_p:
+        return c_definitions.ctypes.pointer(c_definitions.gene_struct_t(
+            # outcome_node_id
+            (self._outcome_node_id +
+             self.pool.range_starts[self._outcome_node_type]),
+            # income_node_id
+            (self._income_node_id +
+             self.pool.range_starts[self._income_node_type]),
+            # connection_type
+            self.outcome_node_type + self.income_node_type >> 3,
+            self.weight_unnormalized,
+            self.weight
+        ))
+        raise NotImplementedError
 
     @property
     def weight(self) -> float:
@@ -117,7 +128,7 @@ class Gene:
 
     @property
     def outcome_node(self) -> tuple[NodeConnectionType, int]:
-        return (self._outcome_node_id, self._outocome_node_type)
+        return (self._outcome_node_id, self._outcome_node_type)
 
     @property
     def income_node(self) -> tuple[NodeConnectionType, int]:
