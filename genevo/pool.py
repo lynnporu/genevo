@@ -149,7 +149,7 @@ class _BitField(_IterableContainer):
 
     def __init__(
         self,
-        bytes: iter[int],
+        byte_array: iter[int],
         bytes_size: int = None,
         skip_last_bits: int = 0,
         grouping: _GroupingType | int = _GroupingType.group_by_byte,
@@ -158,16 +158,17 @@ class _BitField(_IterableContainer):
         """Creates BitField.
 
         Arguments:
-            bytes_size: int, default = None; If None, then bytes size will be
-                calculated by `len(bytes)`. It is convenient to set this
-                parameter in case `bytes` is a pointer to dynamic array which
-                size cannot be calculated manually.
+            bytes_size: int, default = None; If None, then byte_array size will
+                be calculated by `len(byte_array)`. It is convenient to set
+                this parameter in case `byte_array` is a pointer to dynamic
+                array which size cannot be calculated manually.
             skip_last_bits: int, default = 0; Last given number of bits of the
                 last byte wont be considered as the part of the current bit
                 field.
-                Suppose you have defined bit field with bytes [0xff, 0xff].
-                With `skip_last_bits`=0 size of the bit field will be 16 bits,
-                but with `skip_last_bits`=3 the size is equal to 13.
+                Suppose you have defined bit field with byte_array
+                [0xff, 0xff]. With `skip_last_bits`=0 size of the bit field
+                will be 16 bits, but with `skip_last_bits`=3 the size is equal
+                to 13.
                 This argument should be no bigger than 7.
             skip_byte_size_checking: bool, default = False; If set to False
                 than each given int will be checked to have no more than 8
@@ -193,7 +194,7 @@ class _BitField(_IterableContainer):
         if not (self._grouping_size >= 1):
             raise ValueError("grouping size cannot be less than 1")
 
-        self._bytes_len = bytes_size or len(bytes)
+        self._bytes_len = bytes_size or len(byte_array)
         self._bit_size = self._bytes_len * 8 - skip_last_bits
 
         if self._bit_size % self._grouping_size:  # != 0
@@ -202,20 +203,20 @@ class _BitField(_IterableContainer):
                 "of the last bits won't be ever indexed")
 
         if not skip_byte_size_checking:
-            for index, byte in enumerate(self._bytes):
+            for index, byte in enumerate(self._byte_array):
                 if byte.bit_count() > 8:
                     raise ValueError(
                         f"number at position {index} is equal to {byte} has "
                         "more than 8 significant bits")
 
-        self._bytes = bytes
+        self._byte_array = byte_array
         self._number = None
         self._skip_last_bits = skip_last_bits
 
     @classmethod
     def from_dynamic_array(
         cls,
-        bytes: c_definitions.c_uint8_p,
+        byte_array: c_definitions.c_uint8_p,
         bytes_size: int,
         copy_bytes: bool = False,
         *args, **kwargs
@@ -224,20 +225,20 @@ class _BitField(_IterableContainer):
 
         Arguments:
             copy_bytes: bool, default = False; Set this to True in case the
-                memory behind `bytes` will be freed soon.
+                memory behind `byte_array` will be freed soon.
             *args, **kwargs; The rest of the parameters which will be passed
                 into standard constructor.
         """
         if copy_bytes:
-            bytes = [
+            byte_array = [
                 byte.value
                 for _, byte
                 # zip will break after range exhaustion
-                in zip(range(bytes_size), bytes)
+                in zip(range(bytes_size), byte_array)
             ]
 
         return cls(
-            bytes=bytes,
+            byte_array=byte_array,
             bytes_size=bytes_size,
             *args, **kwargs
         )
@@ -252,16 +253,16 @@ class _BitField(_IterableContainer):
 
         """
 
-        if isinstance(self._bytes, c_definitions.c_uint8_p):
-            return self._bytes_len, self._bytes
+        if isinstance(self._byte_array, c_definitions.c_uint8_p):
+            return self._bytes_len, self._byte_array
 
         return self._bytes_len, (c_definitions.c_uint8_p * self._bytes_len)(
-            *map(c_definitions.c_uint8, self._bytes))
+            *map(c_definitions.c_uint8, self._byte_array))
 
     @property
     def number(self) -> int:
         if self._number is None:
-            self._number = int.from_bytes(self._bytes, byteorder="big")
+            self._number = int.from_bytes(self._byte_array, byteorder="big")
             self._number >>= self._skip_last_bits  # Cut off last unneeded bits
         return self._number
 
@@ -295,22 +296,22 @@ class _BitField(_IterableContainer):
 class GenomeResidue(_BitField):
     def __init__(
         self,
-        bytes: list[int] | c_definitions.gene_p,
+        byte_array: list[int] | c_definitions.gene_p,
         bit_size: int
     ):
         full_bytes_size = (bit_size // 8) + 1
 
-        if isinstance(bytes, c_definitions.gene_p):
+        if isinstance(byte_array, c_definitions.gene_p):
             bytes_list = [
-                bytes[index].value
+                byte_array[index].value
                 for index in range(full_bytes_size)
             ]
 
         else:
-            bytes_list = bytes
+            bytes_list = byte_array
 
         super().__init__(
-            bytes=bytes_list,
+            byte_array=bytes_list,
             skip_last_bits=(full_bytes_size * 8 - bit_size),
             grouping=_GroupingType.group_by_bit,
             skip_byte_size_checking=True
