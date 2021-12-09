@@ -203,21 +203,26 @@ class _BitField(_IterableContainer):
                         f"number at position {index} is equal to {byte} has "
                         "more than 8 significant bits")
 
-        # Converts array
-        # [n_0, ..., n_l] to number
-        # (n_0 << (l * 8)) + ... + (n_l << 0). That means
-        # [0xab, 0xcd, 0xef, 0x01] will become 0xabcdef01
-        self._number = sum(
-            byte << (shift * 8)
-            for byte, shift
-            in zip(
-                bytes,
-                reversed(range(len(bytes)))
-            )
+        self._bytes = bytes
+        self._number = None
+        self._skip_last_bits = skip_last_bits
         )
 
-        # Right shift unsignificant bits to the right, so cutting it off
-        self._number >>= skip_last_bits
+    def to_dynamic_array(self) -> c_definitions.c_uint8_p:
+
+        if isinstance(self._bytes, c_definitions.c_uint8_p):
+            return self._bytes
+
+        return (c_definitions.c_uint8_p * self._bytes_len)(*map(
+            c_definitions.c_uint8, self._bytes
+        ))
+
+    @property
+    def number(self) -> int:
+        if self._number is None:
+            self._number = int.from_bytes(self._bytes, byteorder="big")
+            self._number >>= self._skip_last_bits  # Cut off last unneeded bits
+        return self._number
 
     @property
     def bit_length(self):
@@ -243,7 +248,7 @@ class _BitField(_IterableContainer):
         if bit_start < 0:
             raise IndexError
 
-        return self._number & (_max_for_bit(self._grouping_size) << bit_start)
+        return self.number & (_max_for_bit(self._grouping_size) << bit_start)
 
 
 class GenomeResidue(_BitField):
