@@ -63,6 +63,12 @@ class _HasStructBackend:
     def _generate_struct(self) -> c_definitions.ctypes.Structure:
         pass
 
+    def refresh_struct(self):
+        """Deletes the struct, so new one will be generated next time you
+        access `struct` property.
+        """
+        self._struct = None
+
     @property
     def struct(self) -> c_definitions.ctypes.Structure:
         if not self._struct:
