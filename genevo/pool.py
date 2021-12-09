@@ -121,9 +121,14 @@ class Gene(_HasStructBackend):
 
     @classmethod
     def from_bytes(
-        pool: "GenePool", gene_bytes: c_definitions.gene_p
+        cls, pool: "GenePool", gene_bytes: c_definitions.gene_p
     ):
-        raise NotImplementedError
+        return cls.from_struct(
+            pool=pool,
+            struct_ref=c_definitions.get_gene_by_pointer(
+                gene_bytes, pool
+            )
+        )
 
     @classmethod
     def from_struct(
@@ -385,10 +390,32 @@ class Genome(_IterableContainer, _HasStructBackend):
         self._residue = genes_residue
         self._struct = struct
 
-    def _generate_struct(self):
+    def _generate_struct(self) -> c_definitions.genome_struct_p:
         super()._generate_struct()
-        raise NotImplementedError(
-            "struct generation for genomes is not implemented yet")
+        metadata = self._metadata.encode("utf-8")
+        return c_definitions.pointer(c_definitions.genome_struct_t(
+            len(self),
+            metadata,
+            len(metadata),
+            self._gene_bytes,
+            self._residue.bit_length,
+            self._residue.to_dynamic_array()
+        ))
+
+    @property
+    def _gene_bytes(self) -> tuple[int, c_definitions.gene_p]:
+        """Returns array if bytes for genes. If the genome has no its struct
+        yet, then new array will be allocated.
+        """
+        if self._struct:
+            return self._struct.contents.genes
+
+        else:
+            return c_definitions.generate_genes_byte_array(
+                (c_definitions.gene_struct_p * len(self))(
+                    *[gene.struct for gene in self.genes]
+                )
+            )
 
     @property
     def residue_bit_size(self):
@@ -426,7 +453,7 @@ class Genome(_IterableContainer, _HasStructBackend):
         pass
 
 
-class GenePool(_IterableContainer):
+class GenePool(_IterableContainer, _HasStructBackend):
 
     def __init__(
         self,
@@ -445,6 +472,8 @@ class GenePool(_IterableContainer):
         self._weight_part_bit_size = weight_part_bit_size
         self._genomes = genomes or []
         self._struct = struct
+
+        self._range_starts = None
 
     @classmethod
     def from_file_dump(cls, address: str) -> "GenePool":
@@ -548,9 +577,9 @@ class GenePool(_IterableContainer):
     @property
     def genome_structs_vector(self) -> c_definitions.genome_struct_p_p:
         return c_definitions.ctypes.pointer(
-            (c_definitions.genome_struct_p * len(self))(*[
-                genome.struct for genome in self.genomes
-            ])
+            (c_definitions.genome_struct_p * len(self))(
+                *[genome.struct for genome in self.genomes]
+            )
         )
 
     @property
