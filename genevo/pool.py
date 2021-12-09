@@ -27,6 +27,10 @@ class NodeConnectionType(enum.Enum):
     is_output = 0b00100000
 
 
+_INCOME_CONNECTION_TYPE_BITMASK = 0b11100000
+_OUTCOME_CONNECTION_TYPE_BITMASK = 0b00011100
+
+
 class _IterableContainer:
     """Implements slice indexing for container. Requires single _get_by_index
     to be implemented.
@@ -109,6 +113,42 @@ class Gene(_HasStructBackend):
         ))
         raise NotImplementedError
 
+    @classmethod
+    def from_bytes(
+        pool: "GenePool", gene_bytes: c_definitions.gene_p
+    ):
+        raise NotImplementedError
+
+    @classmethod
+    def from_struct(
+        cls, pool: "GenePool", struct_ref: c_definitions.gene_struct_p
+    ):
+        struct = struct_ref.contents
+
+        connection_type = struct.connection_type.value
+        outcome_node_type = NodeConnectionType(
+            connection_type & _OUTCOME_CONNECTION_TYPE_BITMASK)
+        income_node_type = NodeConnectionType(
+            connection_type & _INCOME_CONNECTION_TYPE_BITMASK)
+
+        return cls(
+            pool=pool,
+            outcome_node_id=(
+                struct.outcome_node_id.value -
+                pool.range_starts[outcome_node_type]
+            ),
+            outcome_node_type=outcome_node_type,
+            income_node_id=(
+                struct.income_node_id.value -
+                pool.range_starts[income_node_type]
+            ),
+            income_node_type=income_node_type,
+            weight_unnormalized=struct.weight_unnormalized.value,
+            weight=struct.weight.value,
+            struct=struct_ref,
+            gene_bytes=None
+        )
+
     @property
     def weight(self) -> float:
         if self._weight is None:
@@ -137,18 +177,6 @@ class Gene(_HasStructBackend):
     @property
     def gene_bytes(self) -> c_definitions.gene_p:
         return self._gene_bytes
-
-    @classmethod
-    def from_bytes(
-        pool: "GenePool", gene_bytes: c_definitions.gene_p
-    ):
-        raise NotImplementedError
-
-    @classmethod
-    def from_struct(
-        pool: "GenePool", self, struct: c_definitions.gene_struct_p
-    ):
-        raise NotImplementedError
 
 
 class _GroupingType(enum.Enum):
@@ -470,6 +498,46 @@ class GenePool(_IterableContainer):
             None,
             None
         ))
+
+    @property
+    def nodes_capacity(self) -> int:
+        return _max_for_bit(self._node_id_part_bit_size)
+
+    @property
+    def range_starts(self) -> dict:
+        """Returns start id of range if input, intermediate and output nodes.
+
+        For example, if node_id_part_bit_size has 10 bits, then the model
+        capacity is ((1<<10) - 1) = 1023 neurons.
+        Lets suppose you've set number of input neurons to be 100 and number of
+        output to be 200. In this case you'll have the following ranges:
+        {
+            NodeConnectionType.is_input: 0,
+            NodeConnectionType.is_intermediate: 101,
+            NodeConnectionType.is_output: 824
+        }
+
+        Return:
+            dict[key]: NodeConnectionType
+            dict[value]: Start range
+        """
+        if self._range_starts is not None:
+
+            self._range_starts = dict(zip(
+                [
+                    NodeConnectionType.is_input,
+                    NodeConnectionType.is_intermediate,
+                    NodeConnectionType.is_output
+                ],
+                [
+                    0,  # input nodes
+                    self.input_neurons_number + 1,  # intermediate nodes
+                    self.nodes_capacity - self.output_neurons_number + 1
+                    # output nodes
+                ]
+            ))
+
+        return self._range_starts
 
     @property
     def genome_structs_vector(self) -> c_definitions.genome_struct_p_p:
