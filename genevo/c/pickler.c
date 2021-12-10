@@ -292,49 +292,6 @@ copied bits into number, so now:
 number == 0b00000000...0000000010101111, sizeof(number) == 64
 
 */
-// void copy_bitslots_to_uint64__endianless(
-//     uint8_t *slots, uint64_t *number, uint8_t start, uint8_t end
-// ) {
-
-//     *number = 0;
-
-//     // right offset of the first bit in `number`
-//     uint8_t number_offset = end - start + 1;
-
-//     for(
-//         uint8_t slot_n = start / 8;
-//         slot_n <= end / 8;
-//         slot_n++
-//     ) {
-
-//         uint8_t slot = slots[slot_n];
-//         uint16_t offset;
-
-//         // there's some left offset in the current slot present
-//         if (slot_n * 8 < start) {
-//             offset = start - slot_n * 8;
-//             *number |=
-//                 LEFT_ZERO_UINT8(slot, offset) << (number_offset - 8 + offset);
-//         }
-
-//         // there's right offset
-//         else if ((end + 1) < (slot_n + 1) * 8) {
-//             offset = (slot_n + 1) * 8 - end - 1;
-//             *number |= RIGHT_ZERO_UINT8(slot, offset) >> offset;
-//         }
-
-//         // copy the whole byte
-//         else {
-//             offset = 0;
-//             *number |= slot << (number_offset - 8);
-//         }
-
-//         number_offset -= 8 - offset;
-
-//     }
-
-// }
-
 void copy_bitslots_to_uint64(
     uint8_t *slots, uint64_t *number, uint8_t start, uint8_t end
 ) {
