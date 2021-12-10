@@ -395,7 +395,7 @@ and output ranges. New ID to `_ID` and type to `_CONNECTION_TYPE_VAR`.
     else                                                                       \
     if (_ID > _NODES_CAPACITY - _OUTPUT_RANGE_SIZE) {                          \
         _CONNECTION_TYPE_VAR |= GENE_ ## _DIRECTION ## _IS_OUTPUT;             \
-        _ID -= _NODES_CAPACITY + _OUTPUT_RANGE_SIZE + 1; }                     \
+        _ID -= _NODES_CAPACITY - _OUTPUT_RANGE_SIZE + 1; }                     \
     else {                                                                     \
         _CONNECTION_TYPE_VAR |= GENE_ ## _DIRECTION ## _IS_INTERMEDIATE;       \
         _ID -= _INPUT_RANGE_SIZE; }                                            \
@@ -440,7 +440,7 @@ gene_t * get_gene_by_pointer(
     gene->weight =
         gene->weight_unnormalized / MAX_FOR_BIT(pool->weight_part_bit_size);
 
-    uint64_t nodes_capacity = MAX_FOR_BIT(pool->gene_bytes_size);
+    uint64_t nodes_capacity = MAX_FOR_BIT(pool->node_id_part_bit_size);
 
     // outcome node
     ASSIGN_TYPE_BY_ID(
