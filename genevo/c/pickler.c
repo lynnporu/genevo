@@ -10,7 +10,7 @@ This module contains methods for dumping gene pool into file and vice versa.
 #define sizeof_member(type, member) sizeof(((type *)0)->member)
 
 #define MAPPING_FAIL_CONDITION(_CONDITION, _ERR_CONST) \
-    if(_CONDITION) {ERROR_LEVEL = _ERR_CONST; close_file(mapping); return NULL;}
+    if(_CONDITION) {ERROR_LEVEL = (_ERR_CONST); close_file(mapping); return NULL;}
 
 pool_t * read_pool(const char *address) {
 
@@ -369,7 +369,7 @@ void copy_uint64_to_bitslots(
 }
 
 #define MAX_FOR_BIT(_BIT_SIZE) \
-    (_BIT_SIZE == 64 ? 0xffffffffffff : (1 << _BIT_SIZE) - 1)
+    ((_BIT_SIZE) == 64 ? 0xffffffffffff : (1 << (_BIT_SIZE)) - 1)
 
 uint8_t * point_gene_by_index(
     genome_t *genome, uint32_t index, pool_t *pool
@@ -382,6 +382,9 @@ uint8_t * point_gene_by_index(
 Guess node type (input, output or intermediate) by its ID and sizes of input
 and output ranges. New ID to `_ID` and type to `_CONNECTION_TYPE_VAR`.
 `_DIRECTION` should be one of "INPUT" or "OUTPUT".
+
+! Potential bug: _ID will be calculated several times when passed as the
+  expression.
 
 */
 #define ASSIGN_TYPE_BY_ID(_ID,                                                 \
