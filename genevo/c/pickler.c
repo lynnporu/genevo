@@ -464,6 +464,8 @@ gene_t * get_gene_by_pointer(
 
 gene_t * get_gene_by_index(genome_t *genome, uint32_t index, pool_t *pool) {
 
+    // TODO: set ERROR_LEVEL when index is out of bounds
+
     return get_gene_by_pointer(
         point_gene_by_index(genome, index, pool),
         pool
