@@ -377,6 +377,41 @@ uint8_t * point_gene_by_index(
     return genome->genes + (pool->gene_bytes_size * index);
 }
 
+/*
+
+Guess node type (input, output or intermediate) by its ID and sizes of input
+and output ranges. New ID to `_ID` and type to `_CONNECTION_TYPE_VAR`.
+`_DIRECTION` should be one of "INPUT" or "OUTPUT".
+
+*/
+#define ASSIGN_TYPE_BY_ID(_ID,                                                 \
+                           _INPUT_RANGE_SIZE, _OUTPUT_RANGE_SIZE,              \
+                           _NODES_CAPACITY,                                    \
+                           _CONNECTION_TYPE_VAR, _DIRECTION)                   \
+{                                                                              \
+    _CONNECTION_TYPE_VAR = 0;                                                  \
+    if (_ID < _INPUT_RANGE_SIZE)                                               \
+        _CONNECTION_TYPE_VAR |= GENE_  ## _DIRECTION ## _IS_INPUT;             \
+    else                                                                       \
+    if (_ID > _NODES_CAPACITY - _OUTPUT_RANGE_SIZE) {                          \
+        _CONNECTION_TYPE_VAR |= GENE_ ## _DIRECTION ## _IS_OUTPUT;             \
+        _ID -= _NODES_CAPACITY + _OUTPUT_RANGE_SIZE + 1; }                     \
+    else {                                                                     \
+        _CONNECTION_TYPE_VAR |= GENE_ ## _DIRECTION ## _IS_INTERMEDIATE;       \
+        _ID -= _INPUT_RANGE_SIZE; }                                            \
+}
+
+#define ASSIGN_ID_BY_TYPE(_ID, _TYPE,                                          \
+                           _INPUT_RANGE_SIZE, _OUTPUT_RANGE_SIZE,              \
+                           _NODES_CAPACITY)                                    \
+{                                                                              \
+    if (_TYPE & (GENE_INCOME_IS_INTERMEDIATE | GENE_OUTCOME_IS_INTERMEDIATE))  \
+        _ID += _INPUT_RANGE_SIZE;                                              \
+    if (_TYPE & (GENE_INCOME_IS_OUTPUT | GENE_OUTCOME_IS_OUTPUT))              \
+        _ID += _NODES_CAPACITY - _OUTPUT_RANGE_SIZE;                           \
+}
+
+
 gene_t * get_gene_by_pointer(
     uint8_t *gene_start_byte, pool_t *pool
 ) {
@@ -405,32 +440,23 @@ gene_t * get_gene_by_pointer(
     gene->weight =
         gene->weight_unnormalized / MAX_FOR_BIT(pool->weight_part_bit_size);
 
-    uint64_t first_output_neuron_id =
-        MAX_FOR_BIT(pool->weight_part_bit_size) - pool->output_neurons_number + 1;
+    uint64_t nodes_capacity = MAX_FOR_BIT(pool->gene_bytes_size);
 
-    // type of outcome node
+    // outcome node
+    ASSIGN_TYPE_BY_ID(
+        gene->outcome_node_id,                                   // id
+        pool->input_neurons_number, pool->output_neurons_number, // range sizes
+        nodes_capacity,
+        gene->connection_type,
+        OUTCOME);                                                // direction
 
-    if (gene->outcome_node_id <= pool->input_neurons_number - 1)
-        gene->connection_type |= GENE_OUTCOME_IS_INPUT;
-
-    else
-    if (gene->outcome_node_id >= first_output_neuron_id)
-        gene->connection_type |= GENE_OUTCOME_IS_OUTPUT;
-
-    else
-        gene->connection_type |= GENE_OUTCOME_IS_INTERMEDIATE;
-
-    // type of income node
-
-    if (gene->income_node_id <= pool->input_neurons_number - 1)
-        gene->connection_type |= GENE_INCOME_IS_INPUT;
-
-    else
-    if (gene->income_node_id >= first_output_neuron_id)
-        gene->connection_type |= GENE_INCOME_IS_OUTPUT;
-
-    else
-        gene->connection_type |= GENE_INCOME_IS_INTERMEDIATE;
+    // outcome node
+    ASSIGN_TYPE_BY_ID(
+        gene->income_node_id,                                    // id
+        pool->input_neurons_number, pool->output_neurons_number, // range sizes
+        nodes_capacity,
+        gene->connection_type,
+        INCOME);                                                 // direction
 
     return gene;
 
@@ -442,5 +468,63 @@ gene_t * get_gene_by_index(genome_t *genome, uint32_t index, pool_t *pool) {
         point_gene_by_index(genome, index, pool),
         pool
     );
+
+}
+
+gene_byte_t * generate_genes_byte_array(
+    gene_t **genes, pool_t *pool, uint64_t length
+) {
+
+    gene_byte_t *array = malloc(
+        sizeof(gene_byte_t) * length * pool->gene_bytes_size);
+
+    uint64_t counter = 0;
+    gene_byte_t* start_byte;
+    gene_t* gene;
+
+    uint64_t nodes_capacity = MAX_FOR_BIT(pool->gene_bytes_size);
+
+    for (
+        uint64_t counter = 0; counter < length;
+        counter++,
+        start_byte = array + counter * pool->gene_bytes_size,
+        gene = genes[counter]
+    ) {
+
+        uint64_t outcome_node_id = gene->outcome_node_id,
+                 income_node_id = gene->income_node_id;
+
+        ASSIGN_ID_BY_TYPE(
+            outcome_node_id,
+            gene->connection_type,
+            pool->input_neurons_number, pool->output_neurons_number,
+            nodes_capacity);
+
+        ASSIGN_ID_BY_TYPE(
+            income_node_id,
+            gene->connection_type,
+            pool->input_neurons_number, pool->output_neurons_number,
+            nodes_capacity);
+
+        copy_uint64_to_bitslots(
+            &outcome_node_id,
+            start_byte,
+            0,
+            pool->node_id_part_bit_size);
+        copy_uint64_to_bitslots(
+            &income_node_id,
+            start_byte,
+            pool->node_id_part_bit_size + 1,
+            pool->node_id_part_bit_size);
+
+        copy_uint64_to_bitslots(
+            (uint64_t *)&(gene->weight_unnormalized),
+            start_byte,
+            pool->node_id_part_bit_size * 2 + 1,
+            pool->weight_part_bit_size);
+
+    }
+
+    return array;
 
 }

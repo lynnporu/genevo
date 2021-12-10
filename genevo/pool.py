@@ -383,15 +383,17 @@ class GenomeResidue(_BitField):
 class Genome(_IterableContainer, _HasStructBackend):
     def __init__(
         self,
+        pool: "GenePool",
         metadata: str,
         genes: list[Gene],
         genes_residue: GenomeResidue = None,
-        struct: c_definitions.genome_struct_p = None
+        genome_struct_ref: c_definitions.genome_struct_p = None,
     ):
         self._metadata = metadata
         self._genes = genes
         self._residue = genes_residue
-        self._struct = struct
+        self._struct = genome_struct_ref
+        self._pool = pool
 
     def _generate_struct(self) -> c_definitions.genome_struct_p:
         super()._generate_struct()
@@ -416,7 +418,9 @@ class Genome(_IterableContainer, _HasStructBackend):
         else:
             return c_definitions.generate_genes_byte_array(
                 (c_definitions.gene_struct_p * len(self))(
-                    *[gene.struct for gene in self.genes]
+                    *[gene.struct for gene in self.genes],
+                    self._pool._struct,
+                    len(self.genes)
                 )
             )
 

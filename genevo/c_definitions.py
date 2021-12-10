@@ -100,7 +100,9 @@ get_gene_by_pointer = ctypes.CFUNCTYPE(
 
 generate_genes_byte_array = ctypes.CFUNCTYPE(
     gene_p,
-    gene_struct_p_p
+    gene_struct_p_p,
+    pool_struct_p,
+    c_uint64  # number of genes
 )(('generate_genes_byte_array', libc))
 
 read_pool = ctypes.CFUNCTYPE(
