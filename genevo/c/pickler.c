@@ -478,18 +478,15 @@ gene_byte_t * generate_genes_byte_array(
     gene_byte_t *array = malloc(
         sizeof(gene_byte_t) * length * pool->gene_bytes_size);
 
-    uint64_t counter = 0;
-    gene_byte_t* start_byte;
-    gene_t* gene;
 
     uint64_t nodes_capacity = MAX_FOR_BIT(pool->gene_bytes_size);
 
-    for (
-        uint64_t counter = 0; counter < length;
-        counter++,
-        start_byte = array + counter * pool->gene_bytes_size,
-        gene = genes[counter]
-    ) {
+    gene_byte_t* start_byte;
+    gene_t* gene;
+    for (uint64_t counter = 0; counter < length; counter++) {
+
+        start_byte = array + counter * pool->gene_bytes_size;
+        gene = genes[counter];
 
         uint64_t outcome_node_id = gene->outcome_node_id,
                  income_node_id = gene->income_node_id;
