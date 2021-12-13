@@ -10,13 +10,20 @@ extern uint8_t ERROR_LEVEL;
 
 
 #define ERR_OK                              0x00
-#define ERR_OK_STR                         "No errors."
+#define ERR_OK_STR                          "No errors."
 
 
 // System errors ===============================================================
 
-#define ERR_CANNOT_MALLOC                  0xf0
-#define ERR_CANNOT_MALLOC_STR              "Cannot allocate memory."
+#define ERR_CANNOT_MALLOC                   0xf0
+#define ERR_CANNOT_MALLOC_STR               "Cannot allocate memory."
+
+
+// General errors ==============================================================
+
+#define ERR_OUT_OF_BOUNDS                   0xe0
+#define ERR_OUT_OF_BOUNDS_STR               "You are trying to read out of "   \
+                                            "array bounds."
 
 
 // Gene pool file errors =======================================================
