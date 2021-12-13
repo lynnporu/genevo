@@ -470,16 +470,17 @@ gene_byte_t * generate_genes_byte_array(
             start_byte,
             0,
             pool->node_id_part_bit_size);
+
         copy_uint64_to_bitslots(
             &income_node_id,
             start_byte,
-            pool->node_id_part_bit_size + 1,
+            pool->node_id_part_bit_size,
             pool->node_id_part_bit_size);
 
         copy_uint64_to_bitslots(
             (uint64_t *)&(gene->weight_unnormalized),
             start_byte,
-            pool->node_id_part_bit_size * 2 + 1,
+            pool->node_id_part_bit_size * 2,
             pool->weight_part_bit_size);
 
     }
