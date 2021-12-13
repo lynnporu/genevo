@@ -437,9 +437,9 @@ gene_byte_t * generate_genes_byte_array(
     gene_t **genes, pool_t *pool, uint64_t length
 ) {
 
-    gene_byte_t *array = malloc(
-        sizeof(gene_byte_t) * length * pool->gene_bytes_size);
-
+    gene_byte_t *array = calloc(
+        sizeof(gene_byte_t),
+        length * pool->gene_bytes_size);
 
     uint64_t nodes_capacity = MAX_FOR_BIT(pool->gene_bytes_size);
 
