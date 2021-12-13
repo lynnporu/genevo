@@ -442,9 +442,15 @@ gene_byte_t * generate_genes_byte_array(
     gene_t **genes, pool_t *pool, uint64_t length
 ) {
 
-    gene_byte_t *array = calloc(
-        sizeof(gene_byte_t),
-        length * pool->gene_bytes_size);
+    #define GENES_ARRAY_SIZE \
+        (sizeof(gene_byte_t) * length * pool->gene_bytes_size)
+
+    // 8 auxiliary bytes is malloc'ed here, because
+    // copy_uint64_to_bitslots can cause writing out of bounds.
+    gene_byte_t *array = malloc(GENES_ARRAY_SIZE + 8);
+    memset(array, 0, GENES_ARRAY_SIZE);
+
+    #undef GENES_ARRAY_SIZE
 
     uint64_t nodes_capacity = MAX_FOR_BIT(pool->gene_bytes_size);
 
