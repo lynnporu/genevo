@@ -499,3 +499,9 @@ gene_byte_t * generate_genes_byte_array(
     return array;
 
 }
+
+void free_genes_byte_array(gene_byte_t *array) {
+
+    free(array);
+
+}

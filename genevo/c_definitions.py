@@ -110,6 +110,11 @@ generate_genes_byte_array = ctypes.CFUNCTYPE(
     c_uint64  # number of genes
 )(('generate_genes_byte_array', libc))
 
+free_genes_byte_array = ctypes.CFUNCTYPE(
+    None,
+    gene_p
+)(('free_genes_byte_array', libc))
+
 read_pool = ctypes.CFUNCTYPE(
     pool_struct_p,
     c_char_p  # address

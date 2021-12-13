@@ -145,6 +145,7 @@ pool_t * read_pool(const char *address);
 void close_pool(pool_t *pool);
 void write_pool(const char *address, pool_t *pool, genome_t **genomes);
 gene_byte_t * generate_genes_byte_array(gene_t **, pool_t *, uint64_t length);
+void free_genes_byte_array(gene_byte_t *array);
 
 genome_t * read_next_genome(pool_t *pool);
 void reset_genome_cursor(pool_t *pool);
