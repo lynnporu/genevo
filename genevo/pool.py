@@ -117,7 +117,6 @@ class Gene(_HasStructBackend):
             self.weight_unnormalized,
             self.weight
         ))
-        raise NotImplementedError
 
     @classmethod
     def from_bytes(
@@ -454,7 +453,7 @@ class Genome(_IterableContainer, _HasStructBackend):
                 copy_bytes=False
 
             ),
-            struct=genome_struct_ref
+            genome_struct_ref=genome_struct_ref
         )
 
     def __len__(self) -> int:
@@ -518,9 +517,9 @@ class GenePool(_IterableContainer, _HasStructBackend):
         genomes = []
 
         try:
-            genome_struct = c_definitions.read_next_genome(pool_struct_p)
+            genome_struct_p = c_definitions.read_next_genome(pool_struct_p)
             errors.check_errors()
-            genomes.append(Genome.from_struct(genome_struct))
+            genomes.append(Genome.from_struct(genome_struct_p, pool_struct_p))
 
         except StopIteration:
             pass
