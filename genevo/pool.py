@@ -1,3 +1,4 @@
+import abc
 import enum
 import typing
 import itertools
@@ -31,15 +32,30 @@ _INCOME_CONNECTION_TYPE_BITMASK = 0b11100000
 _OUTCOME_CONNECTION_TYPE_BITMASK = 0b00011100
 
 
-class _IterableContainer:
+class _IterableContainer(metaclass=abc.ABCMeta):
     """Implements slice indexing for container. Requires single _get_by_index
     to be implemented.
     """
 
+    @abc.abstractmethod
     def _get_by_index(self, index: int):
         pass
 
-    def __getitem__(self, key: int | slice):
+    @abc.abstractmethod
+    def __len__(self):
+        pass
+
+    def __iter__(self):
+        return (
+            self._get_by_index(index)
+            for index in range(len(self))
+        )
+
+    def to_list(self):
+        return list(self.__iter__())
+
+    # def __getitem__(self, key: int | slice):  # For Python3.10
+    def __getitem__(self, key: typing.Union[int, slice]):
 
         if isinstance(key, slice):
             # map list of indices with a such function which extracts an item
@@ -55,12 +71,19 @@ class _IterableContainer:
             return self._get_by_index(key)
 
 
-class _HasStructBackend:
+class _HasStructBackend(metaclass=abc.ABCMeta):
     """Base class for all the classes that have C struct as underlying data
     storage.
     """
 
+    @abc.abstractmethod
     def _generate_struct(self) -> c_definitions.ctypes.Structure:
+        """Assigns self._struct with a generated struct.
+        """
+        pass
+
+    @abc.abstractclassmethod
+    def from_struct(self, *args, **kwargs):
         pass
 
     def refresh_struct(self):
