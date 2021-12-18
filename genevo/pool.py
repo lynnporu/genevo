@@ -143,14 +143,29 @@ class Gene(_HasStructBackend):
         ))
 
     @classmethod
-    def from_bytes(
-        cls, pool: "GenePool", gene_bytes: c_definitions.gene_p
+    def from_dynamic_array(
+        cls, pool: "GenePool", gene_bytes: c_definitions.gene_p,
+        index_offset: int = -1
     ):
+        """Create class instance from pointer to the vector of gene bytes.
+
+        Arguments:
+            pool: GenePool
+            gene_bytes: c_definitions.gene_p aka POINTER(c_uint8)
+            index_offset: int, default = -1; If set to non-negative integer,
+                then index offset will be used.
+
+        """
+        struct_ref = (
+            c_definitions.get_gene_by_pointer(gene_bytes, pool)
+            if index_offset < 0 else
+            c_definitions.get_gene_by_index(
+                gene_bytes, index_offset, pool)
+        )
+
         return cls.from_struct(
             pool=pool,
-            struct_ref=c_definitions.get_gene_by_pointer(
-                gene_bytes, pool
-            )
+            struct_ref=struct_ref
         )
 
     @classmethod
@@ -476,16 +491,16 @@ class Genome(_IterableContainer, _HasStructBackend):
     ):
         genome_struct = genome_struct_ref.contents
         gene_structs = [
-            c_definitions.get_gene_by_index(
+            c_definitions.get_gene_in_genome_by_index(
                 genome_struct_ref,
                 index,
                 pool_struct_ref)
-            for index in range(genome_struct.length.value)
+            for index in range(genome_struct.length)
         ]
 
         return cls(
             metadata=bytes(
-                genome_struct.metadata[:genome_struct.metadata_byte_size.value]
+                genome_struct.metadata[:genome_struct.metadata_byte_size]
             ).decode("utf-8"),
             genes=lazy.LazyStub(
                 lambda pool, gene_structs: ([
