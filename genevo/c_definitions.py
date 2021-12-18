@@ -84,15 +84,16 @@ write_pool = ctypes.CFUNCTYPE(
     genome_struct_p_p
 )(('write_pool', libc))
 
-point_gene_by_index = ctypes.CFUNCTYPE(
-    c_uint8_p,
+get_gene_in_genome_by_index = ctypes.CFUNCTYPE(
+    gene_struct_p,
     genome_struct_p,
+    c_uint32,
     pool_struct_p
-)(('point_gene_by_index', libc))
+)(('get_gene_in_genome_by_index', libc))
 
 get_gene_by_index = ctypes.CFUNCTYPE(
     gene_struct_p,
-    genome_struct_p,
+    gene_p,
     c_uint32,
     pool_struct_p
 )(('get_gene_by_index', libc))

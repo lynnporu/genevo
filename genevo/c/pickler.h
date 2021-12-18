@@ -137,8 +137,10 @@ void copy_uint64_to_bitslots(
     uint8_t start, uint8_t number_size
 );
 
-uint8_t * point_gene_by_index(genome_t *, uint32_t, pool_t *);
-gene_t * get_gene_by_index(genome_t *, uint32_t, pool_t *);
+uint8_t * point_gene_in_genome_by_index(genome_t *, uint32_t index, pool_t *);
+uint8_t * point_gene_by_index(uint8_t *genes, uint32_t index, pool_t *pool);
+gene_t * get_gene_in_genome_by_index(genome_t *, uint32_t, pool_t *);
+gene_t * get_gene_by_index(uint8_t *genes, uint32_t index, pool_t *);
 gene_t * get_gene_by_pointer(uint8_t *gene_start_byte, pool_t *);
 
 pool_t * read_pool(const char *address);

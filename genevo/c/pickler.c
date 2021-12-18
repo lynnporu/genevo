@@ -328,10 +328,16 @@ void copy_uint64_to_bitslots(
 #define MAX_FOR_BIT(_BIT_SIZE) \
     ((_BIT_SIZE) == 64 ? 0xffffffffffff : (1 << (_BIT_SIZE)) - 1)
 
-uint8_t * point_gene_by_index(
+uint8_t * point_gene_in_genome_by_index(
     genome_t *genome, uint32_t index, pool_t *pool
 ) {
     return genome->genes + (pool->gene_bytes_size * index);
+}
+
+uint8_t * point_gene_by_index(
+    uint8_t *genes, uint32_t index, pool_t *pool
+) {
+    return genes + (pool->gene_bytes_size * index);
 }
 
 /*
@@ -422,7 +428,9 @@ gene_t * get_gene_by_pointer(
 
 }
 
-gene_t * get_gene_by_index(genome_t *genome, uint32_t index, pool_t *pool) {
+gene_t * get_gene_in_genome_by_index(
+    genome_t *genome, uint32_t index, pool_t *pool
+) {
 
     #ifndef SKIP_CHECK_BOUNDS
     if (index >= genome->length) {
@@ -432,7 +440,16 @@ gene_t * get_gene_by_index(genome_t *genome, uint32_t index, pool_t *pool) {
     #endif
 
     return get_gene_by_pointer(
-        point_gene_by_index(genome, index, pool),
+        point_gene_in_genome_by_index(genome, index, pool),
+        pool 
+    );
+
+}
+
+gene_t * get_gene_by_index(uint8_t *genes, uint32_t index, pool_t *pool) {
+
+    return get_gene_by_pointer(
+        point_gene_by_index(genes, index, pool),
         pool
     );
 
