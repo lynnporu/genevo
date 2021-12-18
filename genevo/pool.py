@@ -132,6 +132,12 @@ class Gene(_HasStructBackend):
         self._struct_ref = struct_ref
         self._gene_bytes = gene_bytes
 
+    def __repr__(self):
+        return (
+            f"<Gene "
+            f"{self._outcome_node_id} -> {self._income_node_id}, "
+            f"weight={self._weight}>")
+
     def _generate_struct_ref(self) -> c_definitions.gene_struct_p:
         return c_definitions.ctypes.pointer(c_definitions.gene_struct_t(
             # outcome_node_id
@@ -451,6 +457,9 @@ class Genome(_IterableContainer, _HasStructBackend):
         else:
             self._genes = genes
 
+    def __repr__(self):
+        return f"<Genome with {len(self)} genes>"
+
     def _generate_struct_ref(self) -> c_definitions.genome_struct_p:
         super()._generate_struct_ref()
         metadata = self._metadata.encode("utf-8")
@@ -577,6 +586,9 @@ class GenePool(_IterableContainer, _HasStructBackend):
         self._struct_ref = struct_ref
 
         self._range_starts = None
+
+    def __repr__(self):
+        return f"<GenePool with {len(self)} genomes>"
 
     @classmethod
     def from_struct(cls, struct_ref: c_definitions.pool_struct_t):
