@@ -186,15 +186,9 @@ class Gene(_HasStructBackend):
 
         return cls(
             pool=pool,
-            outcome_node_id=(
-                struct.outcome_node_id -
-                pool.range_starts[outcome_node_type]
-            ),
+            outcome_node_id=struct.outcome_node_id,
             outcome_node_type=outcome_node_type,
-            income_node_id=(
-                struct.income_node_id -
-                pool.range_starts[income_node_type]
-            ),
+            income_node_id=struct.income_node_id,
             income_node_type=income_node_type,
             weight_unnormalized=struct.weight_unnormalized,
             weight=struct.weight,
