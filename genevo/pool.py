@@ -702,7 +702,7 @@ class GenePool(_IterableContainer, _HasStructBackend):
     def genomes(self):
         return self._genomes
 
-    def eliminate(self, eliminator: typing.Callable[Genome, bool]):
+    def eliminate(self, eliminator: typing.Callable[[Genome], bool]):
         pass
 
     def reproduce(self, kill_parents: float = 0) -> "GenePool":
