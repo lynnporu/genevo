@@ -198,7 +198,7 @@ class Gene(_HasStructBackend):
             income_node_type=income_node_type,
             weight_unnormalized=struct.weight_unnormalized,
             weight=struct.weight,
-            struct=struct_ref,
+            struct_ref=struct_ref,
             gene_bytes=None
         )
 
@@ -499,6 +499,7 @@ class Genome(_IterableContainer, _HasStructBackend):
         ]
 
         return cls(
+            pool=pool,
             metadata=bytes(
                 genome_struct.metadata[:genome_struct.metadata_byte_size]
             ).decode("utf-8"),
@@ -678,7 +679,7 @@ class GenePool(_IterableContainer, _HasStructBackend):
             dict[key]: NodeConnectionType
             dict[value]: Start range
         """
-        if self._range_starts is not None:
+        if self._range_starts is None:
 
             self._range_starts = dict(zip(
                 [
