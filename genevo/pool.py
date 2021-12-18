@@ -178,26 +178,26 @@ class Gene(_HasStructBackend):
     ):
         struct = struct_ref.contents
 
-        connection_type = struct.connection_type.value
+        connection_type = struct.connection_type
         outcome_node_type = NodeConnectionType(
             connection_type & _OUTCOME_CONNECTION_TYPE_BITMASK)
         income_node_type = NodeConnectionType(
-            connection_type & _INCOME_CONNECTION_TYPE_BITMASK)
+            (connection_type & _INCOME_CONNECTION_TYPE_BITMASK) << 3)
 
         return cls(
             pool=pool,
             outcome_node_id=(
-                struct.outcome_node_id.value -
+                struct.outcome_node_id -
                 pool.range_starts[outcome_node_type]
             ),
             outcome_node_type=outcome_node_type,
             income_node_id=(
-                struct.income_node_id.value -
+                struct.income_node_id -
                 pool.range_starts[income_node_type]
             ),
             income_node_type=income_node_type,
-            weight_unnormalized=struct.weight_unnormalized.value,
-            weight=struct.weight.value,
+            weight_unnormalized=struct.weight_unnormalized,
+            weight=struct.weight,
             struct=struct_ref,
             gene_bytes=None
         )
@@ -318,11 +318,7 @@ class _BitField(_IterableContainer):
         byte_array: c_definitions.c_uint8_p, bytes_size: int
     # ) -> list[int]:  # For Python3.10
     ) -> typing.List[int]:
-        return [
-            byte.value
-            for _, byte
-            in zip(range(bytes_size), byte_array)
-        ]
+        return byte_array[:bytes_size]
 
     @classmethod
     def from_dynamic_array(
