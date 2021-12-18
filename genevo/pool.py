@@ -177,11 +177,15 @@ class Gene(_HasStructBackend):
         return self._weight_unnormalized
 
     @property
-    def outcome_node(self) -> tuple[NodeConnectionType, int]:
+    # For Python3.10
+    # def outcome_node(self) -> tuple[NodeConnectionType, int]:
+    def outcome_node(self) -> typing.Tuple[NodeConnectionType, int]:
         return (self._outcome_node_id, self._outcome_node_type)
 
     @property
-    def income_node(self) -> tuple[NodeConnectionType, int]:
+    # For Python3.10
+    # def income_node(self) -> tuple[NodeConnectionType, int]:
+    def income_node(self) -> typing.Tuple[NodeConnectionType, int]:
         return (self._income_node_id, self._income_node_type)
 
     @property
@@ -198,10 +202,14 @@ class _BitField(_IterableContainer):
 
     def __init__(
         self,
-        byte_array: iter[int],
+        # byte_array: iter[int],  # For Python3.10
+        byte_array: typing.Iterable[int],
         bytes_size: int = None,
         skip_last_bits: int = 0,
-        grouping: _GroupingType | int = _GroupingType.group_by_byte,
+        # For Python3.10
+        # grouping: _GroupingType | int = _GroupingType.group_by_byte,
+        grouping: typing.Union[_GroupingType, int] =
+            _GroupingType.group_by_byte,
         skip_byte_size_checking: bool = False
     ):
         """Creates BitField.
@@ -265,7 +273,8 @@ class _BitField(_IterableContainer):
     @staticmethod
     def _copy_bytes(
         byte_array: c_definitions.c_uint8_p, bytes_size: int
-    ) -> list[int]:
+    # ) -> list[int]:  # For Python3.10
+    ) -> typing.List[int]:
         return [
             byte.value
             for _, byte
@@ -300,7 +309,8 @@ class _BitField(_IterableContainer):
     def to_dynamic_array(
         self,
         realloc: bool = False
-    ) -> tuple[int, c_definitions.c_uint8_p]:
+    # ) -> tuple[int, c_definitions.c_uint8_p]:  # For Python3.10
+    ) -> typing.Tuple[int, c_definitions.c_uint8_p]:
         """Allocates dynamic array (if wasn't allocated yet) for the bytes
         inside this bit field.
 
@@ -384,7 +394,8 @@ class Genome(_IterableContainer, _HasStructBackend):
         self,
         pool: "GenePool",
         metadata: str,
-        genes: list[Gene],
+        # genes: list[Gene],  # For Python3.10
+        genes: typing.Union[lazy.LazyStub, typing.List[Gene]],
         genes_residue: GenomeResidue = None,
         genome_struct_ref: c_definitions.genome_struct_p = None,
     ):
@@ -407,7 +418,9 @@ class Genome(_IterableContainer, _HasStructBackend):
         ))
 
     @property
-    def _gene_bytes(self) -> tuple[int, c_definitions.gene_p]:
+    # For Python3.10
+    # def _gene_bytes(self) -> tuple[int, c_definitions.gene_p]:
+    def _gene_bytes(self) -> typing.Tuple[int, c_definitions.gene_p]:
         """Returns array if bytes for genes. If the genome has no its struct
         yet, then new array will be allocated.
         """
@@ -463,7 +476,8 @@ class Genome(_IterableContainer, _HasStructBackend):
         return self.genes[index]
 
     @property
-    def genes(self) -> list[Gene]:
+    # def genes(self) -> list[Gene]:  # For Python3.10
+    def genes(self) -> typing.List[Gene]:
         return self._genes
 
     @property
@@ -493,7 +507,8 @@ class GenePool(_IterableContainer, _HasStructBackend):
         metadata: str,
         node_id_part_bit_size: int,
         weight_part_bit_size: int,
-        genomes: list[Genome] = None,
+        # genomes: list[Genome] = None,  # For Python3.10
+        genomes: typing.List[Genome] = None,
         struct: c_definitions.pool_struct_p = None
     ):
         self._input_neurons_number = input_neurons_number
