@@ -99,6 +99,10 @@ class _HasStructBackend(metaclass=abc.ABCMeta):
             self._struct = self._generate_struct()
         return self._struct
 
+    @property
+    def struct_ref(self):
+        return c_definitions.ctypes.pointer(self.struct)
+
 
 class Gene(_HasStructBackend):
     def __init__(
@@ -129,7 +133,7 @@ class Gene(_HasStructBackend):
         self._gene_bytes = gene_bytes
 
     def _generate_struct(self) -> c_definitions.gene_struct_p:
-        return c_definitions.ctypes.pointer(c_definitions.gene_struct_t(
+        return c_definitions.gene_struct_t(
             # outcome_node_id
             (self._outcome_node_id +
              self.pool.range_starts[self._outcome_node_type]),
@@ -140,7 +144,7 @@ class Gene(_HasStructBackend):
             self.outcome_node_type.value + self.income_node_type.value >> 3,
             self.weight_unnormalized,
             self.weight
-        ))
+        )
 
     @classmethod
     def from_dynamic_array(
@@ -451,14 +455,14 @@ class Genome(_IterableContainer, _HasStructBackend):
     def _generate_struct(self) -> c_definitions.genome_struct_p:
         super()._generate_struct()
         metadata = self._metadata.encode("utf-8")
-        return c_definitions.pointer(c_definitions.genome_struct_t(
+        return c_definitions.genome_struct_t(
             len(self),
             metadata,
             len(metadata),
             self._gene_bytes,
             self._residue.bit_length,
             self._residue.to_dynamic_array()
-        ))
+        )
 
     @property
     # For Python3.10
@@ -473,7 +477,7 @@ class Genome(_IterableContainer, _HasStructBackend):
         else:
             return c_definitions.generate_genes_byte_array(
                 (c_definitions.gene_struct_p * len(self))(
-                    *[gene.struct for gene in self.genes],
+                    *[gene.struct_ref for gene in self.genes],
                     self._pool._struct,
                     len(self.genes)
                 )
@@ -608,14 +612,14 @@ class GenePool(_IterableContainer, _HasStructBackend):
         """
         c_definitions.write_pool(
             address.encode("utf-8"),
-            self.struct, self.genome_structs_vector)
+            self.struct_ref, self.genome_structs_vector)
         errors.check_errors()
 
     def _generate_struct(self) -> c_definitions.pool_struct_p:
         """Generate C struct pool_struct_p for this gene pool.
         """
         metadata = self.metadata.encode("utf-8")
-        return c_definitions.pointer(c_definitions.pool_struct_t(
+        return c_definitions.pool_struct_t(
             len(self),  # organisms_number
             self._input_neurons_number,
             self._output_neurons_number,
@@ -627,7 +631,7 @@ class GenePool(_IterableContainer, _HasStructBackend):
             None,
             None,
             None
-        ))
+        )
 
     @property
     def nodes_capacity(self) -> int:
@@ -673,7 +677,7 @@ class GenePool(_IterableContainer, _HasStructBackend):
     def genome_structs_vector(self) -> c_definitions.genome_struct_p_p:
         return c_definitions.ctypes.pointer(
             (c_definitions.genome_struct_p * len(self))(
-                *[genome.struct for genome in self.genomes]
+                *[genome.struct_ref for genome in self.genomes]
             )
         )
 
