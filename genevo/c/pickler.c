@@ -355,7 +355,6 @@ and output ranges. New ID to `_ID` and type to `_CONNECTION_TYPE_VAR`.
                            _NODES_CAPACITY,                                    \
                            _CONNECTION_TYPE_VAR, _DIRECTION)                   \
 {                                                                              \
-    _CONNECTION_TYPE_VAR = 0;                                                  \
     if (_ID < _INPUT_RANGE_SIZE)                                               \
         _CONNECTION_TYPE_VAR |= GENE_  ## _DIRECTION ## _IS_INPUT;             \
     else                                                                       \
@@ -378,11 +377,9 @@ and output ranges. New ID to `_ID` and type to `_CONNECTION_TYPE_VAR`.
 }
 
 
-gene_t * get_gene_by_pointer(
-    uint8_t *gene_start_byte, pool_t *pool
-) {
+gene_t * get_gene_by_pointer(uint8_t *gene_start_byte, pool_t *pool) {
 
-    gene_t *gene = calloc(1, sizeof(gene_t));
+    gene_t *gene = malloc(sizeof(gene_t));
 
     copy_bitslots_to_uint64(
         gene_start_byte,
@@ -407,6 +404,8 @@ gene_t * get_gene_by_pointer(
         gene->weight_unnormalized / MAX_FOR_BIT(pool->weight_part_bit_size);
 
     uint64_t nodes_capacity = MAX_FOR_BIT(pool->node_id_part_bit_size);
+
+    gene->connection_type = 0;
 
     // outcome node
     ASSIGN_TYPE_BY_ID(
