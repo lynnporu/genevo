@@ -197,6 +197,10 @@ class Gene(_HasStructBackend):
         )
 
     @property
+    def pool(self):
+        return self._pool
+
+    @property
     def weight(self) -> float:
         if self._weight is None:
             self._weight = (
@@ -458,6 +462,10 @@ class Genome(_IterableContainer, _HasStructBackend):
             self._residue.bit_length,
             self._residue.to_dynamic_array()
         ))
+
+    @property
+    def pool(self):
+        return self._pool
 
     @property
     # For Python3.10
