@@ -443,7 +443,7 @@ class Genome(_IterableContainer, _HasStructBackend):
         pool: "GenePool",
         metadata: str,
         # genes: list[Gene],  # For Python3.10
-        genes: typing.Union[lazy.LazyStub, typing.List[Gene]],
+        genes: typing.Union[lazy._LazyStub, typing.List[Gene]],
         genes_residue: GenomeResidue = None,
         genome_struct_ref: c_definitions.genome_struct_p = None,
     ):
@@ -452,7 +452,7 @@ class Genome(_IterableContainer, _HasStructBackend):
         self._struct_ref = genome_struct_ref
         self._pool = pool
 
-        if isinstance(genes, lazy.LazyStub):
+        if isinstance(genes, lazy._LazyStub):
             self._genes = genes.initialize(pool=self)
         else:
             self._genes = genes

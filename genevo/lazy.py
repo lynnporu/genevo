@@ -2,7 +2,7 @@
 """
 
 
-class LazyStub:
+class _LazyStub:
     """Creates stub for some value which has not been initialized yet.
     """
 
