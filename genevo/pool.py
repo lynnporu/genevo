@@ -29,8 +29,8 @@ class NodeConnectionType(enum.Enum):
     is_output = 0b00100000
 
 
-_INCOME_CONNECTION_TYPE_BITMASK = 0b11100000
-_OUTCOME_CONNECTION_TYPE_BITMASK = 0b00011100
+_OUTCOME_CONNECTION_TYPE_BITMASK = 0b11100000
+_INCOME_CONNECTION_TYPE_BITMASK = 0b00011100
 
 
 class _IterableContainer(metaclass=abc.ABCMeta):
@@ -141,7 +141,7 @@ class Gene(_HasStructBackend):
             (self._income_node_id +
              self.pool.range_starts[self._income_node_type]),
             # connection_type
-            self.outcome_node_type.value + self.income_node_type.value >> 3,
+            self.outcome_node_type + self.income_node_type >> 3,
             self.weight_unnormalized,
             self.weight
         ))
