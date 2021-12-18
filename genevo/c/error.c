@@ -13,6 +13,8 @@ const char * get_err_string(const uint8_t errcode) {
 		case ERR_CANNOT_MALLOC:
 			return ERR_CANNOT_MALLOC_STR;
 			break;
+		case ERR_OUT_OF_BOUNDS:
+			return ERR_OUT_OF_BOUNDS_STR;
 		case ERR_FILE_CANNOT_OPEN:
 			return ERR_FILE_CANNOT_OPEN_STR;
 			break;
