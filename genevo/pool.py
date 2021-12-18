@@ -5,6 +5,7 @@ import itertools
 
 from . import c_definitions
 from . import errors
+from . import lazy
 
 
 def _max_for_bit(size: int) -> int:
@@ -423,10 +424,14 @@ class Genome(_IterableContainer, _HasStructBackend):
         genome_struct_ref: c_definitions.genome_struct_p = None,
     ):
         self._metadata = metadata
-        self._genes = genes
         self._residue = genes_residue
         self._struct = genome_struct_ref
         self._pool = pool
+
+        if isinstance(genes, lazy.LazyStub):
+            self._genes = genes.initialize(pool=self)
+        else:
+            self._genes = genes
 
     def _generate_struct(self) -> c_definitions.genome_struct_p:
         super()._generate_struct()
@@ -482,7 +487,13 @@ class Genome(_IterableContainer, _HasStructBackend):
             metadata=bytes(
                 genome_struct.metadata[:genome_struct.metadata_byte_size.value]
             ).decode("utf-8"),
-            genes=list(map(Gene.from_struct, gene_structs)),
+            genes=lazy.LazyStub(
+                lambda pool, gene_structs: ([
+                    Gene.from_struct(pool=pool, struct_ref=gene_struct)
+                    for gene_struct in gene_structs
+                ]),
+                gene_structs=gene_structs
+            ),
             genes_residue=GenomeResidue.from_dynamic_array(
                 byte_array=genome_struct.residue,
                 bit_size=genome_struct.residue_size_bits,
