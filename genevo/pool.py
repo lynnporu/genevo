@@ -490,15 +490,15 @@ class Genome(_IterableContainer, _HasStructBackend):
     @classmethod
     def from_struct(
         cls,
-        genome_struct_ref: c_definitions.genome_struct_p,
-        pool_struct_ref: c_definitions.pool_struct_p
+        pool: "GenePool",
+        genome_struct_ref: c_definitions.genome_struct_p
     ):
         genome_struct = genome_struct_ref.contents
         gene_structs = [
             c_definitions.get_gene_in_genome_by_index(
                 genome_struct_ref,
                 index,
-                pool_struct_ref)
+                pool.struct_ref)
             for index in range(genome_struct.length)
         ]
 
@@ -506,13 +506,10 @@ class Genome(_IterableContainer, _HasStructBackend):
             metadata=bytes(
                 genome_struct.metadata[:genome_struct.metadata_byte_size]
             ).decode("utf-8"),
-            genes=lazy.LazyStub(
-                lambda pool, gene_structs: ([
-                    Gene.from_struct(pool=pool, struct_ref=gene_struct)
-                    for gene_struct in gene_structs
-                ]),
-                gene_structs=gene_structs
-            ),
+            genes=[
+                Gene.from_struct(pool=pool, struct_ref=gene_struct)
+                for gene_struct in gene_structs
+            ],
             genes_residue=GenomeResidue.from_dynamic_array(
                 byte_array=genome_struct.residue,
                 bit_size=genome_struct.residue_size_bits,
@@ -564,6 +561,9 @@ class GenePool(_IterableContainer, _HasStructBackend):
         genomes: typing.List[Genome] = None,
         struct: c_definitions.pool_struct_p = None
     ):
+        # ! genomes may be not initialized yet, if class was created by
+        # ! from_file_dump method
+
         self._input_neurons_number = input_neurons_number
         self._output_neurons_number = output_neurons_number
         self._metadata = metadata
@@ -575,37 +575,48 @@ class GenePool(_IterableContainer, _HasStructBackend):
         self._range_starts = None
 
     @classmethod
-    def from_file_dump(cls, address: str) -> "GenePool":
-        """Read pool from file dump.
-        """
-        pool_struct_p = c_definitions.read_pool(address.encode("utf-8"))
-        errors.check_errors()
-        pool_struct = pool_struct_p.contents
+    def from_struct(cls, struct_ref: c_definitions.pool_struct_t):
+
+        struct = struct_ref.contents
+
+        instance = cls(
+            input_neurons_number=struct.input_neurons_number,
+            output_neurons_number=struct.output_neurons_number,
+            metadata=bytes(
+                struct.metadata[:struct.metadata_byte_size]
+            ).decode("utf-8"),
+            node_id_part_bit_size=struct.node_id_part_bit_size,
+            weight_part_bit_size=struct.weight_part_bit_size,
+            genomes=[],
+            struct=struct_ref
+        )
 
         genomes = []
 
         try:
-            genome_struct_p = c_definitions.read_next_genome(pool_struct_p)
+            genome_struct_p = c_definitions.read_next_genome(struct_ref)
             errors.check_errors()
-            genomes.append(Genome.from_struct(genome_struct_p, pool_struct_p))
+            genomes.append(Genome.from_struct(
+                pool=instance, genome_struct_ref=genome_struct_p
+            ))
 
         except StopIteration:
             pass
 
         finally:
-            c_definitions.reset_genome_cursor(pool_struct_p)
+            c_definitions.reset_genome_cursor(struct_ref)
 
-        return cls(
-            input_neurons_number=pool_struct.input_neurons_number.value,
-            output_neurons_number=pool_struct.output_neurons_number.value,
-            metadata=bytes(
-                pool_struct.metadata[:pool_struct.metadata_byte_size.value]
-            ).decode("utf-8"),
-            node_id_part_bit_size=pool_struct.node_id_part_bit_size.value,
-            weight_part_bit_size=pool_struct.weight_part_bit_size.value,
-            genomes=genomes,
-            struct=pool_struct_p
-        )
+        instance._genomes = genomes
+
+        return instance
+
+    @classmethod
+    def from_file_dump(cls, address: str) -> "GenePool":
+        """Read pool from file dump.
+        """
+        pool_struct_p = c_definitions.read_pool(address.encode("utf-8"))
+        errors.check_errors()
+        return cls.from_struct(pool_struct_p)
 
     def dump_to_file(self, address: str):
         """Dump the pool into the file with given address.
