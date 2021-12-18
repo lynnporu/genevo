@@ -233,6 +233,11 @@ class Gene(_HasStructBackend):
 
     @property
     def gene_bytes(self) -> c_definitions.gene_p:
+
+        if self._gene_bytes is None:
+            self._gene_bytes = c_definitions.generate_genes_byte_array(
+                self.struct_ref, self._pool.struct_ref, 1)
+
         return self._gene_bytes
 
 
