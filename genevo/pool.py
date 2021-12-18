@@ -641,8 +641,24 @@ class GenePool(_IterableContainer, _HasStructBackend):
         ))
 
     @property
+    def input_neurons_number(self):
+        return self._input_neurons_number
+
+    @property
+    def output_neurons_number(self):
+        return self._output_neurons_number
+
+    @property
     def nodes_capacity(self) -> int:
         return _max_for_bit(self._node_id_part_bit_size)
+
+    @property
+    def node_id_part_bit_size(self) -> int:
+        return self._node_id_part_bit_size
+
+    @property
+    def weight_part_bit_size(self) -> int:
+        return self._weight_part_bit_size
 
     @property
     def range_starts(self) -> dict:
