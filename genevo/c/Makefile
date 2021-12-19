@@ -4,7 +4,7 @@ LDFLAGS = -shared
 RM = rm -f
 TARGET_LIB = bin/genevo.so
 
-SRCS = error.c files.c pickler.c
+SRCS = $(wildcard *.c)
 OBJS = $(SRCS:.c=.o)
 
 .PHONY: all
