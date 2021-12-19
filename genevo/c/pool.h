@@ -1,3 +1,10 @@
+/*
+
+This header contains declarations for gene, genome and gene pool. It does not
+contain any methods.
+
+*/
+
 #pragma once
 
 #include <stdint.h>

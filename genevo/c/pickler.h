@@ -1,3 +1,11 @@
+/*
+
+This module contains methods for dumping the pool into file and vice versa.
+For all operations network byte order (big-endian) is used, so it'll work a
+little slower on little-endian platform because of byte swappings.
+
+*/
+
 #pragma once
 
 #include <stdlib.h>
@@ -12,7 +20,7 @@
 
 #include <arpa/inet.h>
 
-#include "gene_pool.h"
+#include "pool.h"
 #include "error.h"
 #include "files.h"
 
@@ -32,7 +40,7 @@
 
 /*
 
-! The notation defined in gene_pool.h is used here. (So MNSb means the size of
+! The notation defined in pool.h is used here. (So MNSb means the size of
   metadata of a genome in bits, for example.)
 
 Structure of the genome in the memory is the following:

@@ -1,3 +1,10 @@
+/*
+
+This header contains declarations for all error levels that are being used
+across the library.
+
+*/
+
 #pragma once
 
 #include <stdint.h>

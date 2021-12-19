@@ -1,3 +1,11 @@
+/*
+
+This header contains declarations for file mappings.
+
+TODO: add Windows support.
+
+*/
+
 #pragma once
 
 #include <stdlib.h>
