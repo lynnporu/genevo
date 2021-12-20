@@ -179,7 +179,8 @@ void write_pool(const char *address, pool_t *pool, genome_t **genomes) {
 }
 
 void close_pool(pool_t *pool) {
-    close_file(pool->file_mapping);
+    if (pool->file_mapping != NULL)
+        close_file(pool->file_mapping);
     free(pool);
 }
 

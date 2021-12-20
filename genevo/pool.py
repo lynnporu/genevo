@@ -587,6 +587,10 @@ class GenePool(_IterableContainer, _HasStructBackend):
 
         self._range_starts = None
 
+    def __del__(self):
+        if self.struct_ref is not None:
+            c_definitions.close_pool(self.struct_ref)
+
     def __repr__(self):
         return f"<GenePool with {len(self)} genomes>"
 
