@@ -57,12 +57,12 @@ void generate_genome_data(
 	genome->length = bits_number / gene_byte_size;
 	genome->residue_size_bits = bits_number - genome->length * gene_byte_size;
 
-	if (generation_mode == GENERATE_RANDOMNESS) {
+	if (generator_mode == GENERATE_RANDOMNESS) {
 		fill_bytes_with_randomness(genome->genes, genome->length * gene_byte_size);
 		fill_bits_with_randomness(genome->residue, genome->residue_size_bits);
 	}
 	else
-	if (generation_mode == GENERATE_ZEROS) {
+	if (generator_mode == GENERATE_ZEROS) {
 		memset(genome->genes, 0, genome->length * gene_byte_size);
 		memset(genome->residue, 0, (genome->residue_size_bits / 8) + 1);
 	}
