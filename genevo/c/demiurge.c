@@ -120,6 +120,42 @@ void delete_genome_metadata(genome_t *genome) {
 
 }
 
+pool_t *allocate_pool() {
+
+	pool_t *pool = malloc(sizeof(pool_t));
+
+	pool->metadata = NULL;
+	pool->metadata_byte_size = 0;
+
+	return pool;
+
+}
+
+void destroy_pool(pool_t *pool, bool close_file) {
+
+	if (close_file) close_file_for_pool(pool);
+	delete_pool_metadata(pool);
+
+	free(pool);
+
+}
+
+void assign_pool_metadata(
+	pool_t *pool, uint16_t metadata_byte_size, const char* metadata
+) {
+
+	delete_pool_metadata(pool);
+	pool->metadata = malloc(metadata_byte_size);
+	memcpy(pool->metadata, metadata, metadata_byte_size);
+
+}
+
+void delete_pool_metadata(pool_t *pool) {
+
+	if (pool->metadata != NULL) free(pool->metadata);
+
+}
+
 }
 /*
 

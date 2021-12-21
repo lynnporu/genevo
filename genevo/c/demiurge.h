@@ -29,6 +29,14 @@ void assign_genome_metadata(
     genome_t *, uint16_t metadata_byte_size, const char *metadata
 );
 void delete_genome_metadata(genome_t *genome);
+
+pool_t *allocate_pool();
+void destroy_pool(pool_t *pool, bool close_file);
+
+void assign_pool_metadata(
+    pool_t *pool, uint16_t metadata_byte_size, const char* metadata
+);
+void delete_pool_metadata(pool_t *pool);
 void destroy_pool_and_genomes(
     pool_and_genomes_t *pool_and_genomes,
     bool destroy_genomes, bool deallocate_genomes_data
