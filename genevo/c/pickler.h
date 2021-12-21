@@ -151,9 +151,15 @@ gene_t * get_gene_in_genome_by_index(genome_t *, uint32_t, pool_t *);
 gene_t * get_gene_by_index(uint8_t *genes, uint32_t index, pool_t *);
 gene_t * get_gene_by_pointer(uint8_t *gene_start_byte, pool_t *);
 
+void open_file_for_pool(const char *address, pool_t *pool, genome_t **genomes);
+void close_file_for_pool(pool_t *pool);
+
+void save_pool(pool_t *pool, genome_t **genomes);
 pool_t * read_pool(const char *address);
-void close_pool(pool_t *pool);
 void write_pool(const char *address, pool_t *pool, genome_t **genomes);
+
+void close_pool(pool_t *pool);
+
 gene_byte_t * generate_genes_byte_array(gene_t **, pool_t *, uint64_t length);
 void free_genes_byte_array(gene_byte_t *array);
 

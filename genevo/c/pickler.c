@@ -71,7 +71,7 @@ pool_t * read_pool(const char *address) {
 
 }
 
-void write_pool(const char *address, pool_t *pool, genome_t **genomes) {
+void open_file_for_pool(const char *address, pool_t *pool, genome_t **genomes) {
 
     ERROR_LEVEL = 0;
 
@@ -95,7 +95,17 @@ void write_pool(const char *address, pool_t *pool, genome_t **genomes) {
     file_map_t *mapping = open_file(address, OPEN_MODE_WRITE, file_size - 1);
     if (ERROR_LEVEL != ERR_OK) return;
 
-    pool_file_preamble_t *pool_preamble = mapping->data;
+    pool->file_mapping = mapping;
+
+}
+
+void close_file_for_pool(pool_t *pool) {
+    close_file(pool->file_mapping);
+}
+
+void save_pool(pool_t *pool, genome_t **genomes) {
+
+    pool_file_preamble_t *pool_preamble = pool->file_mapping->data;
     pool_preamble->initial_byte = POOL_INITIAL_BYTE;
     pool_preamble->organisms_number = hton64(pool->organisms_number);
     pool_preamble->input_neurons_number = hton64(pool->input_neurons_number);
@@ -174,13 +184,19 @@ void write_pool(const char *address, pool_t *pool, genome_t **genomes) {
 
     genome_preamble->initial_byte = POOL_TERMINAL_BYTE;
 
-    close_file(mapping);
+}
+
+void write_pool(const char *address, pool_t *pool, genome_t **genomes) {
+
+    open_file_for_pool(address, pool, genomes);
+    save_pool(pool, genomes);
+    close_file_for_pool(pool);
 
 }
 
 void close_pool(pool_t *pool) {
     if (pool->file_mapping != NULL)
-        close_file(pool->file_mapping);
+        close_file_for_pool(pool);
     free(pool);
 }
 

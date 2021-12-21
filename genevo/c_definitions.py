@@ -10,6 +10,8 @@ c_uint8_p = ctypes.POINTER(c_uint8)  # equal to c_char_p
 
 libc = ctypes.cdll.LoadLibrary("genevo/c/bin/genevo.so")
 
+# pool.h
+
 gene_p = c_uint8_p
 
 
@@ -71,18 +73,12 @@ class pool_struct_t(ctypes.Structure):
 
 pool_struct_p = ctypes.POINTER(pool_struct_t)
 
+# pickler.h
 
 get_err_string = ctypes.CFUNCTYPE(
     c_char_p,
     c_uint8  # errcode
 )(('get_err_string', libc))
-
-write_pool = ctypes.CFUNCTYPE(
-    None,
-    c_char_p,  # address
-    pool_struct_p,  # pool
-    genome_struct_p_p
-)(('write_pool', libc))
 
 get_gene_in_genome_by_index = ctypes.CFUNCTYPE(
     gene_struct_p,
@@ -115,6 +111,20 @@ free_genes_byte_array = ctypes.CFUNCTYPE(
     None,
     gene_p
 )(('free_genes_byte_array', libc))
+
+write_pool = ctypes.CFUNCTYPE(
+    None,
+    c_char_p,  # address
+    pool_struct_p,
+    genome_struct_p_p
+)(('write_pool', libc))
+
+save_pool = ctypes.CFUNCTYPE(
+    None,
+    pool_struct_p,
+    genome_struct_p_p
+)(('save_pool', libc))
+
 
 read_pool = ctypes.CFUNCTYPE(
     pool_struct_p,
