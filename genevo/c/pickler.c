@@ -103,22 +103,38 @@ void close_file_for_pool(pool_t *pool) {
     close_file(pool->file_mapping);
 }
 
-void save_pool(pool_t *pool, genome_t **genomes) {
+void save_pool(pool_t *pool, genome_t **genomes, save_pool_flags_t flags) {
+
+    ERROR_LEVEL = ERR_OK;
+
+    if (
+        (flags | POOL_COPY_DATA && flags | POOL_ASSIGN_GENOME_POINTERS) ||
+        (flags | POOL_COPY_METADATA && flags | POOL_ASSIGN_METADATA_POINTERS)
+    ) {
+        ERROR_LEVEL = ERR_INCOMPATIBLE_FLAGS;
+        return;
+    }
 
     pool_file_preamble_t *pool_preamble = pool->file_mapping->data;
-    pool_preamble->initial_byte = POOL_INITIAL_BYTE;
-    pool_preamble->organisms_number = hton64(pool->organisms_number);
-    pool_preamble->input_neurons_number = hton64(pool->input_neurons_number);
-    pool_preamble->output_neurons_number = hton64(pool->output_neurons_number);
-    pool_preamble->node_id_part_bit_size = pool->node_id_part_bit_size;
-    pool_preamble->weight_part_bit_size = pool->weight_part_bit_size;
-    pool_preamble->metadata_byte_size = hton16(pool->metadata_byte_size);
-    pool_preamble->metadata_initial_byte = POOL_META_INITIAL_BYTE;
+    if (flags | POOL_REWRITE_DESCRIPTION) {
+        pool_preamble->initial_byte = POOL_INITIAL_BYTE;
+        pool_preamble->organisms_number = hton64(pool->organisms_number);
+        pool_preamble->input_neurons_number = hton64(pool->input_neurons_number);
+        pool_preamble->output_neurons_number = hton64(pool->output_neurons_number);
+        pool_preamble->node_id_part_bit_size = pool->node_id_part_bit_size;
+        pool_preamble->weight_part_bit_size = pool->weight_part_bit_size;
+        pool_preamble->metadata_byte_size = hton16(pool->metadata_byte_size);
+        pool_preamble->metadata_initial_byte = POOL_META_INITIAL_BYTE;
+    }
 
     uint8_t *pool_metadata = &pool_preamble->metadata_initial_byte + 1;
 
     // copy pool meta bytes
-    memcpy(pool_metadata, pool->metadata, pool->metadata_byte_size);
+    if (flags | POOL_COPY_METADATA)
+        memcpy(pool_metadata, pool->metadata, pool->metadata_byte_size);
+
+    if (flags | POOL_ASSIGN_METADATA_POINTERS)
+        pool->metadata = pool_metadata;
 
     void *pool_meta_terminal_byte = pool_metadata + pool->metadata_byte_size;
     *(uint8_t *)pool_meta_terminal_byte = POOL_META_TERMINAL_BYTE;
@@ -135,61 +151,75 @@ void save_pool(pool_t *pool, genome_t **genomes) {
 
         genome_t *current_genome = genomes[genome_itr];
 
-        genome_preamble->initial_byte = GENOME_INITIAL_BYTE;
-        genome_preamble->genes_number = hton32(current_genome->length);
-        genome_preamble->metadata_byte_size = hton16(current_genome->metadata_byte_size);
-        genome_preamble->metadata_initial_byte = GENOME_META_INITIAL_BYTE;
+        if (flags | POOL_REWRITE_DESCRIPTION) {
+            genome_preamble->initial_byte = GENOME_INITIAL_BYTE;
+            genome_preamble->genes_number = hton32(current_genome->length);
+            genome_preamble->metadata_byte_size = \
+                hton16(current_genome->metadata_byte_size);
+            genome_preamble->metadata_initial_byte = GENOME_META_INITIAL_BYTE;
+        }
 
         uint8_t *genome_metadata = &genome_preamble->metadata_initial_byte + 1;
 
         // copy genome meta bytes
-        memcpy(
-            genome_metadata, current_genome->metadata,
-            current_genome->metadata_byte_size);
+        if (flags | POOL_COPY_METADATA)
+            memcpy(
+                genome_metadata, current_genome->metadata,
+                current_genome->metadata_byte_size);
 
-        void *genome_meta_terminal_byte =
-            genome_metadata + current_genome->metadata_byte_size;
-
-        *(uint8_t *)genome_meta_terminal_byte = GENOME_META_TERMINAL_BYTE;
-
-        #define GENES_BYTES_SIZE (current_genome->length * pool->gene_bytes_size)
-
-        // copy genes
-        memcpy(
-            genome_meta_terminal_byte + 1, current_genome->genes,
-            GENES_BYTES_SIZE);
-
-        void *residue_byte = genome_meta_terminal_byte + 1 + GENES_BYTES_SIZE;
-        *(uint8_t *)residue_byte = GENOME_RESIDUE_BYTE;
-
-        #undef GENES_BYTES_SIZE
+        if (flags | POOL_ASSIGN_METADATA_POINTERS)
+            current_genome->metadata = genome_metadata;
 
         uint8_t residue_size_bytes =
             (uint8_t)(current_genome->residue_size_bits / 8) + 1;
 
-        *(uint16_t *)(residue_byte + 1) = hton16(current_genome->residue_size_bits);
+        #define GENES_BYTES_SIZE (current_genome->length * pool->gene_bytes_size)
 
-        void *residue_start =
-            residue_byte + 1 + sizeof(current_genome->residue_size_bits);
-
-        memcpy(
-            residue_start, current_genome->residue, residue_size_bytes);
-
+        void *genome_meta_terminal_byte =
+            genome_metadata + current_genome->metadata_byte_size;
+        void *residue_byte = genome_meta_terminal_byte + 1 + GENES_BYTES_SIZE;
+        void *residue_start = residue_byte + 1 + sizeof(current_genome->residue_size_bits);
         void *terminal_byte = residue_start + residue_size_bytes;
-        *(uint8_t *)terminal_byte = GENOME_TERMINAL_BYTE;
+
+        if (flags | POOL_REWRITE_DESCRIPTION) {
+            *(uint8_t *)genome_meta_terminal_byte = GENOME_META_TERMINAL_BYTE;
+            *(uint8_t *)residue_byte = GENOME_RESIDUE_BYTE;
+            *(uint16_t *)(residue_byte + 1) = hton16(current_genome->residue_size_bits);
+            *(uint8_t *)terminal_byte = GENOME_TERMINAL_BYTE;
+        }
+
+        if (flags | POOL_COPY_DATA) {
+            // copy genes
+            memcpy(
+                genome_meta_terminal_byte + 1, current_genome->genes,
+                GENES_BYTES_SIZE);
+
+            memcpy(
+                residue_start, current_genome->residue, residue_size_bytes);
+        }
+
+        if (flags | POOL_ASSIGN_GENOME_POINTERS) {
+            current_genome->genes = genome_meta_terminal_byte + 1;
+            current_genome->residue = residue_start;
+        }
+
+        #undef GENES_BYTES_SIZE
 
         genome_preamble = terminal_byte + 1;
 
     }
 
-    genome_preamble->initial_byte = POOL_TERMINAL_BYTE;
+    if (flags | POOL_REWRITE_DESCRIPTION)
+        genome_preamble->initial_byte = POOL_TERMINAL_BYTE;
 
 }
 
 void write_pool(const char *address, pool_t *pool, genome_t **genomes) {
 
     open_file_for_pool(address, pool, genomes);
-    save_pool(pool, genomes);
+    save_pool(
+        pool, genomes,
+        POOL_COPY_DATA | POOL_REWRITE_DESCRIPTION | POOL_COPY_METADATA);
     close_file_for_pool(pool);
 
 }

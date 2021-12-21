@@ -32,6 +32,10 @@ extern uint8_t ERROR_LEVEL;
 #define ERR_OUT_OF_BOUNDS_STR               "You are trying to read out of "   \
                                             "array bounds."
 
+#define ERR_INCOMPATIBLE_FLAGS              0xe1
+#define ERR_INCOMPATIBLE_FLAGS_STR          "You have just given "             \
+                                            "incompatible flags."
+
 
 // Gene pool file errors =======================================================
 
