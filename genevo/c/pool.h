@@ -88,3 +88,8 @@ typedef struct pool_s {
                 // Position of the byte after POOL_META_TERMINAL_BYTE
     void       *cursor;
 } pool_t;
+
+typedef struct pool_and_genomes_s {
+    pool_t     *pool;
+    genome_t  **genomes;
+} pool_and_genomes_t;

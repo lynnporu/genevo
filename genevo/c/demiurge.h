@@ -21,4 +21,7 @@ void generate_random_genome_data(
 genome_t * create_random_genome(
     const uint8_t *metadata, uint16_t metadata_byte_size,
     uint64_t bits_number, uint8_t gene_byte_size
+void destroy_pool_and_genomes(
+    pool_and_genomes_t *pool_and_genomes,
+    bool destroy_genomes, bool deallocate_genomes_data
 );
