@@ -60,22 +60,65 @@ void generate_random_genome_data(
 
 }
 
-genome_t * create_random_genome(
-	const uint8_t *metadata, uint16_t metadata_byte_size,
-	uint64_t bits_number, uint8_t gene_byte_size
+/*
+
+Allocate genome_t.
+genes_bytes_size and residue_size_bits shouldn't be set in case allocate_data
+is `false`.
+
+*/
+genome_t *allocate_genome(
+	bool allocate_data,
+	uint64_t genes_bytes_size, uint16_t residue_size_bits
 ) {
 
 	genome_t *genome = malloc(sizeof(genome_t));
 
-	genome->length = bits_number / gene_byte_size;
-	genome->metadata_byte_size = metadata_byte_size;
-	genome->metadata = malloc(metadata_byte_size);
+	if (allocate_data) {
+		genome->genes = malloc(genes_bytes_size);
+		genome->residue = malloc(residue_size_bits / 8);
+		genome->residue_size_bits = residue_size_bits;
+	} else {
+		genome->genes = NULL;
+		genome->residue = NULL;
+		genome->residue_size_bits = 0;
+	}
 
-	memcpy(genome->metadata, metadata, metadata_byte_size);
-
-	generate_random_genome_data(genome, bits_number, gene_byte_size);
+	genome->metadata = NULL;
+	genome->metadata_byte_size = 0;
 
 	return genome;
+
+}
+
+void destroy_genome(genome_t *genome, bool deallocate_data) {
+
+	if (deallocate_data) {
+		if (genome->genes != NULL) free(genome->genes);
+		if (genome->residue != NULL) free(genome->residue);
+	}
+
+	delete_genome_metadata(genome);
+
+	free(genome);
+
+}
+
+void assign_genome_metadata(
+	genome_t *genome, uint16_t metadata_byte_size, const char *metadata
+) {
+
+	delete_genome_metadata(genome);
+	genome->metadata = malloc(metadata_byte_size);
+	memcpy(genome->metadata, metadata, metadata_byte_size);
+
+}
+
+void delete_genome_metadata(genome_t *genome) {
+
+	if (genome->metadata != NULL) free(genome->metadata);
+
+}
 
 }
 /*
