@@ -9,7 +9,6 @@ contain any methods.
 
 #include <stdint.h>
 
-#include "pickler.h"
 #include "files.h"
 
 #define GENE_OUTCOME_IS_INPUT        0b10000000
