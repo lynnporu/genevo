@@ -6,6 +6,7 @@
 #include "rand.h"
 #include "string.h"
 #include "stdbool.h"
+#include "pickler.h"
 
 #define fill_bytes_with_randomness(_DESTINATION, _BYTES)                       \
     fill_with_randomness(_DESTINATION, _BYTES, 0)
@@ -37,6 +38,11 @@ void assign_pool_metadata(
     pool_t *pool, uint16_t metadata_byte_size, const char* metadata
 );
 void delete_pool_metadata(pool_t *pool);
+
+pool_and_genomes_t *fill_random_pool(
+    const char *address, pool_t *pool, uint64_t genome_bit_size
+);
+
 void destroy_pool_and_genomes(
     pool_and_genomes_t *pool_and_genomes,
     bool destroy_genomes, bool deallocate_genomes_data
