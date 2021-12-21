@@ -17,6 +17,7 @@ contain any methods.
 #define GENE_INCOME_IS_INPUT         0b00010000
 #define GENE_INCOME_IS_INTERMEDIATE  0b00001000
 #define GENE_INCOME_IS_OUTPUT        0b00000100
+typedef uint8_t gene_connection_t;
 
 /*
 
@@ -57,18 +58,11 @@ typedef uint8_t gene_byte_t;
 #define GENE_BYTE_SIZE sizeof(gene_byte_t)
 
 typedef struct gene_s {
-    uint64_t outcome_node_id;
-    uint64_t income_node_id;
-    uint8_t  connection_type;  /* bitmask with following bits meaning
-                                  [0] - 1= outcome node is input neurone
-                                  [1] - 1= outcome node is intermediate neurone
-                                  [2] - 1= outcome node is output neorune
-                                  [3] - 1= income node is input neurone
-                                  [4] - 1= income node is intermediate neurone
-                                  [5] - 1= income node is output neorune
-                               */
-    int64_t  weight_unnormalized;
-    double   weight;           // weight is normalized to [-1; 1]
+    uint64_t          outcome_node_id;
+    uint64_t          income_node_id;
+    gene_connection_t connection_type;
+    int64_t           weight_unnormalized;
+    double            weight;           // weight is normalized to [-1; 1]
 } gene_t;
 
 typedef struct genome_s {
