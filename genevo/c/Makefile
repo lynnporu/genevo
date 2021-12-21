@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -fPIC -Wall -Wextra -O2 -g
+CFLAGS = -fPIC -Wall -Wextra -O3 -g
 LDFLAGS = -shared
 RM = rm -f
 TARGET_LIB = bin/genevo.so
