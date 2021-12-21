@@ -48,16 +48,28 @@ void fill_with_randomness(uint8_t *destination, uint32_t bytes, uint8_t bits) {
 
 }
 
-void generate_random_genome_data(
-	genome_t *genome, uint64_t bits_number, uint8_t gene_byte_size
+void generate_genome_data(
+	genome_t *genome, uint64_t bits_number, uint8_t gene_byte_size,
+	generator_mode_t generator_mode
 ) {
 
 	// float will round down
 	genome->length = bits_number / gene_byte_size;
 	genome->residue_size_bits = bits_number - genome->length * gene_byte_size;
 
-	fill_bytes_with_randomness(genome->genes, genome->length * gene_byte_size);
-	fill_bits_with_randomness(genome->residue, genome->residue_size_bits);
+	if (generation_mode == GENERATE_RANDOMNESS) {
+		fill_bytes_with_randomness(genome->genes, genome->length * gene_byte_size);
+		fill_bits_with_randomness(genome->residue, genome->residue_size_bits);
+	}
+	else
+	if (generation_mode == GENERATE_ZEROS) {
+		memset(genome->genes, 0, genome->length * gene_byte_size);
+		memset(genome->residue, 0, (genome->residue_size_bits / 8) + 1);
+	}
+	else {
+		ERROR_LEVEL = ERR_WRONG_FLAG;
+		return;
+	}
 
 }
 
@@ -159,15 +171,16 @@ void delete_pool_metadata(pool_t *pool) {
 
 /*
 
-Generate random genomes for pool. For this function the following members of
+Generate genomes for pool. For this function the following members of
 pool_t must be set:
 	* organisms_number
 	* node_id_part_bit_size
 	* weight_part_bit_size
 
 */
-pool_and_genomes_t *fill_random_pool(
-	const char *address, pool_t *pool, uint64_t genome_bit_size
+pool_and_genomes_t *fill_pool(
+	const char *address, pool_t *pool, uint64_t genome_bit_size,
+	generator_mode_t generator_mode
 ) {
 
 	pool->gene_bytes_size =
@@ -191,14 +204,15 @@ pool_and_genomes_t *fill_random_pool(
 	open_file_for_pool(address, pool, genomes);
 	save_pool(pool, genomes, POOL_ASSIGN_GENOME_POINTERS);
 
-	// fill each genome with randomness
+	// fill each genome with values
 	for(
 		uint64_t genome_itr = 0;
 		genome_itr < pool->organisms_number;
 		genome_itr++
 	) {
-		generate_random_genome_data(
-			genomes[genome_itr], genome_bit_size, pool->gene_bytes_size);
+		generate_genome_data(
+			genomes[genome_itr], genome_bit_size, pool->gene_bytes_size,
+			generator_mode);
 	}
 
 	pool_and_genomes_t *pool_and_genomes = malloc(sizeof(pool_and_genomes_t));

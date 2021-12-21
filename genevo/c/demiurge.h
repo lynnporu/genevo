@@ -16,8 +16,13 @@
 
 void fill_with_randomness(uint8_t *destination, uint32_t bytes, uint8_t bits);
 
+#define GENERATE_RANDOMNESS (uint8_t)(0x1 << 0)
+#define GENERATE_ZEROS      (uint8_t)(0x1 << 1)
+typedef uint8_t generator_mode_t;
+
 void generate_random_genome_data(
-    genome_t *, uint64_t bits_number, uint8_t gene_byte_size
+    genome_t *, uint64_t bits_number, uint8_t gene_byte_size,
+    generator_mode_t
 );
 
 genome_t *allocate_genome(
@@ -39,8 +44,9 @@ void assign_pool_metadata(
 );
 void delete_pool_metadata(pool_t *pool);
 
-pool_and_genomes_t *fill_random_pool(
-    const char *address, pool_t *pool, uint64_t genome_bit_size
+pool_and_genomes_t *fill_pool(
+    const char *address, pool_t *pool, uint64_t genome_bit_size,
+    generator_mode_t
 );
 
 void destroy_pool_and_genomes(

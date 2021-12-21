@@ -36,6 +36,10 @@ extern uint8_t ERROR_LEVEL;
 #define ERR_INCOMPATIBLE_FLAGS_STR          "You have just given "             \
                                             "incompatible flags."
 
+#define ERR_WRONG_FLAG                      0xe2
+#define ERR_WRONG_FLAG_STR                  "You have just given wrong flag "  \
+                                            "or mode."
+
 
 // Gene pool file errors =======================================================
 
