@@ -1,9 +1,5 @@
 #include "rand.h"
 
-#define ENSURE_RND_SEED_IS_SET { if (!seed_initialized) set_seed(time(NULL)); }
-
-#define random64 xorshift128p
-
 struct xorshift128p_state {
     union {
         uint64_t x[2];
@@ -28,8 +24,7 @@ void set_seed(uint32_t new_seed) {
 
 }
 
-uint64_t xorshift128p()
-{
+uint64_t xorshift128p() {
     uint64_t t = rand_state.seed.x[0];
     uint64_t const s = rand_state.seed.x[1];
     rand_state.seed.x[0] = s;
