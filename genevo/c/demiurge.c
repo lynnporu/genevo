@@ -1,4 +1,4 @@
-#include "vial.h"
+#include "demiurge.h"
 
 /*
 
@@ -45,5 +45,36 @@ void fill_with_randomness(uint8_t *destination, uint32_t bytes, uint8_t bits) {
 	// partially fill one left byte
 
 	*(uint8_t *)destination = (uint8_t)next_random64() << (8 - bits);
+
+}
+
+void generate_random_genome_data(
+	genome_t *genome, uint64_t bits_number, uint8_t gene_byte_size
+) {
+
+	uint8_t bytes_number = bits_number / (gene_byte_size * 8);
+	genome->residue_size_bits = bits_number - bytes_number * 8;
+
+	fill_bytes_with_randomness(genome->genes, bytes_number);
+	fill_bits_with_randomness(genome->residue, genome->residue_size_bits);
+
+}
+
+genome_t * create_random_genome(
+	const uint8_t *metadata, uint16_t metadata_byte_size,
+	uint64_t bits_number, uint8_t gene_byte_size
+) {
+
+	genome_t *genome = malloc(sizeof(genome_t));
+
+	genome->length = bits_number / gene_byte_size;
+	genome->metadata_byte_size = metadata_byte_size;
+	genome->metadata = malloc(metadata_byte_size);
+
+	memcpy(genome->metadata, metadata, metadata_byte_size);
+
+	generate_random_genome_data(genome, bits_number, gene_byte_size);
+
+	return genome;
 
 }
