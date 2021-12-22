@@ -31,7 +31,11 @@ genome_t * allocate_genome(
     uint32_t length, uint8_t gene_bytes_size,
     uint32_t genome_bit_size
 );
-void destroy_genome(genome_t *genome, bool deallocate_data);
+genome_t ** allocate_genome_vector (
+    uint64_t size, bool allocate_data,
+    uint32_t genes_number, uint8_t gene_bytes_size,
+    uint32_t genome_bit_size
+);
 void destroy_genome(genome_t * const genome, bool deallocate_data);
 
 void assign_genome_metadata(
