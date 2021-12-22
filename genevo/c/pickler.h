@@ -27,16 +27,18 @@ little slower on little-endian platform because of byte swappings.
 // Even the empty pool file should be at least 64 bits long.
 #define POOL_FILE_MIN_SAFE_BIT_SIZE 64
 
-#define POOL_INITIAL_BYTE           (uint8_t) 0xAB
-#define POOL_META_INITIAL_BYTE      (uint8_t) 0xBC
-#define POOL_META_TERMINAL_BYTE     (uint8_t) 0xCD
-#define POOL_TERMINAL_BYTE          (uint8_t) 0xFF
+typedef uint8_t file_control_byte_t;
 
-#define GENOME_INITIAL_BYTE         (uint8_t) 0xA0
-#define GENOME_META_INITIAL_BYTE    (uint8_t) 0xDE
-#define GENOME_META_TERMINAL_BYTE   (uint8_t) 0xEF
-#define GENOME_RESIDUE_BYTE         (uint8_t) 0xA2
-#define GENOME_TERMINAL_BYTE        (uint8_t) 0xA1
+#define POOL_INITIAL_BYTE           (file_control_byte_t)0xAB
+#define POOL_META_INITIAL_BYTE      (file_control_byte_t)0xBC
+#define POOL_META_TERMINAL_BYTE     (file_control_byte_t)0xCD
+#define POOL_TERMINAL_BYTE          (file_control_byte_t)0xFF
+
+#define GENOME_INITIAL_BYTE         (file_control_byte_t)0xA0
+#define GENOME_META_INITIAL_BYTE    (file_control_byte_t)0xDE
+#define GENOME_META_TERMINAL_BYTE   (file_control_byte_t)0xEF
+#define GENOME_RESIDUE_BYTE         (file_control_byte_t)0xA2
+#define GENOME_TERMINAL_BYTE        (file_control_byte_t)0xA1
 
 /*
 
@@ -73,10 +75,10 @@ the residue can be placed after GENOME_RESIDUE_BYTE.
 */
 
 typedef struct genome_preamble_s {
-    uint8_t   initial_byte;
-    uint32_t  genes_number;
-    uint16_t  metadata_byte_size;
-    uint8_t   metadata_initial_byte;
+    file_control_byte_t initial_byte;
+    uint32_t            genes_number;
+    uint16_t            metadata_byte_size;
+    file_control_byte_t metadata_initial_byte;
 } __attribute__((packed, aligned(1))) genome_file_preamble_t;
 
 /*
@@ -112,14 +114,14 @@ POOL_TERMINAL_BYTE                    8            End byte used to verify
 */
 
 typedef struct pool_file_preamble_s {
-    uint8_t  initial_byte;
-    uint64_t organisms_number;
-    uint64_t input_neurons_number;
-    uint64_t output_neurons_number;
-    uint8_t  node_id_part_bit_size;
-    uint8_t  weight_part_bit_size;
-    uint16_t metadata_byte_size;
-    uint8_t  metadata_initial_byte;
+    file_control_byte_t initial_byte;
+    uint64_t            organisms_number;
+    uint64_t            input_neurons_number;
+    uint64_t            output_neurons_number;
+    uint8_t             node_id_part_bit_size;
+    uint8_t             weight_part_bit_size;
+    uint16_t            metadata_byte_size;
+    file_control_byte_t metadata_initial_byte;
 } __attribute__((packed, aligned(1))) pool_file_preamble_t;
 
 /*
@@ -155,11 +157,11 @@ void open_file_for_pool(const char *address, pool_t *pool, genome_t **genomes);
 void close_file_for_pool(pool_t *pool);
 
 typedef uint8_t save_pool_flags_t;
-#define POOL_COPY_DATA                (uint8_t)(1 << 0)
-#define POOL_COPY_METADATA            (uint8_t)(1 << 1)
-#define POOL_ASSIGN_GENOME_POINTERS   (uint8_t)(1 << 2)
-#define POOL_ASSIGN_METADATA_POINTERS (uint8_t)(1 << 3)
-#define POOL_REWRITE_DESCRIPTION      (uint8_t)(1 << 4)
+#define POOL_COPY_DATA                (save_pool_flags_t)(1 << 0)
+#define POOL_COPY_METADATA            (save_pool_flags_t)(1 << 1)
+#define POOL_ASSIGN_GENOME_POINTERS   (save_pool_flags_t)(1 << 2)
+#define POOL_ASSIGN_METADATA_POINTERS (save_pool_flags_t)(1 << 3)
+#define POOL_REWRITE_DESCRIPTION      (save_pool_flags_t)(1 << 4)
 
 void save_pool(pool_t *pool, genome_t **genomes, save_pool_flags_t flags);
 pool_t * read_pool(const char *address);

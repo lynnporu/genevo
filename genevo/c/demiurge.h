@@ -16,9 +16,9 @@
 
 void fill_with_randomness(uint8_t *destination, uint32_t bytes, uint8_t bits);
 
-#define GENERATE_RANDOMNESS (uint8_t)(0x1 << 0)
-#define GENERATE_ZEROS      (uint8_t)(0x1 << 1)
 typedef uint8_t generator_mode_t;
+#define GENERATE_RANDOMNESS (generator_mode_t)(0x1 << 0)
+#define GENERATE_ZEROS      (generator_mode_t)(0x1 << 1)
 
 void generate_random_genome_data(
     genome_t *, uint64_t bits_number, uint8_t gene_byte_size,

@@ -4,7 +4,7 @@
 
 uint8_t ERROR_LEVEL = 0;
 
-const char * get_err_string(const uint8_t errcode) {
+const char * get_err_string(const err_status_t errcode) {
 
 	switch (errcode) {
 		case ERR_OK:

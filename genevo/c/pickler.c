@@ -324,12 +324,6 @@ void free_genomes_ptrs(genome_t ** genomes) {
     free(genomes);
 }
 
-#define LEFT_ZERO_UINT8(_NUMBER, _OFFSET) \
-    ((uint8_t)(_NUMBER << _OFFSET) >> _OFFSET)
-    
-#define RIGHT_ZERO_UINT8(_NUMBER, _OFFSET) \
-    ((uint8_t)(_NUMBER >> _OFFSET) << _OFFSET)
-
 /*
 
 Set `number` to 0 and copy bits within given range [start, end] into number.
