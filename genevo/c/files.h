@@ -26,6 +26,7 @@ typedef struct file_map_s {
 
 typedef enum map_mode_e { OPEN_MODE_READ, OPEN_MODE_WRITE } map_mode_t;
 
+void set_file_size(int descriptor, size_t new_size);
 file_map_t * open_file(
     const char *address, map_mode_t mode, size_t trunc_to_size);
 void close_file(file_map_t *mapping);

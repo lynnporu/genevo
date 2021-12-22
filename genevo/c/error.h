@@ -61,6 +61,10 @@ extern err_status_t ERROR_LEVEL;
 #define ERR_FILE_CANNOT_WRITE_STR           "Cannot stretch the file - write " \
                                             "error."
 
+#define ERR_FILE_CANNOT_STRETCH_READ        (err_status_t)0x06
+#define ERR_FILE_CANNOT_STRETCH_READ_STR    "Cannot set size of the file in "  \
+                                            "read mode."
+
 // Gene pool file errors =======================================================
 
 #define ERR_POOL_CORRUPT_TOO_SMALL          (err_status_t)0x11
