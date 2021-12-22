@@ -221,13 +221,9 @@ void fill_pool(
 ) {
 
 	open_file_for_pool(
-		address,
-		population->pool,
-		population->genomes);
+		address, population->pool, population->genomes);
 	save_pool(
-		population->pool,
-		population->genomes,
-		POOL_ASSIGN_GENOME_POINTERS);
+		population->pool, population->genomes, POOL_ASSIGN_GENOME_POINTERS);
 
 	// fill each genome with values
 	for(
@@ -236,10 +232,8 @@ void fill_pool(
 		genome_itr++
 	) {
 		generate_genome_data(
-			population->genomes[genome_itr],
-			genome_bit_size,
-			population->pool->gene_bytes_size,
-			generator_mode);
+			population->genomes[genome_itr], genome_bit_size,
+			population->pool->gene_bytes_size, generator_mode);
 	}
 
 }
