@@ -109,7 +109,7 @@ genome_t * allocate_genome(
 
 }
 
-genome_t ** allocate_genome_vector (
+genome_t ** allocate_genome_vector(
 	uint64_t size, bool allocate_data,
 	uint32_t genes_number, uint8_t gene_bytes_size,
 	uint32_t genome_bit_size
@@ -124,6 +124,17 @@ genome_t ** allocate_genome_vector (
 
 	return genomes;
 
+}
+
+void destroy_genomes_vector(
+	uint64_t size, bool deallocate_data, bool destroy_each_genome,
+	genome_t ** const genomes
+) {
+	if (destroy_each_genome)
+		for (uint64_t genome_itr = 0; genome_itr < size; genome_itr++)
+			destroy_genome(genomes[genome_itr], deallocate_data);
+
+	free(genomes);
 }
 
 void destroy_genome(genome_t * const genome, bool deallocate_data) {
@@ -279,19 +290,14 @@ deallocate_genomes_data will be passed into destroy_genome.
 void destroy_population(
 	population_t * const population,
 	bool destroy_genomes, bool deallocate_genomes_data,
+	bool close_pool_file
 ) {
 
-	if (destroy_genomes)
-		for (
-			uint64_t genome_itr = 0;
-			genome_itr < pool_and_genomes->pool->organisms_number;
-			genome_itr++
-		)
-			destroy_genome(
-				pool_and_genomes->genomes[genome_itr],
-				deallocate_genomes_data);
-
-	free(pool_and_genomes->genomes);
-	free(pool_and_genomes);
+	destroy_genomes_vector(
+		population->pool->organisms_number,
+		deallocate_genomes_data, destroy_genomes,
+		population->genomes);
+	destroy_pool(population->pool, close_pool_file);
+	free(population);
 
 }

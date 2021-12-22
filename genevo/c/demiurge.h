@@ -36,6 +36,10 @@ genome_t ** allocate_genome_vector (
     uint32_t genes_number, uint8_t gene_bytes_size,
     uint32_t genome_bit_size
 );
+void destroy_genomes_vector(
+    uint64_t size, bool deallocate_data, bool destroy_each_genome,
+    genome_t ** const genomes
+);
 void destroy_genome(genome_t * const genome, bool deallocate_data);
 
 void assign_genome_metadata(
@@ -67,5 +71,6 @@ population_t * create_pool_in_file(
 
 void destroy_population(
     population_t * const population,
-    bool destroy_genomes, bool deallocate_genomes_data
+    bool destroy_genomes, bool deallocate_genomes_data,
+    bool close_pool_file
 );
