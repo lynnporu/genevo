@@ -19,9 +19,9 @@ TODO: add Windows support.
 #include "error.h"
 
 typedef struct file_map_s {
-    int    descriptor;
-    size_t size;
-    void  *data;
+    int     descriptor;
+    size_t  size;
+    void   *data;
 } file_map_t;
 
 typedef enum map_mode_e {
@@ -32,4 +32,4 @@ typedef enum map_mode_e {
 void set_file_size(int descriptor, size_t new_size);
 file_map_t * open_file(
     const char *address, map_mode_t mode, size_t trunc_to_size);
-void close_file(file_map_t *mapping);
+void close_file(file_map_t * const mapping);

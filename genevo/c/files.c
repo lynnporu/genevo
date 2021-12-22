@@ -60,7 +60,7 @@ file_map_t * open_file(const char *address, map_mode_t mode, size_t trunc_to_siz
 
     }
 
-    void *data = mode == OPEN_MODE_READ
+    void * const data = mode == OPEN_MODE_READ
         ? mmap(
             NULL, file_size,
             PROT_READ,
@@ -77,7 +77,7 @@ file_map_t * open_file(const char *address, map_mode_t mode, size_t trunc_to_siz
     if (data == MAP_FAILED)
         CLOSE_AND_RETURN_WITH_STATUS(ERR_FILE_CANNOT_MMAP);
 
-    file_map_t *mapping = malloc(sizeof(file_map_t));
+    file_map_t * const mapping = malloc(sizeof(file_map_t));
     if (mapping == NULL) {
         munmap(data, file_size);
         CLOSE_AND_RETURN_WITH_STATUS(ERR_CANNOT_MALLOC);
@@ -94,7 +94,7 @@ file_map_t * open_file(const char *address, map_mode_t mode, size_t trunc_to_siz
 
 }
 
-void close_file(file_map_t *mapping) {
+void close_file(file_map_t * const mapping) {
 
     munmap(mapping->data, mapping->size);
     close(mapping->descriptor);

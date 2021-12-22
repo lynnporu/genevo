@@ -139,22 +139,23 @@ order which is big-endian.
 #define ntoh64(x) ((((uint64_t)ntohl(x)) << 32) + ntohl((x) >> 32))
 
 void copy_bitslots_to_uint64(
-    uint8_t *slots, uint64_t *number,
+    const uint8_t *slots, uint64_t * const number,
     uint8_t start, uint8_t end);
 
 void copy_uint64_to_bitslots(
-    uint64_t *number, uint8_t *slots,
+    const uint64_t *number, uint8_t * const slots,
     uint8_t start, uint8_t number_size
 );
 
-uint8_t * point_gene_in_genome_by_index(genome_t *, uint32_t index, pool_t *);
-uint8_t * point_gene_by_index(uint8_t *genes, uint32_t index, pool_t *pool);
-gene_t * get_gene_in_genome_by_index(genome_t *, uint32_t, pool_t *);
-gene_t * get_gene_by_index(uint8_t *genes, uint32_t index, pool_t *);
-gene_t * get_gene_by_pointer(uint8_t *gene_start_byte, pool_t *);
+uint8_t * point_gene_in_genome_by_index(genome_t * const, uint32_t index, pool_t *);
+uint8_t * point_gene_by_index(uint8_t * const genes, uint32_t index, pool_t * const pool);
+gene_t * get_gene_in_genome_by_index(genome_t * const, uint32_t, pool_t * const);
+gene_t * get_gene_by_index(uint8_t * const genes, uint32_t index, pool_t * const);
+gene_t * get_gene_by_pointer(uint8_t * const gene_start_byte, pool_t * const);
 
-void open_file_for_pool(const char *address, pool_t *pool, genome_t **genomes);
-void close_file_for_pool(pool_t *pool);
+void open_file_for_pool(
+    const char *address, pool_t * const pool, genome_t ** const genomes);
+void close_file_for_pool(pool_t * const pool);
 
 typedef uint8_t save_pool_flag_t;
 #define POOL_COPY_DATA                (save_pool_flag_t)(1 << 0)
@@ -163,17 +164,17 @@ typedef uint8_t save_pool_flag_t;
 #define POOL_ASSIGN_METADATA_POINTERS (save_pool_flag_t)(1 << 3)
 #define POOL_REWRITE_DESCRIPTION      (save_pool_flag_t)(1 << 4)
 
-void save_pool(pool_t *pool, genome_t **genomes, save_pool_flag_t flags);
+void save_pool(pool_t * const, genome_t ** const, save_pool_flag_t flags);
 pool_t * read_pool(const char *address);
-void write_pool(const char *address, pool_t *pool, genome_t **genomes);
+void write_pool(const char *address, pool_t * const, genome_t ** const);
 
-void close_pool(pool_t *pool);
+void close_pool(pool_t * const);
 
 gene_byte_t * genes_to_byte_array(gene_t **, pool_t *, uint64_t length);
-void free_genes_byte_array(gene_byte_t *array);
+void free_genes_byte_array(gene_byte_t * const);
 
-genome_t * read_next_genome(pool_t *pool);
-void reset_genome_cursor(pool_t *pool);
+genome_t * read_next_genome(pool_t * const);
+void reset_genome_cursor(pool_t * const);
 
-genome_t ** read_genomes(pool_t *pool);
-void free_genomes_ptrs(genome_t ** genomes);
+genome_t ** read_genomes(pool_t * const);
+void free_genomes_ptrs(genome_t ** const);

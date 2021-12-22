@@ -99,11 +99,13 @@ void open_file_for_pool(const char *address, pool_t *pool, genome_t **genomes) {
 
 }
 
-void close_file_for_pool(pool_t *pool) {
+void close_file_for_pool(pool_t * const pool) {
     close_file(pool->file_mapping);
 }
 
-void save_pool(pool_t *pool, genome_t **genomes, save_pool_flag_t flags) {
+void save_pool(
+    pool_t * const pool, genome_t ** const genomes, save_pool_flag_t flags
+) {
 
     ERROR_LEVEL = ERR_OK;
 
@@ -214,7 +216,9 @@ void save_pool(pool_t *pool, genome_t **genomes, save_pool_flag_t flags) {
 
 }
 
-void write_pool(const char *address, pool_t *pool, genome_t **genomes) {
+void write_pool(
+    const char *address, pool_t * const pool, genome_t ** const genomes
+) {
 
     open_file_for_pool(address, pool, genomes);
     save_pool(
@@ -224,18 +228,18 @@ void write_pool(const char *address, pool_t *pool, genome_t **genomes) {
 
 }
 
-void close_pool(pool_t *pool) {
+void close_pool(pool_t * const pool) {
     if (pool->file_mapping != NULL)
         close_file_for_pool(pool);
     free(pool);
 }
 
-void reset_genome_cursor(pool_t *pool) {
+void reset_genome_cursor(pool_t * const pool) {
     pool->cursor = pool->first_genome_start_position;
 }
 
 
-genome_t * read_next_genome(pool_t *pool) {
+genome_t * read_next_genome(pool_t * const pool) {
 
     ERROR_LEVEL = 0;
 
@@ -303,7 +307,7 @@ genome_t * read_next_genome(pool_t *pool) {
 
 }
 
-genome_t ** read_genomes(pool_t *pool) {
+genome_t ** read_genomes(pool_t * const pool) {
 
     genome_t ** genomes = malloc(sizeof(genome_t) * pool->organisms_number);
 
@@ -320,7 +324,7 @@ genome_t ** read_genomes(pool_t *pool) {
 Destroys array of pointers to genomes.
 
 */
-void free_genomes_ptrs(genome_t ** genomes) {
+void free_genomes_ptrs(genome_t ** const genomes) {
     free(genomes);
 }
 
@@ -334,7 +338,7 @@ number == 0b00000000...0000000010101111, sizeof(number) == 64
 
 */
 void copy_bitslots_to_uint64(
-    uint8_t *slots, uint64_t *number, uint8_t start, uint8_t end
+    const uint8_t *slots, uint64_t * const number, uint8_t start, uint8_t end
 ) {
 
     uint8_t byte_offset = start / 8,
@@ -354,7 +358,7 @@ Does the opposite to copy_bitslots_to_uint64.
 
 */
 void copy_uint64_to_bitslots(
-    uint64_t *number, uint8_t *slots, uint8_t start, uint8_t number_size
+    const uint64_t *number, uint8_t * const slots, uint8_t start, uint8_t number_size
 ) {
 
     uint8_t byte_offset = start / 8,
@@ -370,13 +374,13 @@ void copy_uint64_to_bitslots(
     ((_BIT_SIZE) == 64 ? 0xffffffffffff : (1 << (_BIT_SIZE)) - 1)
 
 uint8_t * point_gene_in_genome_by_index(
-    genome_t *genome, uint32_t index, pool_t *pool
+    genome_t * const genome, uint32_t index, pool_t * const pool
 ) {
     return genome->genes + (pool->gene_bytes_size * index);
 }
 
 uint8_t * point_gene_by_index(
-    uint8_t *genes, uint32_t index, pool_t *pool
+    uint8_t * const genes, uint32_t index, pool_t * const pool
 ) {
     return genes + (pool->gene_bytes_size * index);
 }
@@ -418,7 +422,7 @@ and output ranges. New ID to `_ID` and type to `_CONNECTION_TYPE_VAR`.
 }
 
 
-gene_t * get_gene_by_pointer(uint8_t *gene_start_byte, pool_t *pool) {
+gene_t * get_gene_by_pointer(uint8_t * const gene_start_byte, pool_t * const pool) {
 
     gene_t *gene = malloc(sizeof(gene_t));
 
@@ -469,7 +473,7 @@ gene_t * get_gene_by_pointer(uint8_t *gene_start_byte, pool_t *pool) {
 }
 
 gene_t * get_gene_in_genome_by_index(
-    genome_t *genome, uint32_t index, pool_t *pool
+    genome_t * const genome, uint32_t index, pool_t * const pool
 ) {
 
     #ifndef SKIP_CHECK_BOUNDS
@@ -486,7 +490,7 @@ gene_t * get_gene_in_genome_by_index(
 
 }
 
-gene_t * get_gene_by_index(uint8_t *genes, uint32_t index, pool_t *pool) {
+gene_t * get_gene_by_index(uint8_t * const genes, uint32_t index, pool_t * const pool) {
 
     return get_gene_by_pointer(
         point_gene_by_index(genes, index, pool),
@@ -496,7 +500,7 @@ gene_t * get_gene_by_index(uint8_t *genes, uint32_t index, pool_t *pool) {
 }
 
 gene_byte_t * genes_to_byte_array(
-    gene_t **genes, pool_t *pool, uint64_t length
+    gene_t ** const genes, pool_t * const pool, uint64_t length
 ) {
 
     #define GENES_ARRAY_SIZE \
@@ -557,7 +561,7 @@ gene_byte_t * genes_to_byte_array(
 
 }
 
-void free_genes_byte_array(gene_byte_t *array) {
+void free_genes_byte_array(gene_byte_t * const array) {
 
     free(array);
 
