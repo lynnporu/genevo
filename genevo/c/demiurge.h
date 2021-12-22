@@ -22,44 +22,46 @@ typedef enum generator_mode_e {
 } generator_mode_t;
 
 void generate_random_genome_data(
-    genome_t *, uint64_t bits_number, uint8_t gene_byte_size,
+    genome_t * const, uint64_t bits_number, uint8_t gene_byte_size,
     generator_mode_t
 );
 
-genome_t * const allocate_genome(
+genome_t * allocate_genome(
     bool allocate_data,
     uint32_t length, uint8_t gene_bytes_size,
     uint32_t genome_bit_size
 );
 void destroy_genome(genome_t *genome, bool deallocate_data);
+void destroy_genome(genome_t * const genome, bool deallocate_data);
 
 void assign_genome_metadata(
-    genome_t *, uint16_t metadata_byte_size, const char *metadata
+    genome_t * const, uint16_t metadata_byte_size, const char *metadata
 );
-void delete_genome_metadata(genome_t *genome);
+void delete_genome_metadata(genome_t * const genome);
 
-pool_t *allocate_pool();
-void destroy_pool(pool_t *pool, bool close_file);
+pool_t * allocate_pool();
+void destroy_pool(pool_t * const pool, bool close_file);
 
 void assign_pool_metadata(
-    pool_t *pool, uint16_t metadata_byte_size, const char* metadata
+    pool_t * const pool, uint16_t metadata_byte_size, const char* metadata
 );
-void delete_pool_metadata(pool_t *pool);
+void delete_pool_metadata(pool_t * const pool);
 
-pool_and_genomes_t *fill_pool(
-    const char *address, pool_t *pool, uint64_t genome_bit_size,
+void fill_pool(
+    const char *address, pool_and_genomes_t * const,
+    uint64_t genome_bit_size,
     generator_mode_t
 );
 
-pool_and_genomes_t * const create_pool_in_file(
+pool_and_genomes_t * create_pool_in_file(
     uint64_t organisms_number,
     uint8_t node_id_bit_size, uint8_t weight_bit_size,
     uint64_t input_neurons_number, uint64_t output_neurons_number,
     uint64_t genome_bit_size,
-    generator_mode_t generator_mode
+    generator_mode_t
 );
 
 void destroy_pool_and_genomes(
-    pool_and_genomes_t *pool_and_genomes,
+    pool_and_genomes_t * const pool_and_genomes,
     bool destroy_genomes, bool deallocate_genomes_data
 );

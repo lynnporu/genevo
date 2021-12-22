@@ -49,7 +49,7 @@ void fill_with_randomness(uint8_t *destination, uint32_t bytes, uint8_t bits) {
 }
 
 void generate_genome_data(
-	genome_t *genome, uint64_t bits_number, uint8_t gene_byte_size,
+	genome_t * const genome, uint64_t bits_number, uint8_t gene_byte_size,
 	generator_mode_t generator_mode
 ) {
 
@@ -85,7 +85,7 @@ genome_t *allocate_genome(
 	uint64_t genes_bytes_size, uint16_t residue_size_bits
 ) {
 
-	genome_t *genome = malloc(sizeof(genome_t));
+	genome_t * const genome = malloc(sizeof(genome_t));
 
 	if (allocate_data) {
 		genome->genes = malloc(genes_bytes_size);
@@ -133,7 +133,8 @@ genome_t ** const allocate_genome_vector (
 }
 
 void assign_genome_metadata(
-	genome_t *genome, uint16_t metadata_byte_size, const char *metadata
+	genome_t * const genome, uint16_t metadata_byte_size,
+	const char *metadata
 ) {
 
 	delete_genome_metadata(genome);
@@ -142,15 +143,15 @@ void assign_genome_metadata(
 
 }
 
-void delete_genome_metadata(genome_t *genome) {
+void delete_genome_metadata(genome_t * const genome) {
 
 	if (genome->metadata != NULL) free(genome->metadata);
 
 }
 
-pool_t *allocate_pool() {
+pool_t * allocate_pool() {
 
-	pool_t *pool = malloc(sizeof(pool_t));
+	pool_t * const pool = malloc(sizeof(pool_t));
 
 	pool->metadata = NULL;
 	pool->metadata_byte_size = 0;
@@ -159,7 +160,7 @@ pool_t *allocate_pool() {
 
 }
 
-void destroy_pool(pool_t *pool, bool close_file) {
+void destroy_pool(pool_t * const pool, bool close_file) {
 
 	if (close_file) close_file_for_pool(pool);
 	delete_pool_metadata(pool);
@@ -169,7 +170,8 @@ void destroy_pool(pool_t *pool, bool close_file) {
 }
 
 void assign_pool_metadata(
-	pool_t *pool, uint16_t metadata_byte_size, const char* metadata
+	pool_t * const pool, uint16_t metadata_byte_size,
+	const char *metadata
 ) {
 
 	delete_pool_metadata(pool);
@@ -178,7 +180,7 @@ void assign_pool_metadata(
 
 }
 
-void delete_pool_metadata(pool_t *pool) {
+void delete_pool_metadata(pool_t * const pool) {
 
 	if (pool->metadata != NULL) free(pool->metadata);
 
@@ -194,8 +196,7 @@ pool_t must be set:
 
 */
 void fill_pool(
-	const char *address,
-	pool_and_genomes_t *pool_and_genomes,
+	const char *address, pool_and_genomes_t * const pool_and_genomes,
 	uint64_t genome_bit_size,
 	generator_mode_t generator_mode
 ) {
@@ -250,7 +251,7 @@ pool_and_genomes_t * const create_pool_in_file(
 		genes_number, pool->gene_bytes_size, genome_bit_size
 	);
 
-	pool_and_genomes_t *pool_and_genomes = malloc(sizeof(pool_and_genomes_t));
+	pool_and_genomes_t * const pool_and_genomes = malloc(sizeof(pool_and_genomes_t));
 
 	pool_and_genomes->pool = pool;
 	pool_and_genomes->genomes = genomes;
@@ -270,7 +271,7 @@ deallocate_genomes_data will be passed into destroy_genome.
 
 */
 void destroy_pool_and_genomes(
-	pool_and_genomes_t *pool_and_genomes,
+	pool_and_genomes_t * const pool_and_genomes,
 	bool destroy_genomes, bool deallocate_genomes_data
 ) {
 
