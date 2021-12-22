@@ -52,12 +52,12 @@ void assign_pool_metadata(
 void delete_pool_metadata(pool_t * const pool);
 
 void fill_pool(
-    const char *address, pool_and_genomes_t * const,
+    const char *address, population_t * const,
     uint64_t genome_bit_size,
     generator_mode_t
 );
 
-pool_and_genomes_t * create_pool_in_file(
+population_t * create_pool_in_file(
     uint64_t organisms_number,
     uint8_t node_id_bit_size, uint8_t weight_bit_size,
     uint64_t input_neurons_number, uint64_t output_neurons_number,
@@ -65,7 +65,7 @@ pool_and_genomes_t * create_pool_in_file(
     generator_mode_t
 );
 
-void destroy_pool_and_genomes(
-    pool_and_genomes_t * const pool_and_genomes,
+void destroy_population(
+    population_t * const population,
     bool destroy_genomes, bool deallocate_genomes_data
 );
