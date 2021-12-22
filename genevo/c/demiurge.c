@@ -203,36 +203,36 @@ pool_t must be set:
 
 */
 void fill_pool(
-	const char *address, pool_and_genomes_t * const pool_and_genomes,
+	const char *address, population_t * const population,
 	uint64_t genome_bit_size,
 	generator_mode_t generator_mode
 ) {
 
 	open_file_for_pool(
 		address,
-		pool_and_genomes->pool,
-		pool_and_genomes->genomes);
+		population->pool,
+		population->genomes);
 	save_pool(
-		pool_and_genomes->pool,
-		pool_and_genomes->genomes,
+		population->pool,
+		population->genomes,
 		POOL_ASSIGN_GENOME_POINTERS);
 
 	// fill each genome with values
 	for(
 		uint64_t genome_itr = 0;
-		genome_itr < pool_and_genomes->pool->organisms_number;
+		genome_itr < population->pool->organisms_number;
 		genome_itr++
 	) {
 		generate_genome_data(
-			pool_and_genomes->genomes[genome_itr],
+			population->genomes[genome_itr],
 			genome_bit_size,
-			pool_and_genomes->pool->gene_bytes_size,
+			population->pool->gene_bytes_size,
 			generator_mode);
 	}
 
 }
 
-pool_and_genomes_t * create_pool_in_file(
+population_t * create_pool_in_file(
 	uint64_t organisms_number,
 	uint8_t node_id_bit_size, uint8_t weight_bit_size,
 	uint64_t input_neurons_number, uint64_t output_neurons_number,
@@ -257,28 +257,28 @@ pool_and_genomes_t * create_pool_in_file(
 		genes_number, pool->gene_bytes_size, genome_bit_size
 	);
 
-	pool_and_genomes_t * const pool_and_genomes = malloc(sizeof(pool_and_genomes_t));
+	population_t * const population = malloc(sizeof(population_t));
 
-	pool_and_genomes->pool = pool;
-	pool_and_genomes->genomes = genomes;
+	population->pool = pool;
+	population->genomes = genomes;
 
 	// TODO: come up with a name
-	fill_pool("????", pool_and_genomes, genome_bit_size, generator_mode);
+	fill_pool("????", population, genome_bit_size, generator_mode);
 
-	return pool_and_genomes;
+	return population;
 
 }
 
 /*
 
-Destroy pool_and_genomes_t struct and its member `genomes`.
+Destroy population_t struct and its member `genomes`.
 If destroy_genomes is true, then destroy_genome will be called on every genome.
 deallocate_genomes_data will be passed into destroy_genome.
 
 */
-void destroy_pool_and_genomes(
-	pool_and_genomes_t * const pool_and_genomes,
-	bool destroy_genomes, bool deallocate_genomes_data
+void destroy_population(
+	population_t * const population,
+	bool destroy_genomes, bool deallocate_genomes_data,
 ) {
 
 	if (destroy_genomes)
