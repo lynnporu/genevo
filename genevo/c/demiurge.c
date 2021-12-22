@@ -29,6 +29,7 @@ void fill_with_randomness(uint8_t *destination, uint32_t bytes, uint8_t bits) {
 			*(_TYPE *)destination = next_random64();                           \
 			destination += _SIZE;                                              \
 			left_bytes -= _SIZE;                                               \
+			continue;                                                          \
 		}
 
 	for (uint8_t left_bytes = bytes; left_bytes > 0; ) {
