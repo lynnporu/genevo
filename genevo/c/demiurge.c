@@ -104,7 +104,22 @@ genome_t *allocate_genome(
 
 }
 
-void destroy_genome(genome_t *genome, bool deallocate_data) {
+genome_t ** const allocate_genome_vector (
+	uint64_t size, bool allocate_data,
+	uint32_t genes_number, uint8_t gene_bytes_size,
+	uint32_t genome_bit_size
+) {
+
+	// allocate each genome and genomes vector
+	genome_t ** const genomes = malloc(sizeof(genome_t *) * size);
+
+	for(uint64_t genome_itr = 0; genome_itr < size; genome_itr++)
+		genomes[genome_itr] = allocate_genome(
+			allocate_data, genes_number, gene_bytes_size, genome_bit_size);
+
+	return genomes;
+
+}
 
 	if (deallocate_data) {
 		if (genome->genes != NULL) free(genome->genes);
@@ -178,47 +193,70 @@ pool_t must be set:
 	* weight_part_bit_size
 
 */
-pool_and_genomes_t *fill_pool(
-	const char *address, pool_t *pool, uint64_t genome_bit_size,
+void fill_pool(
+	const char *address,
+	pool_and_genomes_t *pool_and_genomes,
+	uint64_t genome_bit_size,
 	generator_mode_t generator_mode
 ) {
 
-	pool->gene_bytes_size =
-		pool->node_id_part_bit_size * 2 + pool->weight_part_bit_size;
-
-	uint32_t genome_length = genome_bit_size / pool->gene_bytes_size,
-		     genome_residue_size = genome_bit_size % pool->gene_bytes_size;
-
-	// allocate each genome and genomes vector
-	genome_t **genomes = malloc(sizeof(genome_t *) * pool->organisms_number);
-	for(
-		uint64_t genome_itr = 0;
-		genome_itr < pool->organisms_number;
-		genome_itr++
-	) {
-		genomes[genome_itr] = allocate_genome(false, 0, 0);
-		genomes[genome_itr]->length = genome_length;
-		genomes[genome_itr]->residue_size_bits = genome_residue_size;
-	}
-
-	open_file_for_pool(address, pool, genomes);
-	save_pool(pool, genomes, POOL_ASSIGN_GENOME_POINTERS);
+	open_file_for_pool(
+		address,
+		pool_and_genomes->pool,
+		pool_and_genomes->genomes);
+	save_pool(
+		pool_and_genomes->pool,
+		pool_and_genomes->genomes,
+		POOL_ASSIGN_GENOME_POINTERS);
 
 	// fill each genome with values
 	for(
 		uint64_t genome_itr = 0;
-		genome_itr < pool->organisms_number;
+		genome_itr < pool_and_genomes->pool->organisms_number;
 		genome_itr++
 	) {
 		generate_genome_data(
-			genomes[genome_itr], genome_bit_size, pool->gene_bytes_size,
+			pool_and_genomes->genomes[genome_itr],
+			genome_bit_size,
+			pool_and_genomes->pool->gene_bytes_size,
 			generator_mode);
 	}
+
+}
+
+pool_and_genomes_t * const create_pool_in_file(
+	uint64_t organisms_number,
+	uint8_t node_id_bit_size, uint8_t weight_bit_size,
+	uint64_t input_neurons_number, uint64_t output_neurons_number,
+	uint64_t genome_bit_size,
+	generator_mode_t generator_mode
+) {
+
+	pool_t * const pool = allocate_pool();
+
+	pool->organisms_number = organisms_number;
+	pool->input_neurons_number = input_neurons_number;
+	pool->output_neurons_number = output_neurons_number;
+	pool->node_id_part_bit_size = node_id_bit_size;
+	pool->weight_part_bit_size = weight_bit_size;
+	pool->gene_bytes_size =
+		pool->node_id_part_bit_size * 2 + pool->weight_part_bit_size;
+
+	uint32_t genes_number = genome_bit_size / pool->gene_bytes_size,
+		     genome_residue_size = genome_bit_size % pool->gene_bytes_size;
+
+	genome_t ** const genomes = allocate_genome_vector(
+		organisms_number, false /* allocate data */,
+		genes_number, pool->gene_bytes_size, genome_bit_size
+	);
 
 	pool_and_genomes_t *pool_and_genomes = malloc(sizeof(pool_and_genomes_t));
 
 	pool_and_genomes->pool = pool;
 	pool_and_genomes->genomes = genomes;
+
+	// TODO: come up with a name
+	fill_pool("????", pool, genome_bit_size, generator_mode);
 
 	return pool_and_genomes;
 

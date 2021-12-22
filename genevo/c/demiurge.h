@@ -26,9 +26,10 @@ void generate_random_genome_data(
     generator_mode_t
 );
 
-genome_t *allocate_genome(
+genome_t * const allocate_genome(
     bool allocate_data,
-    uint64_t genes_bytes_size, uint16_t residue_size_bits
+    uint32_t length, uint8_t gene_bytes_size,
+    uint32_t genome_bit_size
 );
 void destroy_genome(genome_t *genome, bool deallocate_data);
 
@@ -48,6 +49,14 @@ void delete_pool_metadata(pool_t *pool);
 pool_and_genomes_t *fill_pool(
     const char *address, pool_t *pool, uint64_t genome_bit_size,
     generator_mode_t
+);
+
+pool_and_genomes_t * const create_pool_in_file(
+    uint64_t organisms_number,
+    uint8_t node_id_bit_size, uint8_t weight_bit_size,
+    uint64_t input_neurons_number, uint64_t output_neurons_number,
+    uint64_t genome_bit_size,
+    generator_mode_t generator_mode
 );
 
 void destroy_pool_and_genomes(
