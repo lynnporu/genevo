@@ -169,7 +169,7 @@ void write_pool(const char *address, pool_t *pool, genome_t **genomes);
 
 void close_pool(pool_t *pool);
 
-gene_byte_t * generate_genes_byte_array(gene_t **, pool_t *, uint64_t length);
+gene_byte_t * genes_to_byte_array(gene_t **, pool_t *, uint64_t length);
 void free_genes_byte_array(gene_byte_t *array);
 
 genome_t * read_next_genome(pool_t *pool);

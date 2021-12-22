@@ -495,7 +495,7 @@ gene_t * get_gene_by_index(uint8_t *genes, uint32_t index, pool_t *pool) {
 
 }
 
-gene_byte_t * generate_genes_byte_array(
+gene_byte_t * genes_to_byte_array(
     gene_t **genes, pool_t *pool, uint64_t length
 ) {
 
