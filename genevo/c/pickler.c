@@ -103,7 +103,7 @@ void close_file_for_pool(pool_t *pool) {
     close_file(pool->file_mapping);
 }
 
-void save_pool(pool_t *pool, genome_t **genomes, save_pool_flags_t flags) {
+void save_pool(pool_t *pool, genome_t **genomes, save_pool_flag_t flags) {
 
     ERROR_LEVEL = ERR_OK;
 

@@ -156,14 +156,14 @@ gene_t * get_gene_by_pointer(uint8_t *gene_start_byte, pool_t *);
 void open_file_for_pool(const char *address, pool_t *pool, genome_t **genomes);
 void close_file_for_pool(pool_t *pool);
 
-typedef uint8_t save_pool_flags_t;
-#define POOL_COPY_DATA                (save_pool_flags_t)(1 << 0)
-#define POOL_COPY_METADATA            (save_pool_flags_t)(1 << 1)
-#define POOL_ASSIGN_GENOME_POINTERS   (save_pool_flags_t)(1 << 2)
-#define POOL_ASSIGN_METADATA_POINTERS (save_pool_flags_t)(1 << 3)
-#define POOL_REWRITE_DESCRIPTION      (save_pool_flags_t)(1 << 4)
+typedef uint8_t save_pool_flag_t;
+#define POOL_COPY_DATA                (save_pool_flag_t)(1 << 0)
+#define POOL_COPY_METADATA            (save_pool_flag_t)(1 << 1)
+#define POOL_ASSIGN_GENOME_POINTERS   (save_pool_flag_t)(1 << 2)
+#define POOL_ASSIGN_METADATA_POINTERS (save_pool_flag_t)(1 << 3)
+#define POOL_REWRITE_DESCRIPTION      (save_pool_flag_t)(1 << 4)
 
-void save_pool(pool_t *pool, genome_t **genomes, save_pool_flags_t flags);
+void save_pool(pool_t *pool, genome_t **genomes, save_pool_flag_t flags);
 pool_t * read_pool(const char *address);
 void write_pool(const char *address, pool_t *pool, genome_t **genomes);
 
