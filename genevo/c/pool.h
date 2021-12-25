@@ -57,6 +57,13 @@ This number can be increased with maximizing the number of bits.
 typedef uint8_t gene_byte_t;
 #define GENE_BYTE_SIZE sizeof(gene_byte_t)
 
+/* @declaration struct gene
+*  @member uint64 outcome_node_id
+*  @member uint64 income_node_id
+*  @member gene_connection_flag connection_type
+*  @member int64 weight_unnormalized
+*  @member double weight
+*/
 typedef struct gene_s {
     uint64_t               outcome_node_id;
     uint64_t               income_node_id;
@@ -65,6 +72,13 @@ typedef struct gene_s {
     double                 weight;           // weight is normalized to [-1; 1]
 } gene_t;
 
+/* @declaration struct genome
+*  @member uint32 length
+*  @member uint8* metadata
+*  @member uint8* genes
+*  @member uint16 residue_size_bits
+*  @member uint8* residue
+*/
 typedef struct genome_s {
     uint32_t      length;
     uint8_t      *metadata;
@@ -74,6 +88,19 @@ typedef struct genome_s {
     uint8_t      *residue;
 } genome_t;
 
+/* @declaration struct pool
+*  @member uint64 organisms_number
+*  @member uint64 input_neurons_number
+*  @member uint64 output_neurons_number
+*  @member uint16 metadata_byte_size
+*  @member uint8* metadata
+*  @member uint8 node_id_part_bit_size
+*  @member uint8 weight_part_bit_size
+*  @member uint8 gene_bytes_size
+*  @member file_map file_mapping
+*  @member uint8* first_genome_start_position
+*  @member uint8* cursor
+*/
 typedef struct pool_s {
     uint64_t    organisms_number;
     uint64_t    input_neurons_number;
@@ -89,6 +116,10 @@ typedef struct pool_s {
     void       *cursor;
 } pool_t;
 
+/* @declaration struct population
+*  @member pool* pool
+*  @member genome** genome
+*/
 typedef struct population_s {
     pool_t     *pool;
     genome_t  **genomes;

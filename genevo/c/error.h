@@ -13,8 +13,15 @@ across the library.
 
 typedef uint8_t err_status_t;
 
+/* @declaration function get_err_string
+*  @return char*
+*  @argument uint8
+*/
 const char * get_err_string(const err_status_t errcode);
 
+/* @declaration variable ERROR_LEVEL
+*  @type uint8
+*/
 extern err_status_t ERROR_LEVEL;
 
 
