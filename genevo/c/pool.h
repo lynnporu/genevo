@@ -57,7 +57,7 @@ This number can be increased with maximizing the number of bits.
 typedef uint8_t gene_byte_t;
 #define GENE_BYTE_SIZE sizeof(gene_byte_t)
 
-/* @declaration struct gene
+/* @struct gene
 *  @member uint64 outcome_node_id
 *  @member uint64 income_node_id
 *  @member gene_connection_flag connection_type
@@ -72,7 +72,7 @@ typedef struct gene_s {
     double                 weight;           // weight is normalized to [-1; 1]
 } gene_t;
 
-/* @declaration struct genome
+/* @struct genome
 *  @member uint32 length
 *  @member uint8* metadata
 *  @member uint8* genes
@@ -88,7 +88,7 @@ typedef struct genome_s {
     uint8_t      *residue;
 } genome_t;
 
-/* @declaration struct pool
+/* @struct pool
 *  @member uint64 organisms_number
 *  @member uint64 input_neurons_number
 *  @member uint64 output_neurons_number
@@ -116,7 +116,7 @@ typedef struct pool_s {
     void       *cursor;
 } pool_t;
 
-/* @declaration struct population
+/* @struct population
 *  @member pool* pool
 *  @member genome** genome
 */

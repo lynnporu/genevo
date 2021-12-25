@@ -147,7 +147,7 @@ void copy_uint64_to_bitslots(
     uint8_t start, uint8_t number_size
 );
 
-/* @declaration function point_gene_in_genome_by_index
+/* @function point_gene_in_genome_by_index
 *  @return uint8*
 *  @argument genome*
 *  @argument uint32
@@ -155,7 +155,7 @@ void copy_uint64_to_bitslots(
 */
 uint8_t * point_gene_in_genome_by_index(genome_t * const, uint32_t index, pool_t *);
 
-/* @declaration function point_gene_by_index
+/* @function point_gene_by_index
 *  @return uint8*
 *  @argument uint8*
 *  @argument uint32
@@ -163,7 +163,7 @@ uint8_t * point_gene_in_genome_by_index(genome_t * const, uint32_t index, pool_t
 */
 uint8_t * point_gene_by_index(uint8_t * const genes, uint32_t index, pool_t * const pool);
 
-/* @declaration function get_gene_in_genome_by_index
+/* @function get_gene_in_genome_by_index
 *  @return gene*
 *  @argument genome*
 *  @argument uint32
@@ -171,7 +171,7 @@ uint8_t * point_gene_by_index(uint8_t * const genes, uint32_t index, pool_t * co
 */
 gene_t * get_gene_in_genome_by_index(genome_t * const, uint32_t, pool_t * const);
 
-/* @declaration function get_gene_by_index
+/* @function get_gene_by_index
 *  @return gene*
 *  @argument uint8*
 *  @argument uint32
@@ -179,7 +179,7 @@ gene_t * get_gene_in_genome_by_index(genome_t * const, uint32_t, pool_t * const)
 */
 gene_t * get_gene_by_index(uint8_t * const genes, uint32_t index, pool_t * const);
 
-/* @declaration function get_gene_by_pointer
+/* @function get_gene_by_pointer
 *  @return gene*
 *  @argument uint8
 *  @argument pool*
@@ -190,12 +190,13 @@ void open_file_for_pool(
     const char *address, pool_t * const pool, genome_t ** const genomes);
 void close_file_for_pool(pool_t * const pool);
 
-/* @declaration flags save_pool_flag
-*  @member POOL_COPY_DATA                (1 << 0)
-*  @member POOL_COPY_METADATA            (1 << 1)
-*  @member POOL_ASSIGN_GENOME_POINTERS   (1 << 2)
-*  @member POOL_ASSIGN_METADATA_POINTERS (1 << 3)
-*  @member POOL_REWRITE_DESCRIPTION      (1 << 4)
+/* @flags save_pool_flag
+*  @type uint8
+*  @flag POOL_COPY_DATA                (1 << 0)
+*  @flag POOL_COPY_METADATA            (1 << 1)
+*  @flag POOL_ASSIGN_GENOME_POINTERS   (1 << 2)
+*  @flag POOL_ASSIGN_METADATA_POINTERS (1 << 3)
+*  @flag POOL_REWRITE_DESCRIPTION      (1 << 4)
 */
 typedef uint8_t save_pool_flag_t;
 #define POOL_COPY_DATA                (save_pool_flag_t)(1 << 0)
@@ -204,7 +205,7 @@ typedef uint8_t save_pool_flag_t;
 #define POOL_ASSIGN_METADATA_POINTERS (save_pool_flag_t)(1 << 3)
 #define POOL_REWRITE_DESCRIPTION      (save_pool_flag_t)(1 << 4)
 
-/* @declaration function save_pool
+/* @function save_pool
 *  @return void
 *  @argument pool*
 *  @argument genome**
@@ -212,13 +213,13 @@ typedef uint8_t save_pool_flag_t;
 */
 void save_pool(pool_t * const, genome_t ** const, save_pool_flag_t flags);
 
-/* @declaration function read_pool
+/* @function read_pool
 *  @return pool*
 *  @argument char*
 */
 pool_t * read_pool(const char *address);
 
-/* @declaration function write_pool
+/* @function write_pool
 *  @return void
 *  @argument char*
 *  @argument pool*
@@ -226,13 +227,13 @@ pool_t * read_pool(const char *address);
 */
 void write_pool(const char *address, pool_t * const, genome_t ** const);
 
-/* @declaration function close_pool
+/* @function close_pool
 *  @return void
 *  @argument pool*
 */
 void close_pool(pool_t * const);
 
-/* @declaration function genes_to_byte_array
+/* @function genes_to_byte_array
 *  @return uint8
 *  @argument gene**
 *  @argument pool*
@@ -240,33 +241,33 @@ void close_pool(pool_t * const);
 */
 gene_byte_t * genes_to_byte_array(gene_t **, pool_t *, uint64_t length);
 
-/* @declaration function free_genes_byte_array
+/* @function free_genes_byte_array
 *  @return void
 *  @argument uint8*
 */
 void free_genes_byte_array(gene_byte_t * const);
 
 
-/* @declaration function read_next_genome
+/* @function read_next_genome
 *  @return genome*
 *  @argument pool*
 */
 genome_t * read_next_genome(pool_t * const);
 
-/* @declaration function reset_genome_cursor
+/* @function reset_genome_cursor
 *  @return void
 *  @argument pool*
 */
 void reset_genome_cursor(pool_t * const);
 
 
-/* @declaration function read_genomes
+/* @function read_genomes
 *  @return genome**
 *  @argument pool*
 */
 genome_t ** read_genomes(pool_t * const);
 
-/* @declaration function free_genomes_ptrs
+/* @function free_genomes_ptrs
 *  @return void
 *  @argument genome**
 */

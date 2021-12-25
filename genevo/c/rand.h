@@ -9,7 +9,7 @@
 #define ENSURE_RND_SEED_IS_SET { if (!seed_initialized) set_seed(time(NULL)); }
 extern bool seed_initialized;
 
-/* @declaration function set_seed
+/* @function set_seed
 *  @return void
 *  @argument uint32
 */

@@ -8,23 +8,13 @@
 #include "stdbool.h"
 #include "pickler.h"
 
-/* @declaration function fill_bytes_with_randomness
-*  @return void
-*  @argument uint8*
-*  @argument uint32
-*/
 #define fill_bytes_with_randomness(_DESTINATION, _BYTES)                       \
     fill_with_randomness(_DESTINATION, _BYTES, 0)
 
-/* @declaration function fill_bits_with_randomness
-*  @return void
-*  @argument uint8*
-*  @argument uint32
-*/
 #define fill_bits_with_randomness(_DESTINATION, _BITS)                         \
     fill_with_randomness(_DESTINATION, (uint32_t)(_BITS / 8), _BITS % 8)
 
-/* @declaration function fill_with_randomness
+/* @function fill_with_randomness
 *  @return void
 *  @argument uint8*
 *  @argument uint32
@@ -32,7 +22,8 @@
 */
 void fill_with_randomness(uint8_t *destination, uint32_t bytes, uint8_t bits);
 
-/* @declaration enum generator_mode
+/* @enum generator_mode
+*  @type uint8
 *  @member GENERATE_RANDOMNESS (1 << 0)
 *  @member GENERATE_ZEROS      (1 << 1)
 */
@@ -41,7 +32,7 @@ typedef enum generator_mode_e {
     GENERATE_ZEROS      = (uint8_t)(1 << 1)
 } generator_mode_t;
 
-/* @declaration function generate_random_genome_data
+/* @function generate_random_genome_data
 *  @return void
 *  @argument genome*
 *  @argument uint64
@@ -53,7 +44,7 @@ void generate_random_genome_data(
     generator_mode_t
 );
 
-/* @declaration function allocate_genome
+/* @function allocate_genome
 *  @return genome*
 *  @argument bool
 *  @argument uint32
@@ -66,7 +57,7 @@ genome_t * allocate_genome(
     uint32_t genome_bit_size
 );
 
-/* @declaration function allocate_genome_vector
+/* @function allocate_genome_vector
 *  @return genome**
 *  @argument uint64
 *  @argument bool
@@ -80,7 +71,7 @@ genome_t ** allocate_genome_vector (
     uint32_t genome_bit_size
 );
 
-/* @declaration function destroy_genomes_vector
+/* @function destroy_genomes_vector
 *  @return void
 *  @argument uint64
 *  @argument bool
@@ -92,14 +83,14 @@ void destroy_genomes_vector(
     genome_t ** const genomes
 );
 
-/* @declaration function destroy_genome
+/* @function destroy_genome
 *  @return void
 *  @argument genome*
 *  @argument bool
 */
 void destroy_genome(genome_t * const genome, bool deallocate_data);
 
-/* @declaration function assign_genome_metadata
+/* @function assign_genome_metadata
 *  @return void
 *  @argument genome*
 *  @argument uint16
@@ -109,25 +100,25 @@ void assign_genome_metadata(
     genome_t * const, uint16_t metadata_byte_size, const char *metadata
 );
 
-/* @declaration function delete_genome_metadata
+/* @function delete_genome_metadata
 *  @return void
 *  @argument genome*
 */
 void delete_genome_metadata(genome_t * const genome);
 
-/* @declaration function allocate_pool
+/* @function allocate_pool
 *  @return pool*
 */
 pool_t * allocate_pool();
 
-/* @declaration function destroy_pool
+/* @function destroy_pool
 *  @return void
 *  @argument pool*
 *  @argument bool
 */
 void destroy_pool(pool_t * const pool, bool close_file);
 
-/* @declaration function assign_pool_metadata
+/* @function assign_pool_metadata
 *  @return void
 *  @argument pool*
 *  @argument uint16
@@ -137,13 +128,13 @@ void assign_pool_metadata(
     pool_t * const pool, uint16_t metadata_byte_size, const char* metadata
 );
 
-/* @declaration function delete_pool_metadata
+/* @function delete_pool_metadata
 *  @return void
 *  @argument pool*
 */
 void delete_pool_metadata(pool_t * const pool);
 
-/* @declaration function fill_pool
+/* @function fill_pool
 *  @return void
 *  @argument char*
 *  @argument population*
@@ -156,7 +147,7 @@ void fill_pool(
     generator_mode_t
 );
 
-/* @declaration function create_pool_in_file
+/* @function create_pool_in_file
 *  @return population*
 *  @argument uint64
 *  @argument uint8
@@ -174,7 +165,7 @@ population_t * create_pool_in_file(
     generator_mode_t
 );
 
-/* @declaration function destroy_population
+/* @function destroy_population
 *  @return void
 *  @argument population*
 *  @argument bool
