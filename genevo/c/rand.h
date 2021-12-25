@@ -9,6 +9,10 @@
 #define ENSURE_RND_SEED_IS_SET { if (!seed_initialized) set_seed(time(NULL)); }
 extern bool seed_initialized;
 
+/* @declaration function set_seed
+*  @return void
+*  @argument uint32
+*/
 void set_seed(uint32_t);
 
 uint64_t xorshift128p();
