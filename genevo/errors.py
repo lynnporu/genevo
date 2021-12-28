@@ -35,7 +35,7 @@ def get_error_level() -> ctypes.c_uint8:
     Returns:
         ctypes.c_uint8; Value of the ERROR_LEVEL.
     """
-    return ctypes.c_uint8.in_dll(c_definitions.libc, "ERROR_LEVEL")
+    return c_definitions.libc.ERROR_LEVEL
 
 
 def check_errors(raise_immediately: bool = True) -> typing.Optional[Exception]:
@@ -51,26 +51,25 @@ def check_errors(raise_immediately: bool = True) -> typing.Optional[Exception]:
     """
 
     error_level = get_error_level()
-    error_level_int = error_level.value
 
     error = None
 
-    if not error_level_int:
+    if not error_level:
         return error  # = None at this stage
 
-    elif 0xf0 <= error_level_int <= 0xff:
+    elif 0xf0 <= error_level <= 0xff:
         error = OSError
 
-    elif 0x01 <= error_level_int <= 0x0f:
+    elif 0x01 <= error_level <= 0x0f:
         error = OSError
 
-    elif 0x11 <= error_level_int <= 0x1f:
+    elif 0x11 <= error_level <= 0x1f:
         error = PoolParsingError
 
-    elif 0x21 <= error_level_int <= 0x2f:
+    elif 0x21 <= error_level <= 0x2f:
         error = GenomeParsingError
 
-    elif 0x31 <= error_level_int <= 0x3f:
+    elif 0x31 <= error_level <= 0x3f:
         error = GeneParsingError
 
     error_instance = error(

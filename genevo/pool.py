@@ -114,8 +114,8 @@ class Gene(_HasStructBackend):
         income_node_type: NodeConnectionType,
         weight_unnormalized: int = None,
         weight: int = None,
-        struct_ref: c_definitions.gene_struct_p = None,
-        gene_bytes: c_definitions.gene_p = None
+        struct_ref: c_definitions.gene_p = None,
+        gene_bytes: c_definitions.gene_byte_p = None
     ):
 
         if weight_unnormalized is None and weight is None:
@@ -138,8 +138,8 @@ class Gene(_HasStructBackend):
             f"{self._outcome_node_id} -> {self._income_node_id}, "
             f"weight={self._weight}>")
 
-    def _generate_struct_ref(self) -> c_definitions.gene_struct_p:
-        return c_definitions.ctypes.pointer(c_definitions.gene_struct_t(
+    def _generate_struct_ref(self) -> c_definitions.gene_p:
+        return c_definitions.ctypes.pointer(c_definitions.gene(
             # outcome_node_id
             (self._outcome_node_id +
              self.pool.range_starts[self._outcome_node_type]),
@@ -154,14 +154,14 @@ class Gene(_HasStructBackend):
 
     @classmethod
     def from_dynamic_array(
-        cls, pool: "GenePool", gene_bytes: c_definitions.gene_p,
+        cls, pool: "GenePool", gene_bytes: c_definitions.gene_byte_p,
         index_offset: int = -1
     ):
         """Create class instance from pointer to the vector of gene bytes.
 
         Arguments:
             pool: GenePool
-            gene_bytes: c_definitions.gene_p aka POINTER(c_uint8)
+            gene_bytes: c_definitions.gene_byte_p aka POINTER(c_uint8)
             index_offset: int, default = -1; If set to non-negative integer,
                 then index offset will be used.
 
@@ -180,7 +180,7 @@ class Gene(_HasStructBackend):
 
     @classmethod
     def from_struct(
-        cls, pool: "GenePool", struct_ref: c_definitions.gene_struct_p
+        cls, pool: "GenePool", struct_ref: c_definitions.gene_p
     ):
         struct = struct_ref.contents
 
@@ -236,7 +236,7 @@ class Gene(_HasStructBackend):
         return (self._income_node_id, self._income_node_type)
 
     @property
-    def gene_bytes(self) -> c_definitions.gene_p:
+    def gene_bytes(self) -> c_definitions.gene_byte_p:
 
         if self._gene_bytes is None:
             self._gene_bytes = c_definitions.generate_genes_byte_array(
@@ -445,7 +445,7 @@ class Genome(_IterableContainer, _HasStructBackend):
         # genes: list[Gene],  # For Python3.10
         genes: typing.Union[lazy._LazyStub, typing.List[Gene]],
         genes_residue: GenomeResidue = None,
-        genome_struct_ref: c_definitions.genome_struct_p = None,
+        genome_struct_ref: c_definitions.genome_p = None,
     ):
         self._metadata = metadata
         self._residue = genes_residue
@@ -460,10 +460,10 @@ class Genome(_IterableContainer, _HasStructBackend):
     def __repr__(self):
         return f"<Genome with {len(self)} genes>"
 
-    def _generate_struct_ref(self) -> c_definitions.genome_struct_p:
+    def _generate_struct_ref(self) -> c_definitions.genome_p:
         super()._generate_struct_ref()
         metadata = self._metadata.encode("utf-8")
-        return c_definitions.ctypes.pointer(c_definitions.genome_struct_t(
+        return c_definitions.ctypes.pointer(c_definitions.genome(
             len(self),
             metadata,
             len(metadata),
@@ -478,8 +478,8 @@ class Genome(_IterableContainer, _HasStructBackend):
 
     @property
     # For Python3.10
-    # def _gene_bytes(self) -> tuple[int, c_definitions.gene_p]:
-    def _gene_bytes(self) -> typing.Tuple[int, c_definitions.gene_p]:
+    # def _gene_bytes(self) -> tuple[int, c_definitions.gene_byte_p]:
+    def _gene_bytes(self) -> typing.Tuple[int, c_definitions.gene_byte_p]:
         """Returns array if bytes for genes. If the genome has no its struct
         yet, then new array will be allocated.
         """
@@ -488,7 +488,7 @@ class Genome(_IterableContainer, _HasStructBackend):
 
         else:
             return c_definitions.generate_genes_byte_array(
-                (c_definitions.gene_struct_p * len(self))(
+                (c_definitions.gene_p * len(self))(
                     *[gene.struct_ref for gene in self.genes],
                     self._pool._struct,
                     len(self.genes)
@@ -503,7 +503,7 @@ class Genome(_IterableContainer, _HasStructBackend):
     def from_struct(
         cls,
         pool: "GenePool",
-        genome_struct_ref: c_definitions.genome_struct_p
+        genome_struct_ref: c_definitions.genome_p
     ):
         genome_struct = genome_struct_ref.contents
         gene_structs_p = [
@@ -572,7 +572,7 @@ class GenePool(_IterableContainer, _HasStructBackend):
         weight_part_bit_size: int,
         # genomes: list[Genome] = None,  # For Python3.10
         genomes: typing.List[Genome] = None,
-        struct_ref: c_definitions.pool_struct_p = None
+        struct_ref: c_definitions.pool_p = None
     ):
         # ! genomes may be not initialized yet, if class was created by
         # ! from_file_dump method
@@ -595,7 +595,7 @@ class GenePool(_IterableContainer, _HasStructBackend):
         return f"<GenePool with {len(self)} genomes>"
 
     @classmethod
-    def from_struct(cls, struct_ref: c_definitions.pool_struct_t):
+    def from_struct(cls, struct_ref: c_definitions.pool):
 
         struct = struct_ref.contents
 
@@ -646,11 +646,11 @@ class GenePool(_IterableContainer, _HasStructBackend):
             self.struct_ref, self.genome_structs_vector)
         errors.check_errors()
 
-    def _generate_struct_ref(self) -> c_definitions.pool_struct_p:
+    def _generate_struct_ref(self) -> c_definitions.pool_p:
         """Generate C struct pool_struct_p for this gene pool.
         """
         metadata = self.metadata.encode("utf-8")
-        return c_definitions.ctypes.pointer(c_definitions.pool_struct_t(
+        return c_definitions.ctypes.pointer(c_definitions.pool(
             len(self),  # organisms_number
             self._input_neurons_number,
             self._output_neurons_number,
@@ -721,9 +721,9 @@ class GenePool(_IterableContainer, _HasStructBackend):
         return self._range_starts
 
     @property
-    def genome_structs_vector(self) -> c_definitions.genome_struct_p_p:
+    def genome_structs_vector(self) -> c_definitions.genome_p_p:
         return c_definitions.ctypes.pointer(
-            (c_definitions.genome_struct_p * len(self))(
+            (c_definitions.genome_p * len(self))(
                 *[genome.struct_ref for genome in self.genomes]
             )
         )
