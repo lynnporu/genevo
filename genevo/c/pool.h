@@ -11,6 +11,15 @@ contain any methods.
 
 #include "files.h"
 
+/* @flags gene_connection_flag
+*  @type uint8
+*  @flag GENE_OUTCOME_IS_INPUT           (1 << 7)
+*  @flag GENE_OUTCOME_IS_INTERMEDIATE    (1 << 6)
+*  @flag GENE_OUTCOME_IS_OUTPUT          (1 << 5)
+*  @flag GENE_INCOME_IS_INPUT            (1 << 4)
+*  @flag GENE_INCOME_IS_INTERMEDIATE     (1 << 3)
+*  @flag GENE_INCOME_IS_OUTPUT           (1 << 2)
+*/
 #define GENE_OUTCOME_IS_INPUT        0b10000000
 #define GENE_OUTCOME_IS_INTERMEDIATE 0b01000000
 #define GENE_OUTCOME_IS_OUTPUT       0b00100000
@@ -54,6 +63,9 @@ This number can be increased with maximizing the number of bits.
 
 */
 
+/* @typedef gene_byte
+*  @from_type uint8_t
+*/
 typedef uint8_t gene_byte_t;
 #define GENE_BYTE_SIZE sizeof(gene_byte_t)
 
