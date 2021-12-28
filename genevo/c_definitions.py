@@ -17,7 +17,7 @@ libc = annotatec.Loader(
     ]
 )
 
-gene_vec_p = ctypes.POINTER(libc.gene_vec)
+gene_byte_p = ctypes.POINTER(libc.gene_byte)
 
 gene_p = ctypes.POINTER(libc.gene)
 genome_p = ctypes.POINTER(libc.genome)
