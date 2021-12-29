@@ -241,8 +241,11 @@ void fill_pool(
 	generator_mode_t generator_mode
 ) {
 
+	#ifndef ERROR_ON_EMPTY_FILENAME_FOR_POOL
 	bool address_is_allocated = false;
 	char *allocated_address;
+	#endif
+
 	if (address == NULL) {
 	#ifndef ERROR_ON_EMPTY_FILENAME_FOR_POOL
 		allocated_address = alloc_name_for_pool(population->pool);
@@ -259,7 +262,9 @@ void fill_pool(
 	save_pool(
 		population->pool, population->genomes, POOL_ASSIGN_GENOME_POINTERS);
 
+	#ifndef ERROR_ON_EMPTY_FILENAME_FOR_POOL
 	if (address_is_allocated) free(allocated_address);
+	#endif
 
 	// fill each genome with values
 	for(
