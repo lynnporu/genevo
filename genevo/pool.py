@@ -215,7 +215,7 @@ class GenomeResidue(bits._BitField):
         )
 
 
-class Genome(containers._IterableContainer, _HasStructBackend):
+class Genome(containers._LazyIterableContainer, _HasStructBackend):
     def __init__(
         self,
         pool: "GenePool",
@@ -249,6 +249,11 @@ class Genome(containers._IterableContainer, _HasStructBackend):
             self._residue.bit_length,
             self._residue.to_dynamic_array()
         ))
+
+    def _iter_function(self, index: int) -> Gene:
+        struct_ref = definitions.get_gene_in_genome_by_index(
+            self.struct_ref, index, self.pool.struct_ref)
+        return Gene.from_struct(pool=self.pool, struct_ref=struct_ref)
 
     @property
     def pool(self):

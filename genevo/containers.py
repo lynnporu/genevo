@@ -40,3 +40,38 @@ class _IterableContainer(metaclass=abc.ABCMeta):
 
         else:
             return self._get_by_index(key)
+
+
+class _LazyIterableContainer(_IterableContainer, metaclass=abc.ABCMeta):
+    """Container for iterable, which items was not computed yet.
+    """
+
+    def __init__(self):
+        self._iter_caching_on = True
+        self._iter_cache = dict()
+
+    @abc.abstractmethod
+    def _iter_function(self, index: int):
+        pass
+
+    def _reset_iter_cache(self):
+        self._iter_cache = dict()
+
+    def _ensure_index_inited(self, index: int):
+        if index not in self._iter_cache:
+            self._iter_cache[index] = self._iter_function(index)
+
+    def __getitem__(self, key: typing.Union[int, slice]):
+
+        if not self._iter_caching_on:
+            return super().__getitem__(key)
+
+        # ensure range was inited
+        if isinstance(key, slice):
+            for index in range(key.start, key.stop, key.step):
+                self._ensure_index_inited(index)
+            return super().__getitem__(key)
+
+        else:
+            self._ensure_index_inited(key)
+            return super().__getitem__(key)
