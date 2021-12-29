@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdint.h>
+#include <stdio.h>
 
 #include "pool.h"
 #include "rand.h"
@@ -32,13 +33,6 @@ typedef enum generator_mode_e {
     GENERATE_ZEROS      = (uint8_t)(1 << 1)
 } generator_mode_t;
 
-/* @function generate_random_genome_data
-*  @return void
-*  @argument genome*
-*  @argument uint64
-*  @argument uint8
-*  @argument generator_mode
-*/
 void generate_random_genome_data(
     genome_t * const, uint64_t bits_number, uint8_t gene_byte_size,
     generator_mode_t
@@ -164,6 +158,8 @@ population_t * create_pool_in_file(
     uint64_t genome_bit_size,
     generator_mode_t
 );
+
+char * alloc_name_for_pool(pool_t *);
 
 /* @function destroy_population
 *  @return void

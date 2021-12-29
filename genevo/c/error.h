@@ -49,6 +49,10 @@ extern err_status_t ERROR_LEVEL;
 #define ERR_WRONG_FLAG_STR                  "You have just given wrong flag "  \
                                             "or mode."
 
+#define ERR_NOT_ENOUGH_PARAMS               (err_status_t)0xe3
+#define ERR_NOT_ENOUGH_PARAMS_STR           "Some of the mandatory parameters "\
+                                            "were not set."
+
 
 // Gene pool file errors =======================================================
 

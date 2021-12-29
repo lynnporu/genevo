@@ -205,6 +205,27 @@ void delete_pool_metadata(pool_t * const pool) {
 
 }
 
+
+/*
+
+Create name for a file in which the pool will be allocated. New name will be
+created based on current timestamp and a pointer to the pool.
+! This function allocates new memory, which should be freed after use.
+
+*/
+char * alloc_name_for_pool(pool_t *pool) {
+
+	uint64_t number = time(NULL) + (uint64_t)pool;
+	// maximum size of uint64 in hex is 9 symbols + ".pool"
+	char *address = malloc(sizeof(char) * (9 + 5));
+
+	sprintf(address, "%lX.pool", number);
+
+	return address;
+
+}
+
+
 /*
 
 Generate genomes for pool. For this function the following members of
@@ -220,10 +241,25 @@ void fill_pool(
 	generator_mode_t generator_mode
 ) {
 
+	bool address_is_allocated = false;
+	char *allocated_address;
+	if (address == NULL) {
+	#ifndef ERROR_ON_EMPTY_FILENAME_FOR_POOL
+		allocated_address = alloc_name_for_pool(population->pool);
+		address = allocated_address;
+		address_is_allocated = true;
+	#else
+		ERROR_LEVEL = ERR_NOT_ENOUGH_PARAMS;
+		return;
+	#endif
+	}
+
 	open_file_for_pool(
 		address, population->pool, population->genomes);
 	save_pool(
 		population->pool, population->genomes, POOL_ASSIGN_GENOME_POINTERS);
+
+	if (address_is_allocated) free(allocated_address);
 
 	// fill each genome with values
 	for(
@@ -268,8 +304,9 @@ population_t * create_pool_in_file(
 	population->pool = pool;
 	population->genomes = genomes;
 
-	// TODO: come up with a name
-	fill_pool("????", population, genome_bit_size, generator_mode);
+	fill_pool(
+		NULL, // file address
+		population, genome_bit_size, generator_mode);
 
 	return population;
 
