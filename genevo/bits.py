@@ -2,7 +2,7 @@ import enum
 import typing
 
 from . import containers
-from . import c_definitions
+from . import definitions
 
 
 def _max_for_bit(size: int) -> int:
@@ -99,7 +99,7 @@ class _BitField(containers._IterableContainer):
 
     @staticmethod
     def _copy_bytes(
-        byte_array: c_definitions.c_uint8_p, bytes_size: int
+        byte_array: definitions.c_uint8_p, bytes_size: int
     # ) -> list[int]:  # For Python3.10
     ) -> typing.List[int]:
         return byte_array[:bytes_size]
@@ -107,7 +107,7 @@ class _BitField(containers._IterableContainer):
     @classmethod
     def from_dynamic_array(
         cls,
-        byte_array: c_definitions.c_uint8_p,
+        byte_array: definitions.c_uint8_p,
         bytes_size: int,
         copy_bytes: bool = False,
         *args, **kwargs
@@ -132,8 +132,8 @@ class _BitField(containers._IterableContainer):
     def to_dynamic_array(
         self,
         realloc: bool = False
-    # ) -> tuple[int, c_definitions.c_uint8_p]:  # For Python3.10
-    ) -> typing.Tuple[int, c_definitions.c_uint8_p]:
+    # ) -> tuple[int, definitions.c_uint8_p]:  # For Python3.10
+    ) -> typing.Tuple[int, definitions.c_uint8_p]:
         """Allocates dynamic array (if wasn't allocated yet) for the bytes
         inside this bit field.
 
@@ -147,13 +147,13 @@ class _BitField(containers._IterableContainer):
         """
 
         if (
-            isinstance(self._byte_array, c_definitions.c_uint8_p) and
+            isinstance(self._byte_array, definitions.c_uint8_p) and
             not realloc
         ):
             return self._bytes_len, self._byte_array
 
-        return self._bytes_len, (c_definitions.c_uint8_p * self._bytes_len)(
-            *map(c_definitions.c_uint8, self._byte_array))
+        return self._bytes_len, (definitions.c_uint8_p * self._bytes_len)(
+            *map(definitions.c_uint8, self._byte_array))
 
     @property
     def number(self) -> int:

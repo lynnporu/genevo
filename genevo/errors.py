@@ -1,7 +1,7 @@
 import typing
 import ctypes
 
-from . import c_definitions
+from . import definitions
 
 
 class GenevoError(Exception):
@@ -35,7 +35,7 @@ def get_error_level() -> ctypes.c_uint8:
     Returns:
         ctypes.c_uint8; Value of the ERROR_LEVEL.
     """
-    return c_definitions.libc.ERROR_LEVEL
+    return definitions.libc.ERROR_LEVEL
 
 
 def check_errors(raise_immediately: bool = True) -> typing.Optional[Exception]:
@@ -73,7 +73,7 @@ def check_errors(raise_immediately: bool = True) -> typing.Optional[Exception]:
         error = GeneParsingError
 
     error_instance = error(
-        c_definitions.get_err_string(error_level).decode("utf-8"))
+        definitions.get_err_string(error_level).decode("utf-8"))
 
     if raise_immediately:
         raise error_instance
