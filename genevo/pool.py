@@ -221,19 +221,42 @@ class Genome(containers._LazyIterableContainer, _HasStructBackend):
         pool: "GenePool",
         metadata: str,
         # genes: list[Gene],  # For Python3.10
-        genes: typing.Union[lazy._LazyStub, typing.List[Gene]],
+        genes: typing.Union[None, typing.List[Gene]],
         genes_residue: GenomeResidue = None,
         genome_struct_ref: definitions.genome_p = None,
     ):
+        """
+        Pass either genes and genes_residue or genome_struct_ref.
+        """
+
+        super().__init__()
+
         self._metadata = metadata
-        self._residue = genes_residue
+
+        if (genes or genes_residue) and genome_struct_ref:
+            raise TypeError(
+                "Pass either `genes` and `genes_residue` or "
+                "`genome_struct_ref`")
+
+        if bool(genes) != bool(genes_residue):
+            raise TypeError(
+                "Both `genes` and `genes_residue` should be set or undefined.")
+
         self._struct_ref = genome_struct_ref
         self._pool = pool
 
-        if isinstance(genes, lazy._LazyStub):
-            self._genes = genes.initialize(pool=self)
+        if genome_struct_ref:
+            self._iter_caching_on = True
+            self._residue = GenomeResidue.from_dynamic_array(
+                byte_array=genome_struct_ref.contents.residue,
+                bit_size=genome_struct_ref.contents.residue_size_bits,
+                copy_bytes=False
+            )
         else:
-            self._genes = genes
+            self._iter_caching_on = False
+            self._residue = genes_residue
+
+        self._genes = genes
 
     def __repr__(self):
         return f"<Genome with {len(self)} genes>"
@@ -289,29 +312,14 @@ class Genome(containers._LazyIterableContainer, _HasStructBackend):
         genome_struct_ref: definitions.genome_p
     ):
         genome_struct = genome_struct_ref.contents
-        gene_structs_p = [
-            definitions.get_gene_in_genome_by_index(
-                genome_struct_ref,
-                index,
-                pool.struct_ref)
-            for index in range(genome_struct.length)
-        ]
 
         return cls(
             pool=pool,
             metadata=bytes(
                 genome_struct.metadata[:genome_struct.metadata_byte_size]
             ).decode("utf-8"),
-            genes=[
-                Gene.from_struct(pool=pool, struct_ref=gene_struct_p)
-                for gene_struct_p in gene_structs_p
-            ],
-            genes_residue=GenomeResidue.from_dynamic_array(
-                byte_array=genome_struct.residue,
-                bit_size=genome_struct.residue_size_bits,
-                copy_bytes=False
-
-            ),
+            genes=None,
+            genes_residue=None,
             genome_struct_ref=genome_struct_ref
         )
 
@@ -398,7 +406,7 @@ class GenePool(containers._IterableContainer, _HasStructBackend):
 
         try:
             genome_struct_p = definitions.read_next_genome(struct_ref)
-            errors.check_errors()
+            errors.check_errors()  # may raise StopIteration
             genomes.append(Genome.from_struct(
                 pool=instance, genome_struct_ref=genome_struct_p
             ))
