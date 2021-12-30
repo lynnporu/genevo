@@ -12,7 +12,7 @@ c_uint8_p = ctypes.POINTER(c_uint8)  # equal to c_char_p
 
 libc = annotatec.Loader(
     library="genevo/c/bin/genevo.so",
-    headers=[
+    sources=[
         "genevo/c/"
     ]
 )
