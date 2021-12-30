@@ -64,7 +64,7 @@ This number can be increased with maximizing the number of bits.
 */
 
 /* @typedef gene_byte
-*  @from_type uint8_t
+*  @from_type uint8
 */
 typedef uint8_t gene_byte_t;
 #define GENE_BYTE_SIZE sizeof(gene_byte_t)
