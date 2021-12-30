@@ -4,7 +4,6 @@ import typing
 
 from . import definitions
 from . import errors
-from . import lazy
 from . import containers
 from . import bits
 
