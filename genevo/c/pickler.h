@@ -24,8 +24,8 @@ little slower on little-endian platform because of byte swappings.
 #include "error.h"
 #include "files.h"
 
-// Even the empty pool file should be at least 64 bits long.
-#define POOL_FILE_MIN_SAFE_BIT_SIZE 64
+// Even the empty pool file should be at least 256 bits long.
+#define POOL_FILE_MIN_SAFE_BIT_SIZE 256
 
 typedef uint8_t file_control_byte_t;
 
