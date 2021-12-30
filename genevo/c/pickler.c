@@ -338,7 +338,7 @@ number == 0b00000000...0000000010101111, sizeof(number) == 64
 
  */
 void copy_bitslots_to_uint64(
-    const uint8_t *slots, uint64_t * const number, uint8_t start, uint8_t end
+    const gene_byte* slots, uint64_t * const number, uint8_t start, uint8_t end
 ) {
 
     uint8_t byte_offset = start / 8,
@@ -358,7 +358,7 @@ Does the opposite to copy_bitslots_to_uint64.
 
  */
 void copy_uint64_to_bitslots(
-    const uint64_t *number, uint8_t * const slots, uint8_t start, uint8_t number_size
+    const uint64_t *number, gene_byte_t * const slots, uint8_t start, uint8_t number_size
 ) {
 
     uint8_t byte_offset = start / 8,
@@ -380,7 +380,7 @@ uint8_t * point_gene_in_genome_by_index(
 }
 
 uint8_t * point_gene_by_index(
-    uint8_t * const genes, uint32_t index, pool_t * const pool
+    gene_byte_t * const genes, uint32_t index, pool_t * const pool
 ) {
     return genes + (pool->gene_bytes_size * index);
 }
@@ -422,7 +422,7 @@ and output ranges. New ID to `_ID` and type to `_CONNECTION_TYPE_VAR`.
 }
 
 
-gene_t * get_gene_by_pointer(uint8_t * const gene_start_byte, pool_t * const pool) {
+gene_t * get_gene_by_pointer(gene_byte_t * const gene_start_byte, pool_t * const pool) {
 
     gene_t *gene = malloc(sizeof(gene_t));
 
@@ -490,7 +490,7 @@ gene_t * get_gene_in_genome_by_index(
 
 }
 
-gene_t * get_gene_by_index(uint8_t * const genes, uint32_t index, pool_t * const pool) {
+gene_t * get_gene_by_index(gene_byte_t * const genes, uint32_t index, pool_t * const pool) {
 
     return get_gene_by_pointer(
         point_gene_by_index(genes, index, pool),

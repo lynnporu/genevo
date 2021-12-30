@@ -139,11 +139,11 @@ order which is big-endian.
 #define ntoh64(x) ((((uint64_t)ntohl(x)) << 32) + ntohl((x) >> 32))
 
 void copy_bitslots_to_uint64(
-    const uint8_t *slots, uint64_t * const number,
+    const gene_byte *slots, uint64_t * const number,
     uint8_t start, uint8_t end);
 
 void copy_uint64_to_bitslots(
-    const uint64_t *number, uint8_t * const slots,
+    const uint64_t *number, gene_byte_t * const slots,
     uint8_t start, uint8_t number_size
 );
 
@@ -161,7 +161,7 @@ uint8_t * point_gene_in_genome_by_index(genome_t * const, uint32_t index, pool_t
  * @argument uint32
  * @argument pool*
  */
-uint8_t * point_gene_by_index(uint8_t * const genes, uint32_t index, pool_t * const pool);
+uint8_t * point_gene_by_index(gene_byte_t * const genes, uint32_t index, pool_t * const pool);
 
 /* @function get_gene_in_genome_by_index
  * @return gene*
@@ -177,14 +177,14 @@ gene_t * get_gene_in_genome_by_index(genome_t * const, uint32_t, pool_t * const)
  * @argument uint32
  * @argument pool*
  */
-gene_t * get_gene_by_index(uint8_t * const genes, uint32_t index, pool_t * const);
+gene_t * get_gene_by_index(gene_byte_t * const genes, uint32_t index, pool_t * const);
 
 /* @function get_gene_by_pointer
  * @return gene*
  * @argument uint8
  * @argument pool*
  */
-gene_t * get_gene_by_pointer(uint8_t * const gene_start_byte, pool_t * const);
+gene_t * get_gene_by_pointer(gene_byte_t * const gene_start_byte, pool_t * const);
 
 void open_file_for_pool(
     const char *address, pool_t * const pool, genome_t ** const genomes);
