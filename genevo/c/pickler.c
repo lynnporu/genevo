@@ -2,7 +2,7 @@
 
 This module contains methods for dumping gene pool into file and vice versa.
 
-*/
+ */
 
 
 #include "pickler.h"
@@ -323,7 +323,7 @@ genome_t ** read_genomes(pool_t * const pool) {
 
 Destroys array of pointers to genomes.
 
-*/
+ */
 void free_genomes_ptrs(genome_t ** const genomes) {
     free(genomes);
 }
@@ -336,7 +336,7 @@ Result of copy_bitslots_to_uint64(slots, number, 5, 13) will be (13-5=8)
 copied bits into number, so now:
 number == 0b00000000...0000000010101111, sizeof(number) == 64
 
-*/
+ */
 void copy_bitslots_to_uint64(
     const uint8_t *slots, uint64_t * const number, uint8_t start, uint8_t end
 ) {
@@ -356,7 +356,7 @@ void copy_bitslots_to_uint64(
 
 Does the opposite to copy_bitslots_to_uint64.
 
-*/
+ */
 void copy_uint64_to_bitslots(
     const uint64_t *number, uint8_t * const slots, uint8_t start, uint8_t number_size
 ) {
@@ -394,7 +394,7 @@ and output ranges. New ID to `_ID` and type to `_CONNECTION_TYPE_VAR`.
 ! Potential bug: _ID will be calculated several times when passed as the
   expression.
 
-*/
+ */
 #define ASSIGN_TYPE_BY_ID(_ID,                                                 \
                            _INPUT_RANGE_SIZE, _OUTPUT_RANGE_SIZE,              \
                            _NODES_CAPACITY,                                    \

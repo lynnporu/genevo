@@ -5,7 +5,7 @@
 Stretch file to given size. Assumes its descriptor were opened with O_TRUNC
 flag.
 
-*/
+ */
 void set_file_size(int descriptor, size_t new_size) {
 
     if (lseek(descriptor, new_size, SEEK_SET) == -1) {

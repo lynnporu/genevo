@@ -3,7 +3,7 @@
 This header contains declarations for gene, genome and gene pool. It does not
 contain any methods.
 
-*/
+ */
 
 #pragma once
 
@@ -12,14 +12,14 @@ contain any methods.
 #include "files.h"
 
 /* @flags gene_connection_flag
-*  @type uint8
-*  @flag GENE_OUTCOME_IS_INPUT           (1 << 7)
-*  @flag GENE_OUTCOME_IS_INTERMEDIATE    (1 << 6)
-*  @flag GENE_OUTCOME_IS_OUTPUT          (1 << 5)
-*  @flag GENE_INCOME_IS_INPUT            (1 << 4)
-*  @flag GENE_INCOME_IS_INTERMEDIATE     (1 << 3)
-*  @flag GENE_INCOME_IS_OUTPUT           (1 << 2)
-*/
+ * @type uint8
+ * @flag GENE_OUTCOME_IS_INPUT           (1 << 7)
+ * @flag GENE_OUTCOME_IS_INTERMEDIATE    (1 << 6)
+ * @flag GENE_OUTCOME_IS_OUTPUT          (1 << 5)
+ * @flag GENE_INCOME_IS_INPUT            (1 << 4)
+ * @flag GENE_INCOME_IS_INTERMEDIATE     (1 << 3)
+ * @flag GENE_INCOME_IS_OUTPUT           (1 << 2)
+ */
 #define GENE_OUTCOME_IS_INPUT        0b10000000
 #define GENE_OUTCOME_IS_INTERMEDIATE 0b01000000
 #define GENE_OUTCOME_IS_OUTPUT       0b00100000
@@ -61,27 +61,27 @@ This number can be increased with maximizing the number of bits.
 
 ! Be sure that GSb % 8 == 0.
 
-*/
+ */
 
 /* @typedef gene_byte
-*  @from_type uint8
-*/
+ * @from_type uint8
+ */
 /* @typedef gene_byte_p
-*  @from_type gene_byte*
-*/
+ * @from_type gene_byte*
+ */
 typedef uint8_t gene_byte_t;
 #define GENE_BYTE_SIZE sizeof(gene_byte_t)
 
 /* @struct gene
-*  @member uint64 outcome_node_id
-*  @member uint64 income_node_id
-*  @member gene_connection_flag connection_type
-*  @member int64 weight_unnormalized
-*  @member double weight
-*/
+ * @member uint64 outcome_node_id
+ * @member uint64 income_node_id
+ * @member gene_connection_flag connection_type
+ * @member int64 weight_unnormalized
+ * @member double weight
+ */
 /* @typedef gene_p
-*  @from_type gene*
-*/
+ * @from_type gene*
+ */
 typedef struct gene_s {
     uint64_t               outcome_node_id;
     uint64_t               income_node_id;
@@ -91,18 +91,18 @@ typedef struct gene_s {
 } gene_t;
 
 /* @typedef genome_p
-*  @from_type genome*
-*/
+ * @from_type genome*
+ */
 /* @typedef genome_p_p
-*  @from_type genome**
-*/
+ * @from_type genome**
+ */
 /* @struct genome
-*  @member uint32 length
-*  @member uint8* metadata
-*  @member uint8* genes
-*  @member uint16 residue_size_bits
-*  @member uint8* residue
-*/
+ * @member uint32 length
+ * @member uint8* metadata
+ * @member uint8* genes
+ * @member uint16 residue_size_bits
+ * @member uint8* residue
+ */
 typedef struct genome_s {
     uint32_t      length;
     uint8_t      *metadata;
@@ -113,21 +113,21 @@ typedef struct genome_s {
 } genome_t;
 
 /* @typedef pool_p
-*  @from_type pool*
-*/
+ * @from_type pool*
+ */
 /* @struct pool
-*  @member uint64 organisms_number
-*  @member uint64 input_neurons_number
-*  @member uint64 output_neurons_number
-*  @member uint16 metadata_byte_size
-*  @member uint8* metadata
-*  @member uint8 node_id_part_bit_size
-*  @member uint8 weight_part_bit_size
-*  @member uint8 gene_bytes_size
-*  @member file_map file_mapping
-*  @member uint8* first_genome_start_position
-*  @member uint8* cursor
-*/
+ * @member uint64 organisms_number
+ * @member uint64 input_neurons_number
+ * @member uint64 output_neurons_number
+ * @member uint16 metadata_byte_size
+ * @member uint8* metadata
+ * @member uint8 node_id_part_bit_size
+ * @member uint8 weight_part_bit_size
+ * @member uint8 gene_bytes_size
+ * @member file_map file_mapping
+ * @member uint8* first_genome_start_position
+ * @member uint8* cursor
+ */
 typedef struct pool_s {
     uint64_t    organisms_number;
     uint64_t    input_neurons_number;
@@ -144,12 +144,12 @@ typedef struct pool_s {
 } pool_t;
 
 /* @typedef population_p
-*  @from_type population*
-*/
+ * @from_type population*
+ */
 /* @struct population
-*  @member pool* pool
-*  @member genome** genome
-*/
+ * @member pool* pool
+ * @member genome** genome
+ */
 typedef struct population_s {
     pool_t     *pool;
     genome_t  **genomes;

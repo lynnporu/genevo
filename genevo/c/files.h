@@ -4,7 +4,7 @@ This header contains declarations for file mappings.
 
 TODO: add Windows support.
 
-*/
+ */
 
 #pragma once
 
@@ -19,10 +19,10 @@ TODO: add Windows support.
 #include "error.h"
 
 /* @struct file_map
-*  @member int descriptor
-*  @member size size
-*  @member void* data
-*/
+ * @member int descriptor
+ * @member size size
+ * @member void* data
+ */
 typedef struct file_map_s {
     int     descriptor;
     size_t  size;

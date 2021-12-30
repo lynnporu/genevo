@@ -15,7 +15,7 @@ place_random_bits(mem, 9);
 Now destination has memory dump `???????? ?0000000`, where `?` is some random
 bit.
 
-*/
+ */
 void fill_with_randomness(uint8_t *destination, uint32_t bytes, uint8_t bits) {
 
 	#ifndef SKIP_RND_SEED_CHECK
@@ -81,7 +81,7 @@ Allocate genome_t. If allocate_data is true, then genome->genes array of size
 Residue size will be calcualted and assigned to genome->residue_size_bits,
 `length` will be assigned to genome->length.
 
-*/
+ */
 genome_t * allocate_genome(
 	bool allocate_data,
 	uint32_t length, uint8_t gene_bytes_size,
@@ -212,7 +212,7 @@ Create name for a file in which the pool will be allocated. New name will be
 created based on current timestamp and a pointer to the pool.
 ! This function allocates new memory, which should be freed after use.
 
-*/
+ */
 char * alloc_name_for_pool(pool_t *pool) {
 
 	uint64_t number = time(NULL) + (uint64_t)pool;
@@ -234,7 +234,7 @@ pool_t must be set:
 	* node_id_part_bit_size
 	* weight_part_bit_size
 
-*/
+ */
 void fill_pool(
 	const char *address, population_t * const population,
 	uint64_t genome_bit_size,
@@ -300,7 +300,7 @@ population_t * create_pool_in_file(
 	uint32_t genes_number = genome_bit_size / pool->gene_bytes_size;
 
 	genome_t ** const genomes = allocate_genome_vector(
-		organisms_number, false /* allocate data */,
+		organisms_number, false /* allocate data  */,
 		genes_number, pool->gene_bytes_size, genome_bit_size
 	);
 
@@ -323,7 +323,7 @@ Destroy population_t struct and its member `genomes`.
 If destroy_genomes is true, then destroy_genome will be called on every genome.
 deallocate_genomes_data will be passed into destroy_genome.
 
-*/
+ */
 void destroy_population(
 	population_t * const population,
 	bool destroy_genomes, bool deallocate_genomes_data,

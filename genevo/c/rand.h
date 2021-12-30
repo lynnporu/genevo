@@ -10,9 +10,9 @@
 extern bool seed_initialized;
 
 /* @function set_seed
-*  @return void
-*  @argument uint32
-*/
+ * @return void
+ * @argument uint32
+  */
 void set_seed(uint32_t);
 
 uint64_t xorshift128p();

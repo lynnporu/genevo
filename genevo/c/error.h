@@ -3,7 +3,7 @@
 This header contains declarations for all error levels that are being used
 across the library.
 
-*/
+ */
 
 #pragma once
 
@@ -14,14 +14,14 @@ across the library.
 typedef uint8_t err_status_t;
 
 /* @function get_err_string
-*  @return string
-*  @argument uint8
-*/
+ * @return string
+ * @argument uint8
+ */
 const char * get_err_string(const err_status_t errcode);
 
 /* @variable ERROR_LEVEL
-*  @type uint8
-*/
+ * @type uint8
+ */
 extern err_status_t ERROR_LEVEL;
 
 
