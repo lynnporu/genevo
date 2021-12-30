@@ -72,6 +72,12 @@ def check_errors(raise_immediately: bool = True) -> typing.Optional[Exception]:
     elif 0x31 <= error_level <= 0x3f:
         error = GeneParsingError
 
+    elif error_level == 0xe0:
+        error = StopIteration
+
+    elif 0xe1 <= error_level <= 0xef:
+        error = TypeError
+
     error_instance = error(
         definitions.libc.get_err_string(error_level).decode("utf-8"))
 
