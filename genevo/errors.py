@@ -73,7 +73,7 @@ def check_errors(raise_immediately: bool = True) -> typing.Optional[Exception]:
         error = GeneParsingError
 
     error_instance = error(
-        definitions.get_err_string(error_level).decode("utf-8"))
+        definitions.libc.get_err_string(error_level).decode("utf-8"))
 
     if raise_immediately:
         raise error_instance
