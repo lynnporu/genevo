@@ -9,6 +9,22 @@ This module contains methods for dumping gene pool into file and vice versa.
 
 #define sizeof_member(type, member) sizeof(((type *)0)->member)
 
+#define COPY_MEMBER(_MEMB_NAME, _STRUCT_SRC, _STRUCT_DIST)                     \
+    { _STRUCT_DIST -> _MEMB_NAME = _STRUCT_SRC -> _MEMB_NAME; }
+
+#define COPY_MEMBER_WITH_SWAP(_MEMB_NAME, _STRUCT_SRC, _STRUCT_DIST, _DIRECTION)\
+    {                                                                          \
+        _STRUCT_DIST -> _MEMB_NAME =                                           \
+        _DIRECTION(sizeof_member( _STRUCT_SRC, _MEMB_NAME ) * 8)               \
+            ( _STRUCT_SRC -> _MEMB_NAME );                                     \
+    }
+
+#define COPY_MEMBER_HTON(_MEMB_NAME, _STRUCT_SRC, _STRUCT_DIST)                \
+    COPY_MEMBER_WITH_SWAP(_MEMB_NAME, _STRUCT_SRC, _STRUCT_DIST, HTON)
+
+#define COPY_MEMBER_NTOH(_MEMB_NAME, _STRUCT_SRC, _STRUCT_DIST)                \
+    COPY_MEMBER_WITH_SWAP(_MEMB_NAME, _STRUCT_SRC, _STRUCT_DIST, NTOH)
+
 #define MAPPING_FAIL_CONDITION(_CONDITION, _ERR_CONST) \
     if(_CONDITION) {ERROR_LEVEL = (_ERR_CONST); close_file(mapping); return NULL;}
 
