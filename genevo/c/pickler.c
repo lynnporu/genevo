@@ -64,13 +64,12 @@ pool_t * read_pool(const char *address) {
 
     pool->file_mapping = mapping;
 
-    pool->organisms_number = ntoh64(preamble->organisms_number);
+    COPY_MEMBER_NTOH(organisms_number,      preamble, pool);
+    COPY_MEMBER_NTOH(metadata_byte_size,    preamble, pool);
+    COPY_MEMBER_NTOH(input_neurons_number,  preamble, pool);
+    COPY_MEMBER_NTOH(output_neurons_number, preamble, pool);
 
-    pool->metadata_byte_size = ntoh16(preamble->metadata_byte_size);
     pool->metadata = (byte_t *)(&preamble->metadata_initial_byte + 1);
-
-    pool->input_neurons_number = ntoh64(preamble->input_neurons_number);
-    pool->output_neurons_number = ntoh64(preamble->output_neurons_number);
 
     pool->node_id_part_bit_size = preamble->node_id_part_bit_size;
     pool->weight_part_bit_size = preamble->weight_part_bit_size;
@@ -139,13 +138,13 @@ void save_pool(
 
     pool_file_preamble_t *pool_preamble = pool->file_mapping->data;
     if (flags | POOL_REWRITE_DESCRIPTION) {
-        pool_preamble->initial_byte = POOL_INITIAL_BYTE;
-        pool_preamble->organisms_number = hton64(pool->organisms_number);
-        pool_preamble->input_neurons_number = hton64(pool->input_neurons_number);
-        pool_preamble->output_neurons_number = hton64(pool->output_neurons_number);
-        pool_preamble->node_id_part_bit_size = pool->node_id_part_bit_size;
-        pool_preamble->weight_part_bit_size = pool->weight_part_bit_size;
-        pool_preamble->metadata_byte_size = hton16(pool->metadata_byte_size);
+        pool_preamble->initial_byte         = POOL_INITIAL_BYTE;
+        COPY_MEMBER_HTON(organisms_number,        pool, pool_preamble);
+        COPY_MEMBER_HTON(input_neurons_number,    pool, pool_preamble);
+        COPY_MEMBER_HTON(output_neurons_number,   pool, pool_preamble);
+        COPY_MEMBER     (node_id_part_bit_size,   pool, pool_preamble);
+        COPY_MEMBER     (weight_id_part_bit_size, pool, pool_preamble);
+        COPY_MEMBER_HTON(metadata_byte_size,      pool, pool_preamble);
         pool_preamble->metadata_initial_byte = POOL_META_INITIAL_BYTE;
     }
 
@@ -175,9 +174,8 @@ void save_pool(
 
         if (flags | POOL_REWRITE_DESCRIPTION) {
             genome_preamble->initial_byte = GENOME_INITIAL_BYTE;
-            genome_preamble->genes_number = hton32(current_genome->length);
-            genome_preamble->metadata_byte_size = \
-                hton16(current_genome->metadata_byte_size);
+            COPY_MEMBER_HTON(length,             current_genome, genome_preamble);
+            COPY_MEMBER_HTON(metadata_byte_size, current_genome, genome_preamble);
             genome_preamble->metadata_initial_byte = GENOME_META_INITIAL_BYTE;
         }
 
@@ -206,7 +204,9 @@ void save_pool(
         if (flags | POOL_REWRITE_DESCRIPTION) {
             *(uint8_t *)genome_meta_terminal_byte = GENOME_META_TERMINAL_BYTE;
             *(uint8_t *)residue_byte = GENOME_RESIDUE_BYTE;
-            *(uint16_t *)(residue_byte + 1) = hton16(current_genome->residue_size_bits);
+            *(uint16_t *)(residue_byte + 1) =
+                HTON(sizeof_member(current_genome, residue_size_bits))
+                    (current_genome->residue_size_bits);
             *(uint8_t *)terminal_byte = GENOME_TERMINAL_BYTE;
         }
 
@@ -282,8 +282,9 @@ genome_t * read_next_genome(pool_t * const pool) {
 
     genome_t* genome = malloc(sizeof(genome_t));
 
-    genome->length = ntoh32(preamble->genes_number);
-    genome->metadata_byte_size = ntoh16(preamble->metadata_byte_size);
+    COPY_MEMBER_NTOH(length,             preamble, genome);
+    COPY_MEMBER_NTOH(metadata_byte_size, preamble, genome);
+
     genome->metadata = &preamble->metadata_initial_byte + 1;
 
     void *genome_meta_terminal_byte =
@@ -306,7 +307,7 @@ genome_t * read_next_genome(pool_t * const pool) {
         return NULL;
     }
 
-    genome->residue_size_bits = ntoh16(
+    genome->residue_size_bits = NTOH(sizeof_member(genome, residue_size_bits))(
         *(uint16_t *)(residue_byte + sizeof(uint8_t)));
 
     genome->residue =
@@ -366,7 +367,7 @@ void copy_bitslots_to_uint64(
     
     uint64_t copy_number = *(uint64_t *)(slots + byte_offset);
     
-    copy_number = hton64(copy_number) << bit_offset;
+    copy_number = HTON(sizeof(copy_number))(copy_number) << bit_offset;
         
     *number = copy_number >> (64 - end + start - 1);
 
@@ -386,7 +387,7 @@ void copy_uint64_to_bitslots(
     
     uint64_t copy_number = *number << (64 - bit_offset - number_size);
     
-    *(uint64_t *)(slots + byte_offset) |= hton64(copy_number);
+    *(uint64_t *)(slots + byte_offset) |= HTON(sizeof(copy_number))(copy_number);
 
 }
 
