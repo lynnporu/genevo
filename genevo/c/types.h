@@ -17,8 +17,8 @@ order which is big-endian.
 #define ntoh16 ntohs
 #define hton32 htonl
 #define ntoh32 ntohl
-#define hton64(x) ((((uint64_t)htonl(x)) << 32) + htonl((x) >> 32))
-#define ntoh64(x) ((((uint64_t)ntohl(x)) << 32) + ntohl((x) >> 32))
+#define hton64(x) ((((uint64_t)hton32(x)) << 32) + hton32((x) >> 32))
+#define ntoh64(x) ((((uint64_t)ntoh32(x)) << 32) + ntoh32((x) >> 32))
 
 
 #define HTON_EVALUATOR(_SIZE) hton ## _SIZE
