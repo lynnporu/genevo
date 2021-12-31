@@ -5,6 +5,8 @@ This module contains methods for dumping gene pool into file and vice versa.
  */
 
 
+// New year 2022 commit
+
 #include "pickler.h"
 
 #define sizeof_member(type, member) sizeof(((type *)0)->member)
