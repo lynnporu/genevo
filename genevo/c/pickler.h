@@ -23,6 +23,7 @@ little slower on little-endian platform because of byte swappings.
 #include "pool.h"
 #include "error.h"
 #include "files.h"
+#include "types.h"
 
 // Even the empty pool file should be at least 256 bits long.
 #define POOL_FILE_MIN_SAFE_BIT_SIZE 256
@@ -75,10 +76,10 @@ the residue can be placed after GENOME_RESIDUE_BYTE.
  */
 
 typedef struct genome_preamble_s {
-    file_control_byte_t initial_byte;
-    uint32_t            genes_number;
-    uint16_t            metadata_byte_size;
-    file_control_byte_t metadata_initial_byte;
+    file_control_byte_t    initial_byte;
+    genome_length_t        genes_number;
+    genome_metadata_size_t metadata_byte_size;
+    file_control_byte_t    metadata_initial_byte;
 } __attribute__((packed, aligned(1))) genome_file_preamble_t;
 
 /*
@@ -114,36 +115,23 @@ POOL_TERMINAL_BYTE                    8            End byte used to verify
  */
 
 typedef struct pool_file_preamble_s {
-    file_control_byte_t initial_byte;
-    uint64_t            organisms_number;
-    uint64_t            input_neurons_number;
-    uint64_t            output_neurons_number;
-    uint8_t             node_id_part_bit_size;
-    uint8_t             weight_part_bit_size;
-    uint16_t            metadata_byte_size;
-    file_control_byte_t metadata_initial_byte;
+    file_control_byte_t        initial_byte;
+    pool_organisms_num_t       organisms_number;
+    pool_neurons_num_t         input_neurons_number;
+    pool_neurons_num_t         output_neurons_number;
+    pool_gene_node_id_part_t   node_id_part_bit_size;
+    pool_gene_weight_part_t    weight_part_bit_size;
+    pool_metadata_size_t       metadata_byte_size;
+    file_control_byte_t        metadata_initial_byte;
 } __attribute__((packed, aligned(1))) pool_file_preamble_t;
 
-/*
-
-All data structures is being dumped into the file using using network byte
-order which is big-endian.
-
- */
-
-#define hton16 htons
-#define ntoh16 ntohs
-#define hton32 htonl
-#define ntoh32 ntohl
-#define hton64(x) ((((uint64_t)htonl(x)) << 32) + htonl((x) >> 32))
-#define ntoh64(x) ((((uint64_t)ntohl(x)) << 32) + ntohl((x) >> 32))
 
 void copy_bitslots_to_uint64(
-    const gene_byte *slots, uint64_t * const number,
+    const byte_t *slots, uint64_t * const number,
     uint8_t start, uint8_t end);
 
 void copy_uint64_to_bitslots(
-    const uint64_t *number, gene_byte_t * const slots,
+    const uint64_t *number, byte_t * const slots,
     uint8_t start, uint8_t number_size
 );
 

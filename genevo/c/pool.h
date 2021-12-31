@@ -63,6 +63,8 @@ This number can be increased with maximizing the number of bits.
 
  */
 
+typedef uint8_t byte_t;
+
 /* @typedef gene_byte
  * @from_type uint8
  */
@@ -70,7 +72,10 @@ This number can be increased with maximizing the number of bits.
  * @from_type gene_byte*
  */
 typedef uint8_t gene_byte_t;
-#define GENE_BYTE_SIZE sizeof(gene_byte_t)
+
+typedef uint64_t gene_node_id_t;
+typedef int64_t  gene_edge_weight_unnormalized_t;
+typedef double   gene_edge_weight;
 
 /* @struct gene
  * @member uint64 outcome_node_id
@@ -83,12 +88,17 @@ typedef uint8_t gene_byte_t;
  * @from_type gene*
  */
 typedef struct gene_s {
-    uint64_t               outcome_node_id;
-    uint64_t               income_node_id;
-    gene_connection_flag_t connection_type;
-    int64_t                weight_unnormalized;
-    double                 weight;           // weight is normalized to [-1; 1]
+    gene_node_id_t                  outcome_node_id;
+    gene_node_id_t                  income_node_id;
+    gene_connection_flag_t          connection_type;
+    gene_edge_weight_unnormalized_t weight_unnormalized;
+    // weight is normalized to [-1; 1]
+    gene_edge_weight                 weight;
 } gene_t;
+
+typedef uint32_t genome_length_t;
+typedef uint16_t genome_metadata_size_t;
+typedef uint16_t genome_residue_size_t;
 
 /* @typedef genome_p
  * @from_type genome*
@@ -104,13 +114,21 @@ typedef struct gene_s {
  * @member uint8* residue
  */
 typedef struct genome_s {
-    uint32_t      length;
-    uint8_t      *metadata;
-    uint16_t      metadata_byte_size;
-    gene_byte_t  *genes;
-    uint16_t      residue_size_bits;
-    uint8_t      *residue;
+    genome_length_t          length;
+    byte_t                  *metadata;
+    genome_metadata_size_t   metadata_byte_size;
+    gene_byte_t             *genes;
+    genome_residue_size_t    residue_size_bits;
+    byte_t                  *residue;
 } genome_t;
+
+// 'pl' means 'pool'
+typedef uint64_t   pool_organisms_num_t;
+typedef uint64_t   pool_neurons_num_t;
+typedef uint16_t   pool_metadata_size_t;
+typedef uint8_t    pool_gene_node_id_part_t;
+typedef uint8_t    pool_gene_weight_part_t;
+typedef uint8_t    pool_gene_byte_size_t;
 
 /* @typedef pool_p
  * @from_type pool*
@@ -129,18 +147,18 @@ typedef struct genome_s {
  * @member uint8* cursor
  */
 typedef struct pool_s {
-    uint64_t    organisms_number;
-    uint64_t    input_neurons_number;
-    uint64_t    output_neurons_number;
-    uint16_t    metadata_byte_size;
-    uint8_t    *metadata;
-    uint8_t     node_id_part_bit_size;
-    uint8_t     weight_part_bit_size;
-    uint8_t     gene_bytes_size;
-    file_map_t *file_mapping;
-    void       *first_genome_start_position;
-                // Position of the byte after POOL_META_TERMINAL_BYTE
-    void       *cursor;
+    pool_organisms_num_t      organisms_number;
+    pool_neurons_num_t        input_neurons_number;
+    pool_neurons_num_t        output_neurons_number;
+    pool_metadata_size_t      metadata_byte_size;
+    byte_t                   *metadata;
+    pool_gene_node_id_part_t  node_id_part_bit_size;
+    pool_gene_weight_part_t   weight_part_bit_size;
+    pool_gene_byte_size_t     gene_bytes_size;
+    file_map_t               *file_mapping;
+    void                     *first_genome_start_position;
+    // Position of the byte after POOL_META_TERMINAL_BYTE
+    void                     *cursor;
 } pool_t;
 
 /* @typedef population_p

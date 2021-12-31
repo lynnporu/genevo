@@ -51,7 +51,7 @@ pool_t * read_pool(const char *address) {
     pool->organisms_number = ntoh64(preamble->organisms_number);
 
     pool->metadata_byte_size = ntoh16(preamble->metadata_byte_size);
-    pool->metadata = (uint8_t *)(&preamble->metadata_initial_byte + 1);
+    pool->metadata = (byte_t *)(&preamble->metadata_initial_byte + 1);
 
     pool->input_neurons_number = ntoh64(preamble->input_neurons_number);
     pool->output_neurons_number = ntoh64(preamble->output_neurons_number);
@@ -81,7 +81,11 @@ void open_file_for_pool(const char *address, pool_t *pool, genome_t **genomes) {
         sizeof(POOL_META_TERMINAL_BYTE) +
         sizeof(POOL_TERMINAL_BYTE);
 
-    for (uint64_t genome_i = 0; genome_i < pool->organisms_number; genome_i++)
+    for (
+        pool_organisms_num_t genome_i = 0;
+        genome_i < pool->organisms_number;
+        genome_i++
+    )
         file_size +=
             sizeof(genome_file_preamble_t) +
             genomes[genome_i]->metadata_byte_size +
@@ -89,7 +93,7 @@ void open_file_for_pool(const char *address, pool_t *pool, genome_t **genomes) {
             genomes[genome_i]->length * pool->gene_bytes_size +
             sizeof(GENOME_RESIDUE_BYTE) +
             sizeof_member(genome_t, residue_size_bits) +
-            (uint16_t)(genomes[genome_i]->residue_size_bits / 8) + 1 +
+            (genome_residue_size_t)(genomes[genome_i]->residue_size_bits / 8) + 1 +
             sizeof(GENOME_TERMINAL_BYTE);
 
     file_map_t *mapping = open_file(address, OPEN_MODE_WRITE, file_size - 1);
@@ -129,7 +133,7 @@ void save_pool(
         pool_preamble->metadata_initial_byte = POOL_META_INITIAL_BYTE;
     }
 
-    uint8_t *pool_metadata = &pool_preamble->metadata_initial_byte + 1;
+    byte_t *pool_metadata = &pool_preamble->metadata_initial_byte + 1;
 
     // copy pool meta bytes
     if (flags | POOL_COPY_METADATA)
@@ -139,14 +143,14 @@ void save_pool(
         pool->metadata = pool_metadata;
 
     void *pool_meta_terminal_byte = pool_metadata + pool->metadata_byte_size;
-    *(uint8_t *)pool_meta_terminal_byte = POOL_META_TERMINAL_BYTE;
+    *(file_control_byte_t *)pool_meta_terminal_byte = POOL_META_TERMINAL_BYTE;
 
     // genome pointer
     genome_file_preamble_t *genome_preamble = pool_meta_terminal_byte + 1;
 
     for(
         // genome iterator
-        uint64_t genome_itr = 0;
+        pool_organisms_num_t genome_itr = 0;
         genome_itr < pool->organisms_number;
         genome_itr++
     ) {
@@ -161,7 +165,7 @@ void save_pool(
             genome_preamble->metadata_initial_byte = GENOME_META_INITIAL_BYTE;
         }
 
-        uint8_t *genome_metadata = &genome_preamble->metadata_initial_byte + 1;
+        byte_t *genome_metadata = &genome_preamble->metadata_initial_byte + 1;
 
         // copy genome meta bytes
         if (flags | POOL_COPY_METADATA)
@@ -338,7 +342,7 @@ number == 0b00000000...0000000010101111, sizeof(number) == 64
 
  */
 void copy_bitslots_to_uint64(
-    const gene_byte* slots, uint64_t * const number, uint8_t start, uint8_t end
+    const gene_byte_t* slots, uint64_t * const number, uint8_t start, uint8_t end
 ) {
 
     uint8_t byte_offset = start / 8,
