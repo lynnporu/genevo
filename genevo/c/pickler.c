@@ -239,6 +239,7 @@ void write_pool(
     const char *address, pool_t * const pool, genome_t ** const genomes
 ) {
 
+    if (pool->file_mapping != NULL) close_file_for_pool(pool);
     open_file_for_pool(address, pool, genomes);
     save_pool(
         pool, genomes,
@@ -248,8 +249,7 @@ void write_pool(
 }
 
 void close_pool(pool_t * const pool) {
-    if (pool->file_mapping != NULL)
-        close_file_for_pool(pool);
+    if (pool->file_mapping != NULL) close_file_for_pool(pool);
     free(pool);
 }
 
