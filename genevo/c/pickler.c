@@ -16,9 +16,7 @@ This module contains methods for dumping gene pool into file and vice versa.
 
 #define COPY_MEMBER_WITH_SWAP(_MEMB_NAME, _STRUCT_SRC, _STRUCT_DIST, _DIRECTION)\
     {                                                                          \
-        _STRUCT_DIST -> _MEMB_NAME =                                           \
-        _DIRECTION(sizeof_member( _STRUCT_SRC, _MEMB_NAME ) * 8)               \
-            ( _STRUCT_SRC -> _MEMB_NAME );                                     \
+        _STRUCT_DIST -> _MEMB_NAME = _DIRECTION(_STRUCT_SRC -> _MEMB_NAME);    \
     }
 
 #define COPY_MEMBER_HTON(_MEMB_NAME, _STRUCT_SRC, _STRUCT_DIST)                \
@@ -145,7 +143,7 @@ void save_pool(
         COPY_MEMBER_HTON(input_neurons_number,    pool, pool_preamble);
         COPY_MEMBER_HTON(output_neurons_number,   pool, pool_preamble);
         COPY_MEMBER     (node_id_part_bit_size,   pool, pool_preamble);
-        COPY_MEMBER     (weight_id_part_bit_size, pool, pool_preamble);
+        COPY_MEMBER     (weight_part_bit_size,    pool, pool_preamble);
         COPY_MEMBER_HTON(metadata_byte_size,      pool, pool_preamble);
         pool_preamble->metadata_initial_byte = POOL_META_INITIAL_BYTE;
     }
@@ -207,8 +205,7 @@ void save_pool(
             *(uint8_t *)genome_meta_terminal_byte = GENOME_META_TERMINAL_BYTE;
             *(uint8_t *)residue_byte = GENOME_RESIDUE_BYTE;
             *(uint16_t *)(residue_byte + 1) =
-                HTON(sizeof_member(current_genome, residue_size_bits))
-                    (current_genome->residue_size_bits);
+                HTON(current_genome->residue_size_bits);
             *(uint8_t *)terminal_byte = GENOME_TERMINAL_BYTE;
         }
 
@@ -309,11 +306,11 @@ genome_t * read_next_genome(pool_t * const pool) {
         return NULL;
     }
 
-    genome->residue_size_bits = NTOH(sizeof_member(genome, residue_size_bits))(
+    genome->residue_size_bits = NTOH(
         *(uint16_t *)(residue_byte + sizeof(uint8_t)));
 
     genome->residue =
-        residue_byte + sizeof(uint8_t) + sizeof(genome->residue_size_bits);
+        residue_byte + sizeof(uint8_t) + sizeof_member(genome_t, residue_size_bits);
 
     void * terminal_byte =
         genome->residue + (genome->residue_size_bits / 8) + 1;
@@ -369,7 +366,7 @@ void copy_bitslots_to_uint64(
     
     uint64_t copy_number = *(uint64_t *)(slots + byte_offset);
     
-    copy_number = HTON(sizeof(copy_number))(copy_number) << bit_offset;
+    copy_number = HTON(copy_number) << bit_offset;
         
     *number = copy_number >> (64 - end + start - 1);
 
@@ -389,7 +386,7 @@ void copy_uint64_to_bitslots(
     
     uint64_t copy_number = *number << (64 - bit_offset - number_size);
     
-    *(uint64_t *)(slots + byte_offset) |= HTON(sizeof(copy_number))(copy_number);
+    *(uint64_t *)(slots + byte_offset) |= HTON(copy_number);
 
 }
 

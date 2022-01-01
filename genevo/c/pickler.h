@@ -77,7 +77,7 @@ the residue can be placed after GENOME_RESIDUE_BYTE.
 
 typedef struct genome_preamble_s {
     file_control_byte_t    initial_byte;
-    genome_length_t        genes_number;
+    genome_length_t        length;
     genome_metadata_size_t metadata_byte_size;
     file_control_byte_t    metadata_initial_byte;
 } __attribute__((packed, aligned(1))) genome_file_preamble_t;
