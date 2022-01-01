@@ -25,4 +25,4 @@ order which is big-endian.
 #define NTOH_EVALUATOR(_SIZE) ntoh ## _SIZE
 
 #define HTON(_SIZE) HTON_EVALUATOR(_SIZE)
-#define NTON(_SIZE) NTOH_EVALUATOR(_SIZE)
+#define NTOH(_SIZE) NTOH_EVALUATOR(_SIZE)
