@@ -166,7 +166,7 @@ typedef struct pool_s {
  */
 /* @struct population
  * @member pool* pool
- * @member genome** genome
+ * @member genome** genomes
  */
 typedef struct population_s {
     pool_t     *pool;

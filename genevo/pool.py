@@ -351,6 +351,11 @@ class Genome(containers._LazyIterableContainer, _HasStructBackend):
         pass
 
 
+class GeneratorMode(enum.Enum):
+    zeros = definitions.libc.GENERATE_ZEROS
+    random = definitions.libc.GENERATE_RANDOMNESS
+
+
 class GenePool(containers._IterableContainer, _HasStructBackend):
 
     def __init__(
@@ -385,7 +390,36 @@ class GenePool(containers._IterableContainer, _HasStructBackend):
         return f"<GenePool with {len(self)} genomes>"
 
     @classmethod
-    def from_struct(cls, struct_ref: definitions.libc.pool):
+    def generate(
+        cls,
+        organisms_num: int,
+        node_id_part_size: int, weight_part_size: int,
+        input_neurons_number: int, output_neurons_number: int,
+        genome_bit_size: int,
+        generator_mode: GeneratorMode = GeneratorMode.random
+    ):
+        """Generates new pool.
+        """
+        population = definitions.create_pool_in_file(
+            organisms_num,
+            node_id_part_size, weight_part_size,
+            input_neurons_number, output_neurons_number,
+            genome_bit_size,
+            generator_mode.value)
+
+        return cls.from_struct(
+            struct_ref=population.pool,
+            genomes_structs_ref=population.genomes)
+
+    @classmethod
+    def from_struct(
+        cls,
+        struct_ref: definitions.libc.pool,
+        genomes_structs_ref: definitions.libc.genome_p_p = None
+    ):
+        """
+        If genomes is not given, they'll be parsed from the pool.
+        """
 
         struct = struct_ref.contents
 
@@ -403,8 +437,15 @@ class GenePool(containers._IterableContainer, _HasStructBackend):
 
         genomes = []
 
+        if genomes_structs_ref:
+            structs_generator = iter(genomes_structs_ref)
+            next_genome = lambda: next(structs_generator)  # noqa731
+        else:
+            read_next = definitions.libc.read_next_genome
+            next_genome = lambda: read_next(struct_ref)  # noqa731
+
         try:
-            genome_struct_p = definitions.libc.read_next_genome(struct_ref)
+            genome_struct_p = next_genome()
             errors.check_errors()  # may raise StopIteration
             genomes.append(Genome.from_struct(
                 pool=instance, genome_struct_ref=genome_struct_p
