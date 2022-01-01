@@ -84,13 +84,13 @@ Residue size will be calcualted and assigned to genome->residue_size_bits,
  */
 genome_t * allocate_genome(
 	bool allocate_data,
-	uint32_t length, uint8_t gene_bytes_size,
+	genome_length_t length, uint8_t gene_bytes_size,
 	uint32_t genome_bit_size
 ) {
 
 	genome_t * const genome = malloc(sizeof(genome_t));
 
-	uint32_t genome_byte_size = gene_bytes_size * length;
+	uint64_t genome_byte_size = gene_bytes_size * length;
 	uint16_t residue_size_bits = genome_byte_size * 8 - genome_bit_size;
 
 	if (allocate_data) {
@@ -111,15 +111,15 @@ genome_t * allocate_genome(
 }
 
 genome_t ** allocate_genome_vector(
-	uint64_t size, bool allocate_data,
-	uint32_t genes_number, uint8_t gene_bytes_size,
+	pool_organisms_num_t size, bool allocate_data,
+	genome_length_t genes_number, uint8_t gene_bytes_size,
 	uint32_t genome_bit_size
 ) {
 
 	// allocate each genome and genomes vector
 	genome_t ** const genomes = malloc(sizeof(genome_t *) * size);
 
-	for(uint64_t genome_itr = 0; genome_itr < size; genome_itr++)
+	for(pool_organisms_num_t genome_itr = 0; genome_itr < size; genome_itr++)
 		genomes[genome_itr] = allocate_genome(
 			allocate_data, genes_number, gene_bytes_size, genome_bit_size);
 
@@ -128,11 +128,14 @@ genome_t ** allocate_genome_vector(
 }
 
 void destroy_genomes_vector(
-	uint64_t size, bool deallocate_data, bool destroy_each_genome,
+	pool_organisms_num_t size, bool deallocate_data, bool destroy_each_genome,
 	genome_t ** const genomes
 ) {
 	if (destroy_each_genome)
-		for (uint64_t genome_itr = 0; genome_itr < size; genome_itr++)
+		for (
+			pool_organisms_num_t genome_itr = 0;
+			genome_itr < size; genome_itr++
+		)
 			destroy_genome(genomes[genome_itr], deallocate_data);
 
 	free(genomes);
@@ -152,7 +155,7 @@ void destroy_genome(genome_t * const genome, bool deallocate_data) {
 }
 
 void assign_genome_metadata(
-	genome_t * const genome, uint16_t metadata_byte_size,
+	genome_t * const genome, genome_metadata_size_t metadata_byte_size,
 	const char *metadata
 ) {
 
@@ -189,7 +192,7 @@ void destroy_pool(pool_t * const pool, bool close_file) {
 }
 
 void assign_pool_metadata(
-	pool_t * const pool, uint16_t metadata_byte_size,
+	pool_t * const pool, pool_metadata_size_t metadata_byte_size,
 	const char *metadata
 ) {
 
@@ -280,9 +283,11 @@ void fill_pool(
 }
 
 population_t * create_pool_in_file(
-	uint64_t organisms_number,
-	uint8_t node_id_bit_size, uint8_t weight_bit_size,
-	uint64_t input_neurons_number, uint64_t output_neurons_number,
+	pool_organisms_num_t organisms_number,
+	pool_gene_node_id_part_t node_id_bit_size,
+	pool_gene_weight_part_t weight_bit_size,
+	pool_neurons_num_t input_neurons_number,
+	pool_neurons_num_t output_neurons_number,
 	uint64_t genome_bit_size,
 	generator_mode_t generator_mode
 ) {
@@ -297,7 +302,7 @@ population_t * create_pool_in_file(
 	pool->gene_bytes_size =
 		pool->node_id_part_bit_size * 2 + pool->weight_part_bit_size;
 
-	uint32_t genes_number = genome_bit_size / pool->gene_bytes_size;
+	genome_length_t genes_number = genome_bit_size / pool->gene_bytes_size;
 
 	genome_t ** const genomes = allocate_genome_vector(
 		organisms_number, false /* allocate data  */,

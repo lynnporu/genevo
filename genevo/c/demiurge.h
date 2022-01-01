@@ -47,7 +47,7 @@ void generate_random_genome_data(
  */
 genome_t * allocate_genome(
     bool allocate_data,
-    uint32_t length, uint8_t gene_bytes_size,
+    genome_length_t, uint8_t gene_bytes_size,
     uint32_t genome_bit_size
 );
 
@@ -60,8 +60,8 @@ genome_t * allocate_genome(
  * @argument uint32
  */
 genome_t ** allocate_genome_vector (
-    uint64_t size, bool allocate_data,
-    uint32_t genes_number, uint8_t gene_bytes_size,
+    pool_organisms_num_t, bool allocate_data,
+    genome_length_t, pool_gene_byte_size_t,
     uint32_t genome_bit_size
 );
 
@@ -73,7 +73,7 @@ genome_t ** allocate_genome_vector (
  * @argument genome**
  */
 void destroy_genomes_vector(
-    uint64_t size, bool deallocate_data, bool destroy_each_genome,
+    pool_organisms_num_t, bool deallocate_data, bool destroy_each_genome,
     genome_t ** const genomes
 );
 
@@ -91,7 +91,7 @@ void destroy_genome(genome_t * const genome, bool deallocate_data);
  * @argument char*
  */
 void assign_genome_metadata(
-    genome_t * const, uint16_t metadata_byte_size, const char *metadata
+    genome_t * const, genome_metadata_size_t, const char *metadata
 );
 
 /* @function delete_genome_metadata
@@ -119,7 +119,7 @@ void destroy_pool(pool_t * const pool, bool close_file);
  * @argument char*
  */
 void assign_pool_metadata(
-    pool_t * const pool, uint16_t metadata_byte_size, const char* metadata
+    pool_t * const pool, pool_metadata_size_t, const char* metadata
 );
 
 /* @function delete_pool_metadata
@@ -152,9 +152,10 @@ void fill_pool(
  * @argument generator_mode
  */
 population_t * create_pool_in_file(
-    uint64_t organisms_number,
-    uint8_t node_id_bit_size, uint8_t weight_bit_size,
-    uint64_t input_neurons_number, uint64_t output_neurons_number,
+    pool_organisms_num_t,
+    pool_gene_node_id_part_t, pool_gene_weight_part_t,
+    pool_neurons_num_t input_neurons_number,
+    pool_neurons_num_t output_neurons_number,
     uint64_t genome_bit_size,
     generator_mode_t
 );
