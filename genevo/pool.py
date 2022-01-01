@@ -352,8 +352,8 @@ class Genome(containers._LazyIterableContainer, _HasStructBackend):
 
 
 class GeneratorMode(enum.Enum):
-    zeros = definitions.libc.GENERATE_ZEROS
-    random = definitions.libc.GENERATE_RANDOMNESS
+    zeros = definitions.libc.generator_mode.GENERATE_ZEROS
+    random = definitions.libc.generator_mode.GENERATE_RANDOMNESS
 
 
 class GenePool(containers._IterableContainer, _HasStructBackend):
