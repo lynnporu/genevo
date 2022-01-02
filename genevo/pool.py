@@ -356,6 +356,13 @@ class GeneratorMode(enum.Enum):
     random = definitions.libc.generator_mode.GENERATE_RANDOMNESS
 
 
+_GENOME_RETRIEVING_LIMIT = int(1e8)
+"""When genomes are being parsed from the pool, we're waiting for StopIteration
+to be raised. This constant is sorf of seat belt to prevent from infinite
+retrieving.
+"""
+
+
 class GenePool(containers._IterableContainer, _HasStructBackend):
 
     def __init__(
@@ -438,18 +445,21 @@ class GenePool(containers._IterableContainer, _HasStructBackend):
         genomes = []
 
         if genomes_structs_ref:
-            structs_generator = iter(genomes_structs_ref)
+            structs_generator = (
+                genomes_structs_ref[index]
+                for index in range(genomes_structs_vector_size))
             next_genome = lambda: next(structs_generator)  # noqa731
         else:
             read_next = definitions.libc.read_next_genome
             next_genome = lambda: read_next(struct_ref)  # noqa731
 
         try:
-            genome_struct_p = next_genome()
-            errors.check_errors()  # may raise StopIteration
-            genomes.append(Genome.from_struct(
-                pool=instance, genome_struct_ref=genome_struct_p
-            ))
+            for _ in range(_GENOME_RETRIEVING_LIMIT):
+                genome_struct_p = next_genome()
+                errors.check_errors()  # may raise StopIteration
+                genomes.append(Genome.from_struct(
+                    pool=instance, genome_struct_ref=genome_struct_p
+                ))
 
         except StopIteration:
             pass
