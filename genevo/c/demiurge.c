@@ -91,7 +91,7 @@ genome_t * allocate_genome(
 	genome_t * const genome = malloc(sizeof(genome_t));
 
 	uint64_t genome_byte_size = gene_bytes_size * length;
-	uint16_t residue_size_bits = genome_byte_size * 8 - genome_bit_size;
+	uint16_t residue_size_bits = genome_bit_size - genome_byte_size * 8;
 
 	if (allocate_data) {
 		genome->genes = malloc(genome_byte_size);
@@ -300,9 +300,9 @@ population_t * create_pool_in_file(
 	pool->node_id_part_bit_size = node_id_bit_size;
 	pool->weight_part_bit_size = weight_bit_size;
 	pool->gene_bytes_size =
-		pool->node_id_part_bit_size * 2 + pool->weight_part_bit_size;
+		(pool->node_id_part_bit_size * 2 + pool->weight_part_bit_size) / 8;
 
-	genome_length_t genes_number = genome_bit_size / pool->gene_bytes_size;
+	genome_length_t genes_number = genome_bit_size / (pool->gene_bytes_size * 8);
 
 	genome_t ** const genomes = allocate_genome_vector(
 		organisms_number, false /* allocate data  */,
