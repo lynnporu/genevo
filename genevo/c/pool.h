@@ -109,6 +109,7 @@ typedef uint16_t genome_residue_size_t;
 /* @struct genome
  * @member uint32 length
  * @member uint8* metadata
+ * @member uint16 metadata_byte_size
  * @member uint8* genes
  * @member uint16 residue_size_bits
  * @member uint8* residue
