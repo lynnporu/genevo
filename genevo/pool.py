@@ -42,7 +42,7 @@ class _HasStructBackend(metaclass=abc.ABCMeta):
 
     @property
     def struct_ref(self):
-        if not self._struct_ref:
+        if self._struct_ref is None:
             self._struct_ref = self._generate_struct_ref()
         return self._struct_ref
 
