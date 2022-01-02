@@ -65,7 +65,7 @@ void generate_genome_data(
 	else
 	if (generator_mode == GENERATE_ZEROS) {
 		memset(genome->genes, 0, genome->length * gene_byte_size);
-		memset(genome->residue, 0, (genome->residue_size_bits / 8) + 1);
+		memset(genome->residue, 0, BITS_TO_BYTES(genome->residue_size_bits));
 	}
 	else {
 		ERROR_LEVEL = ERR_WRONG_FLAG;
@@ -91,11 +91,11 @@ genome_t * allocate_genome(
 	genome_t * const genome = malloc(sizeof(genome_t));
 
 	uint64_t genome_byte_size = gene_bytes_size * length;
-	uint16_t residue_size_bits = genome_bit_size - genome_byte_size * 8;
+	uint16_t residue_size_bits = genome_bit_size - BYTES_TO_BITS(genome_byte_size);
 
 	if (allocate_data) {
 		genome->genes = malloc(genome_byte_size);
-		genome->residue = malloc(residue_size_bits * 8);
+		genome->residue = malloc(BITS_TO_BYTES(residue_size_bits));
 	} else {
 		genome->genes = NULL;
 		genome->residue = NULL;
@@ -301,8 +301,7 @@ population_t * create_pool_in_file(
 	pool->output_neurons_number = output_neurons_number;
 	pool->node_id_part_bit_size = node_id_bit_size;
 	pool->weight_part_bit_size = weight_bit_size;
-	pool->gene_bytes_size =
-		(pool->node_id_part_bit_size * 2 + pool->weight_part_bit_size) / 8;
+	pool->gene_bytes_size = BITS_TO_BYTES(gene_bit_size);
 
 	genome_length_t genes_number = genome_bit_size / (pool->gene_bytes_size * 8);
 

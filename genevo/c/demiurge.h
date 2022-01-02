@@ -8,6 +8,7 @@
 #include "string.h"
 #include "stdbool.h"
 #include "pickler.h"
+#include "bit_manipulations.h"
 
 #define fill_bytes_with_randomness(_DESTINATION, _BYTES)                       \
     fill_with_randomness(_DESTINATION, _BYTES, 0)

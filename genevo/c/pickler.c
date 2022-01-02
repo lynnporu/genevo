@@ -73,9 +73,9 @@ pool_t * read_pool(const char *address) {
 
     pool->node_id_part_bit_size = preamble->node_id_part_bit_size;
     pool->weight_part_bit_size = preamble->weight_part_bit_size;
-    pool->gene_bytes_size = (
+    pool->gene_bytes_size = BITS_TO_BYTES(
         pool->node_id_part_bit_size * 2 +
-        pool->weight_part_bit_size) / 8;
+        pool->weight_part_bit_size);
 
     pool->first_genome_start_position =
         &preamble->metadata_initial_byte + 1 + pool->metadata_byte_size + 1;
@@ -108,7 +108,8 @@ void open_file_for_pool(const char *address, pool_t *pool, genome_t **genomes) {
             genomes[genome_i]->length * pool->gene_bytes_size +
             sizeof(GENOME_RESIDUE_BYTE) +
             sizeof_member(genome_t, residue_size_bits) +
-            (genome_residue_size_t)(genomes[genome_i]->residue_size_bits / 8) + 1 +
+            (genome_residue_size_t)BITS_TO_BYTES(
+                genomes[genome_i]->residue_size_bits) +
             sizeof(GENOME_TERMINAL_BYTE);
 
     file_map_t *mapping = open_file(address, OPEN_MODE_WRITE, file_size - 1);
@@ -191,8 +192,8 @@ void save_pool(
         if (flags & POOL_ASSIGN_METADATA_POINTERS)
             current_genome->metadata = genome_metadata;
 
-        uint8_t residue_size_bytes =
-            (uint8_t)(current_genome->residue_size_bits / 8) + 1;
+        uint8_t residue_size_bytes = BITS_TO_BYTES(
+            current_genome->residue_size_bits);
 
         #define GENES_BYTES_SIZE (current_genome->length * pool->gene_bytes_size)
 
@@ -314,7 +315,7 @@ genome_t * read_next_genome(pool_t * const pool) {
         residue_byte + sizeof(uint8_t) + sizeof_member(genome_t, residue_size_bits);
 
     void * terminal_byte =
-        genome->residue + (genome->residue_size_bits / 8) + 1;
+        genome->residue + BITS_TO_BYTES(genome->residue_size_bits);
 
     if (*(uint8_t *)terminal_byte != GENOME_TERMINAL_BYTE) {
         ERROR_LEVEL = ERR_GENM_CORRUPT_END;
