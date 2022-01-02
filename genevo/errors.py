@@ -51,31 +51,36 @@ def check_errors(raise_immediately: bool = True) -> typing.Optional[Exception]:
     """
 
     error_level = get_error_level()
+    # TODO: sometimes get_error_level() returns int, other times c_ubyte.
+    error_level_value = (
+        error_level
+        if isinstance(error_level, int)
+        else error_level.value)
 
     error = None
 
-    if not error_level:
+    if not error_level_value:
         return error  # = None at this stage
 
-    elif 0xf0 <= error_level <= 0xff:
+    elif 0xf0 <= error_level_value <= 0xff:
         error = OSError
 
-    elif 0x01 <= error_level <= 0x0f:
+    elif 0x01 <= error_level_value <= 0x0f:
         error = OSError
 
-    elif 0x11 <= error_level <= 0x1f:
+    elif 0x11 <= error_level_value <= 0x1f:
         error = PoolParsingError
 
-    elif 0x21 <= error_level <= 0x2f:
+    elif 0x21 <= error_level_value <= 0x2f:
         error = GenomeParsingError
 
-    elif 0x31 <= error_level <= 0x3f:
+    elif 0x31 <= error_level_value <= 0x3f:
         error = GeneParsingError
 
-    elif error_level == 0xe0:
+    elif error_level_value == 0xe0:
         error = StopIteration
 
-    elif 0xe1 <= error_level <= 0xef:
+    elif 0xe1 <= error_level_value <= 0xef:
         error = TypeError
 
     error_instance = error(
