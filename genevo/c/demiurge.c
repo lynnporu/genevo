@@ -220,8 +220,10 @@ char * alloc_name_for_pool(pool_t *pool) {
 
 	uint64_t number = time(NULL) + (uint64_t)pool;
 	// maximum size of uint64 in hex is 9 symbols + ".pool"
-	char *address = malloc(sizeof(char) * (9 + 5));
+	char *address = calloc(sizeof(char), 9 + 5);
 
+	// in case printed string is less than (9 + 5), symbols, the last bit is
+	// \0 anyway, so it will suit well for functions taking (const char *)
 	sprintf(address, "%lX.pool", number);
 
 	return address;
