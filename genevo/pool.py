@@ -323,7 +323,12 @@ class Genome(containers._LazyIterableContainer, _HasStructBackend):
         )
 
     def __len__(self) -> int:
-        return len(self.genes)
+        if self._struct_ref:
+            return self._struct_ref.contents.length
+        elif self.genes:
+            return len(self.genes)
+        else:
+            return None
 
     def _get_by_index(self, index: int) -> Gene:
         return self.genes[index]
@@ -585,7 +590,12 @@ class GenePool(containers._IterableContainer, _HasStructBackend):
         return bits._max_for_bit(self.gene_bits_size)
 
     def __len__(self) -> int:
-        return len(self.genomes)
+        if self._struct_ref:
+            return self.struct.organisms_number
+        elif self.genomes:
+            return len(self.genomes)
+        else:
+            return None
 
     def _get_by_index(self, index: int) -> Genome:
         return self.genomes[index]
