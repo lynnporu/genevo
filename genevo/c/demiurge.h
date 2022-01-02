@@ -35,7 +35,7 @@ typedef enum generator_mode_e {
 } generator_mode_t;
 
 void generate_random_genome_data(
-    genome_t * const, uint64_t bits_number, uint8_t gene_byte_size,
+    genome_t * const, uint8_t gene_byte_size,
     generator_mode_t
 );
 
@@ -138,7 +138,6 @@ void delete_pool_metadata(pool_t * const pool);
  */
 void fill_pool(
     const char *address, population_t * const,
-    uint64_t genome_bit_size,
     generator_mode_t
 );
 

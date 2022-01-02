@@ -49,14 +49,15 @@ void fill_with_randomness(uint8_t *destination, uint32_t bytes, uint8_t bits) {
 
 }
 
+/*
+
+For this function genome->length and genome->residue_size_bits should be set.
+
+ */
 void generate_genome_data(
-	genome_t * const genome, uint64_t bits_number, uint8_t gene_byte_size,
+	genome_t * const genome, uint8_t gene_byte_size,
 	generator_mode_t generator_mode
 ) {
-
-	// float will round down
-	genome->length = bits_number / gene_byte_size;
-	genome->residue_size_bits = bits_number - genome->length * gene_byte_size;
 
 	if (generator_mode == GENERATE_RANDOMNESS) {
 		fill_bytes_with_randomness(genome->genes, genome->length * gene_byte_size);
@@ -242,7 +243,6 @@ pool_t must be set:
  */
 void fill_pool(
 	const char *address, population_t * const population,
-	uint64_t genome_bit_size,
 	generator_mode_t generator_mode
 ) {
 
@@ -278,7 +278,7 @@ void fill_pool(
 		genome_itr++
 	) {
 		generate_genome_data(
-			population->genomes[genome_itr], genome_bit_size,
+			population->genomes[genome_itr],
 			population->pool->gene_bytes_size, generator_mode);
 	}
 
@@ -327,7 +327,7 @@ population_t * create_pool_in_file(
 
 	fill_pool(
 		NULL, // file address
-		population, genome_bit_size, generator_mode);
+		population, generator_mode);
 
 	return population;
 
