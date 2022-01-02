@@ -152,10 +152,10 @@ void save_pool(
     byte_t *pool_metadata = &pool_preamble->metadata_initial_byte + 1;
 
     // copy pool meta bytes
-    if (flags & POOL_COPY_METADATA){
+    if (flags & POOL_COPY_METADATA)
         memcpy(pool_metadata, pool->metadata, pool->metadata_byte_size);
 
-    if (flags & POOL_ASSIGN_METADATA_POINTERS){
+    if (flags & POOL_ASSIGN_METADATA_POINTERS)
         pool->metadata = pool_metadata;
 
     void *pool_meta_terminal_byte = pool_metadata + pool->metadata_byte_size;
