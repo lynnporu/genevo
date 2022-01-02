@@ -1,5 +1,6 @@
 import abc
 import enum
+import math
 import typing
 
 from . import definitions
@@ -202,7 +203,7 @@ class GenomeResidue(bits._BitField):
         *args, **kwargs
     ):
 
-        full_bytes_size = (bit_size // 8) + 1
+        full_bytes_size = math.ceil(bit_size / 8)
 
         return super().from_dynamic_array(
             byte_array=byte_array,
