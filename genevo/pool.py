@@ -413,22 +413,27 @@ class GenePool(containers._IterableContainer, _HasStructBackend):
     ):
         """Generates new pool.
         """
-        population = definitions.create_pool_in_file(
+        population = definitions.libc.create_pool_in_file(
             organisms_num,
             node_id_part_size, weight_part_size,
             input_neurons_number, output_neurons_number,
             genome_bit_size,
             generator_mode.value)
 
-        return cls.from_struct(
-            struct_ref=population.pool,
-            genomes_structs_ref=population.genomes)
+        instance = cls.from_struct(
+            struct_ref=population.contents.pool,
+            genomes_structs_ref=population.contents.genomes,
+            genomes_structs_vector_size=(
+                population.contents.pool.contents.organisms_number))
+
+        return instance
 
     @classmethod
     def from_struct(
         cls,
-        struct_ref: definitions.libc.pool,
-        genomes_structs_ref: definitions.libc.genome_p_p = None
+        struct_ref: definitions.libc.pool_p,
+        genomes_structs_ref: definitions.libc.genome_p_p = None,
+        genomes_structs_vector_size: int = None
     ):
         """
         If genomes is not given, they'll be parsed from the pool.
