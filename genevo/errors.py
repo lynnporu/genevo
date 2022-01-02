@@ -12,6 +12,11 @@ class GenevoError(Exception):
         super().__init__(message)
 
 
+class LibcError(Exception):
+    """Some unexpected error underlying C lib generated.
+    """
+
+
 class FileParsingError(GenevoError):
     """Class for all errors related to processing pool files.
     """
@@ -82,6 +87,9 @@ def check_errors(raise_immediately: bool = True) -> typing.Optional[Exception]:
 
     elif 0xe1 <= error_level_value <= 0xef:
         error = TypeError
+
+    else:
+        error = LibcError
 
     error_instance = error(
         definitions.libc.get_err_string(error_level).decode("utf-8"))
