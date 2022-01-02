@@ -35,7 +35,7 @@ def get_error_level() -> ctypes.c_uint8:
     Returns:
         ctypes.c_uint8; Value of the ERROR_LEVEL.
     """
-    return definitions.libc.ERROR_LEVEL
+    return definitions.libc.ERROR_LEVEL.value
 
 
 def check_errors(raise_immediately: bool = True) -> typing.Optional[Exception]:
