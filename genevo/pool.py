@@ -259,7 +259,8 @@ class Genome(containers._LazyIterableContainer, _HasStructBackend):
         self._genes = genes
 
     def __repr__(self):
-        return f"<Genome with {len(self)} genes>"
+        size = len(self) or "unknown number of"
+        return f"<Genome with {size} genes>"
 
     def _generate_struct_ref(self) -> definitions.libc.genome_p:
         super()._generate_struct_ref()
@@ -400,7 +401,8 @@ class GenePool(containers._IterableContainer, _HasStructBackend):
             definitions.libc.close_pool(self.struct_ref)
 
     def __repr__(self):
-        return f"<GenePool with {len(self)} genomes>"
+        size = len(self) or "unknown number of"
+        return f"<GenePool with {size} genomes>"
 
     @classmethod
     def generate(
