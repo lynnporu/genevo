@@ -263,11 +263,15 @@ class Genome(containers._LazyIterableContainer, _HasStructBackend):
 
         if genome_struct_ref:
             self.iter_caching_on = True
-            self._residue = GenomeResidue.from_dynamic_array(
-                byte_array=genome_struct_ref.contents.residue,
-                bit_size=genome_struct_ref.contents.residue_size_bits,
-                copy_bytes=False
-            )
+            residue_size = genome_struct_ref.contents.residue_size_bits
+            if residue_size == 0:
+                self._residue = None
+            else:
+                self._residue = GenomeResidue.from_dynamic_array(
+                    byte_array=genome_struct_ref.contents.residue,
+                    bit_size=residue_size,
+                    copy_bytes=False
+                )
         else:
             self.iter_caching_on = False
             self._residue = genes_residue
