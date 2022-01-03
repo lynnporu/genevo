@@ -21,7 +21,7 @@ class _IterableContainer(metaclass=abc.ABCMeta):
 
     def __iter__(self):
         return (
-            self._get_by_index(index)
+            self._iteration_function(index)
             for index in range(len(self))
         )
 
@@ -67,7 +67,7 @@ class _LazyIterableContainer(_IterableContainer, metaclass=abc.ABCMeta):
         self._iter_caching_on = value
 
         self._iteration_function = (
-            self._get_by_index_cached
+            self._get_from_cache
             if self._iter_caching_on
             else self._get_by_index
         )
@@ -83,17 +83,6 @@ class _LazyIterableContainer(_IterableContainer, metaclass=abc.ABCMeta):
         if index not in self._iter_cache:
             self._iter_cache[index] = self._get_by_index_cached(index)
 
-    def __getitem__(self, key: typing.Union[int, slice]):
-
-        if not self._iter_caching_on:
-            return super().__getitem__(key)
-
-        # ensure range was inited
-        if isinstance(key, slice):
-            for index in range(key.start, key.stop, key.step):
-                self._ensure_index_inited(index)
-            return super().__getitem__(key)
-
-        else:
-            self._ensure_index_inited(key)
-            return super().__getitem__(key)
+    def _get_from_cache(self, index):
+        self._ensure_index_inited(index)
+        return self._iter_cache[index]
