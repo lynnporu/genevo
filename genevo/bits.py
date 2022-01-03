@@ -65,6 +65,8 @@ class _BitField(containers._IterableContainer):
                 give 10-bit numbers.
 
         """
+        super().__init__()
+
         if not (skip_last_bits < 8):
             raise ValueError(
                 "you can't skip more than 7 bits of the last byte, just pass "
