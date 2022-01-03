@@ -8,6 +8,9 @@ class _IterableContainer(metaclass=abc.ABCMeta):
     to be implemented.
     """
 
+    def __init__(self):
+        self._iteration_function = self._get_by_index
+
     @abc.abstractmethod
     def _get_by_index(self, index: int):
         pass
