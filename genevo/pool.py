@@ -246,14 +246,14 @@ class Genome(containers._LazyIterableContainer, _HasStructBackend):
         self._pool = pool
 
         if genome_struct_ref:
-            self._iter_caching_on = True
+            self.iter_caching_on = True
             self._residue = GenomeResidue.from_dynamic_array(
                 byte_array=genome_struct_ref.contents.residue,
                 bit_size=genome_struct_ref.contents.residue_size_bits,
                 copy_bytes=False
             )
         else:
-            self._iter_caching_on = False
+            self.iter_caching_on = False
             self._residue = genes_residue
 
         self._genes = genes
@@ -274,7 +274,7 @@ class Genome(containers._LazyIterableContainer, _HasStructBackend):
             self._residue.to_dynamic_array()
         ))
 
-    def _iter_function(self, index: int) -> Gene:
+    def _get_by_index_cached(self, index: int) -> Gene:
         struct_ref = definitions.libc.get_gene_in_genome_by_index(
             self.struct_ref, index, self.pool.struct_ref)
         return Gene.from_struct(pool=self.pool, struct_ref=struct_ref)
@@ -383,6 +383,9 @@ class GenePool(containers._IterableContainer, _HasStructBackend):
         genomes: typing.List[Genome] = None,
         struct_ref: definitions.libc.pool_p = None
     ):
+
+        super().__init__()
+
         # ! genomes may be not initialized yet, if class was created by
         # ! from_file_dump method
 

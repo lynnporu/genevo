@@ -32,14 +32,14 @@ class _IterableContainer(metaclass=abc.ABCMeta):
             # map list of indices with a such function which extracts an item
             # by its index
             return list(map(
-                self._get_by_index,
+                self._iteration_function,
                 itertools.islice(  # produce indices for extraction
                     range(len(self)),
                     key.start, key.stop, key.step)
             ))
 
         else:
-            return self._get_by_index(key)
+            return self._iteration_function(key)
 
 
 class _LazyIterableContainer(_IterableContainer, metaclass=abc.ABCMeta):
@@ -47,11 +47,30 @@ class _LazyIterableContainer(_IterableContainer, metaclass=abc.ABCMeta):
     """
 
     def __init__(self):
+        super().__init__()
         self._iter_caching_on = True
         self._iter_cache = dict()
 
+    @property
+    def iter_caching_on(self):
+        return self._iter_caching_on
+
+    @iter_caching_on.setter
+    def iter_caching_on(self, value: bool):
+
+        if not isinstance(value, bool):
+            raise TypeError
+
+        self._iter_caching_on = value
+
+        self._iteration_function = (
+            self._get_by_index_cached
+            if self._iter_caching_on
+            else self._get_by_index
+        )
+
     @abc.abstractmethod
-    def _iter_function(self, index: int):
+    def _get_by_index_cached(self, index: int):
         pass
 
     def _reset_iter_cache(self):
@@ -59,7 +78,7 @@ class _LazyIterableContainer(_IterableContainer, metaclass=abc.ABCMeta):
 
     def _ensure_index_inited(self, index: int):
         if index not in self._iter_cache:
-            self._iter_cache[index] = self._iter_function(index)
+            self._iter_cache[index] = self._get_by_index_cached(index)
 
     def __getitem__(self, key: typing.Union[int, slice]):
 
