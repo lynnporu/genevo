@@ -14,6 +14,17 @@ class NodeConnectionType(enum.Enum):
     is_intermediate = 0b01000000
     is_output = 0b00100000
 
+    @staticmethod
+    def get_name(value) -> str:
+        if value == NodeConnectionType.is_input:
+            return "input"
+        elif value == NodeConnectionType.is_intermediate:
+            return "intermediate"
+        elif value == NodeConnectionType.is_output:
+            return "output"
+        else:
+            raise TypeError
+
 
 _OUTCOME_CONNECTION_TYPE_BITMASK = 0b11100000
 _INCOME_CONNECTION_TYPE_BITMASK = 0b00011100
@@ -80,9 +91,14 @@ class Gene(_HasStructBackend):
         self._gene_bytes = gene_bytes
 
     def __repr__(self):
+        outcome_name = NodeConnectionType.get_name(self._outcome_node_type)
+        income_name = NodeConnectionType.get_name(self._income_node_type)
+
         return (
             f"<Gene "
-            f"{self._outcome_node_id} -> {self._income_node_id}, "
+            f"({outcome_name}){self._outcome_node_id}"
+            " -> "
+            f"({income_name}){self._income_node_id} "
             f"weight={self._weight}>")
 
     def _generate_struct_ref(self) -> definitions.libc.gene_p:
