@@ -421,9 +421,6 @@ void copy_uint64_to_bitslots(
 
 }
 
-#define MAX_FOR_BIT(_BIT_SIZE) \
-    ((_BIT_SIZE) == 64 ? 0xffffffffffff : (1 << (_BIT_SIZE)) - 1)
-
 uint8_t * point_gene_in_genome_by_index(
     genome_t * const genome, uint32_t index, pool_t * const pool
 ) {
@@ -496,10 +493,11 @@ gene_t * get_gene_by_pointer(gene_byte_t * const gene_start_byte, pool_t * const
         pool->node_id_part_bit_size * 2,
         pool->node_id_part_bit_size * 2 + pool->weight_part_bit_size - 1);
 
-    gene->weight =
-        gene->weight_unnormalized / (double)MAX_FOR_BIT(pool->weight_part_bit_size);
+    gene->weight = NORMALIZE_FROM_BIT_WIDTH(
+        gene->weight_unnormalized,
+        pool->weight_part_bit_size);
 
-    uint64_t nodes_capacity = MAX_FOR_BIT(pool->node_id_part_bit_size);
+    uint64_t nodes_capacity = MAX_FOR_BIT_WIDTH(pool->node_id_part_bit_size);
 
     gene->connection_type = 0;
 
@@ -564,7 +562,7 @@ gene_byte_t * genes_to_byte_array(
 
     #undef GENES_ARRAY_SIZE
 
-    uint64_t nodes_capacity = MAX_FOR_BIT(pool->gene_bytes_size);
+    uint64_t nodes_capacity = MAX_FOR_BIT_WIDTH(pool->gene_bytes_size);
 
     gene_byte_t* start_byte;
     gene_t* gene;
