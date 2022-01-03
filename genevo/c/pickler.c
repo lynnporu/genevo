@@ -363,14 +363,43 @@ void copy_bitslots_to_uint64(
     const gene_byte_t* slots, uint64_t * const number, uint8_t start, uint8_t end
 ) {
 
-    uint8_t byte_offset = start / 8,
-            bit_offset = start % 8;
+    const uint8_t byte_offset = start / 8,
+                  bit_offset = start % 8;
     
     uint64_t copy_number = *(uint64_t *)(slots + byte_offset);
     
-    copy_number = HTON(copy_number) << bit_offset;
-        
-    *number = copy_number >> (64 - end + start - 1);
+    // Delete left unwanted bits with left shifting
+    copy_number <<= bit_offset;
+
+    // Delete right unwanted bits should be done with considering byte
+    // alignment.
+    // For example: 1111 1111 1000 0000 -> 0000 1111 1111 1000. Here also 3
+    // last bits should be manually set to 0
+    const uint8_t number_size = end - start + 1;
+    const uint8_t ceil_bit_size = ceil(number_size / 8) * 8;
+
+    // Number represented with bytes [0xa, 0xb, 0xc] >> 8 on litle endian
+    // platform will give us number [0xb, 0xc] and vice versa. So in order to
+    // erase right bits we should do left shifting.
+
+    #ifdef IS_BIG_ENDIAN
+    copy_number >>= 64 - number_size;
+    #endif
+
+    #ifdef IS_LITTLE_ENDIAN
+    copy_number <<= 64 - number_size;
+    #endif
+
+    const uint8_t unwanted_right_bits_num = ceil_bit_size - number_size;
+    copy_number &= ~((1 << unwanted_right_bits_num) - 1);
+
+    // On big endian platform number has already properly placed bytes
+
+    #ifdef IS_LITTLE_ENDIAN
+    copy_number = bswap_64(copy_number);
+    #endif
+
+    *number = copy_number;
 
 }
 
