@@ -25,14 +25,14 @@ void fill_with_randomness(uint8_t *destination, uint32_t bytes, uint8_t bits) {
 	// fill whole bytes first
 
 	#define FILL_NEXT(_SIZE, _TYPE)                                            \
-		if (left_bytes >= _SIZE) {                                             \
+		if (bytes >= _SIZE) {                                                  \
 			*(_TYPE *)destination = next_random64();                           \
 			destination += _SIZE;                                              \
-			left_bytes -= _SIZE;                                               \
+			bytes -= _SIZE;                                                    \
 			continue;                                                          \
 		}
 
-	for (uint8_t left_bytes = bytes; left_bytes > 0; ) {
+	while (bytes > 0) {
 		// this will work faster than just filling all the bytes
 		// with next_random64()
 		FILL_NEXT(8, uint64_t);
