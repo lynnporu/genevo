@@ -267,6 +267,8 @@ void fill_pool(
 	save_pool(
 		population->pool, population->genomes, POOL_ASSIGN_GENOME_POINTERS);
 
+	if (ERROR_LEVEL != ERR_OK) return;
+
 	#ifndef ERROR_ON_EMPTY_FILENAME_FOR_POOL
 	if (address_is_allocated) free(allocated_address);
 	#endif
