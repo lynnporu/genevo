@@ -497,7 +497,7 @@ gene_t * get_gene_by_pointer(gene_byte_t * const gene_start_byte, pool_t * const
         pool->node_id_part_bit_size * 2 + pool->weight_part_bit_size - 1);
 
     gene->weight =
-        gene->weight_unnormalized / MAX_FOR_BIT(pool->weight_part_bit_size);
+        gene->weight_unnormalized / (double)MAX_FOR_BIT(pool->weight_part_bit_size);
 
     uint64_t nodes_capacity = MAX_FOR_BIT(pool->node_id_part_bit_size);
 
