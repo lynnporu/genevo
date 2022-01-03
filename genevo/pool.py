@@ -1,26 +1,12 @@
 import abc
 import enum
+import math
 import typing
-import itertools
 
-from . import c_definitions
+from . import definitions
 from . import errors
-from . import lazy
-
-
-def _max_for_bit(size: int) -> int:
-    """Returns a number which has all `size` bits set to 1.
-
-    Examples:
-        >>> bin(_max_for_bit(3))
-        <<< 0b111
-        >>> bin(_max_for_bit(0))
-        <<< 0b0
-    """
-    if size >= 0:
-        return (1 << size) - 1
-    else:
-        raise ValueError("`size` should be non negative number")
+from . import containers
+from . import bits
 
 
 class NodeConnectionType(enum.Enum):
@@ -28,48 +14,20 @@ class NodeConnectionType(enum.Enum):
     is_intermediate = 0b01000000
     is_output = 0b00100000
 
+    @staticmethod
+    def get_name(value) -> str:
+        if value == NodeConnectionType.is_input:
+            return "input"
+        elif value == NodeConnectionType.is_intermediate:
+            return "intermediate"
+        elif value == NodeConnectionType.is_output:
+            return "output"
+        else:
+            raise TypeError
+
 
 _OUTCOME_CONNECTION_TYPE_BITMASK = 0b11100000
 _INCOME_CONNECTION_TYPE_BITMASK = 0b00011100
-
-
-class _IterableContainer(metaclass=abc.ABCMeta):
-    """Implements slice indexing for container. Requires single _get_by_index
-    to be implemented.
-    """
-
-    @abc.abstractmethod
-    def _get_by_index(self, index: int):
-        pass
-
-    @abc.abstractmethod
-    def __len__(self):
-        pass
-
-    def __iter__(self):
-        return (
-            self._get_by_index(index)
-            for index in range(len(self))
-        )
-
-    def to_list(self):
-        return list(self.__iter__())
-
-    # def __getitem__(self, key: int | slice):  # For Python3.10
-    def __getitem__(self, key: typing.Union[int, slice]):
-
-        if isinstance(key, slice):
-            # map list of indices with a such function which extracts an item
-            # by its index
-            return list(map(
-                self._get_by_index,
-                itertools.islice(  # produce indices for extraction
-                    range(len(self)),
-                    key.start, key.stop, key.step)
-            ))
-
-        else:
-            return self._get_by_index(key)
 
 
 class _HasStructBackend(metaclass=abc.ABCMeta):
@@ -95,12 +53,12 @@ class _HasStructBackend(metaclass=abc.ABCMeta):
 
     @property
     def struct_ref(self):
-        if not self._struct_ref:
+        if self._struct_ref is None:
             self._struct_ref = self._generate_struct_ref()
         return self._struct_ref
 
     @property
-    def struct(self) -> c_definitions.ctypes.Structure:
+    def struct(self) -> definitions.ctypes.Structure:
         return self.struct_ref.contents
 
 
@@ -114,8 +72,8 @@ class Gene(_HasStructBackend):
         income_node_type: NodeConnectionType,
         weight_unnormalized: int = None,
         weight: int = None,
-        struct_ref: c_definitions.gene_struct_p = None,
-        gene_bytes: c_definitions.gene_p = None
+        struct_ref: definitions.libc.gene_p = None,
+        gene_bytes: definitions.libc.gene_byte_p = None
     ):
 
         if weight_unnormalized is None and weight is None:
@@ -133,13 +91,18 @@ class Gene(_HasStructBackend):
         self._gene_bytes = gene_bytes
 
     def __repr__(self):
+        outcome_name = NodeConnectionType.get_name(self._outcome_node_type)
+        income_name = NodeConnectionType.get_name(self._income_node_type)
+
         return (
             f"<Gene "
-            f"{self._outcome_node_id} -> {self._income_node_id}, "
+            f"({outcome_name}){self._outcome_node_id}"
+            " -> "
+            f"({income_name}){self._income_node_id} "
             f"weight={self._weight}>")
 
-    def _generate_struct_ref(self) -> c_definitions.gene_struct_p:
-        return c_definitions.ctypes.pointer(c_definitions.gene_struct_t(
+    def _generate_struct_ref(self) -> definitions.libc.gene_p:
+        return definitions.ctypes.pointer(definitions.libc.gene(
             # outcome_node_id
             (self._outcome_node_id +
              self.pool.range_starts[self._outcome_node_type]),
@@ -154,22 +117,22 @@ class Gene(_HasStructBackend):
 
     @classmethod
     def from_dynamic_array(
-        cls, pool: "GenePool", gene_bytes: c_definitions.gene_p,
+        cls, pool: "GenePool", gene_bytes: definitions.libc.gene_byte_p,
         index_offset: int = -1
     ):
         """Create class instance from pointer to the vector of gene bytes.
 
         Arguments:
             pool: GenePool
-            gene_bytes: c_definitions.gene_p aka POINTER(c_uint8)
+            gene_bytes: definitions.libc.gene_byte_p aka POINTER(c_uint8)
             index_offset: int, default = -1; If set to non-negative integer,
                 then index offset will be used.
 
         """
         struct_ref = (
-            c_definitions.get_gene_by_pointer(gene_bytes, pool)
+            definitions.libc.get_gene_by_pointer(gene_bytes, pool)
             if index_offset < 0 else
-            c_definitions.get_gene_by_index(
+            definitions.libc.get_gene_by_index(
                 gene_bytes, index_offset, pool)
         )
 
@@ -180,7 +143,7 @@ class Gene(_HasStructBackend):
 
     @classmethod
     def from_struct(
-        cls, pool: "GenePool", struct_ref: c_definitions.gene_struct_p
+        cls, pool: "GenePool", struct_ref: definitions.libc.gene_p
     ):
         struct = struct_ref.contents
 
@@ -236,234 +199,93 @@ class Gene(_HasStructBackend):
         return (self._income_node_id, self._income_node_type)
 
     @property
-    def gene_bytes(self) -> c_definitions.gene_p:
+    def gene_bytes(self) -> definitions.libc.gene_byte_p:
 
         if self._gene_bytes is None:
-            self._gene_bytes = c_definitions.generate_genes_byte_array(
+            self._gene_bytes = definitions.libc.generate_genes_byte_array(
                 self.struct_ref, self._pool.struct_ref, 1)
 
         return self._gene_bytes
 
 
-class _GroupingType(enum.Enum):
-    group_by_bit = 1
-    group_by_byte = 8
-
-
-class _BitField(_IterableContainer):
-
-    def __init__(
-        self,
-        # byte_array: iter[int],  # For Python3.10
-        byte_array: typing.Iterable[int],
-        bytes_size: int = None,
-        skip_last_bits: int = 0,
-        # For Python3.10
-        # grouping: _GroupingType | int = _GroupingType.group_by_byte,
-        grouping: typing.Union[_GroupingType, int] =
-            _GroupingType.group_by_byte,
-        skip_byte_size_checking: bool = False
-    ):
-        """Creates BitField.
-
-        Arguments:
-            bytes_size: int, default = None; If None, then byte_array size will
-                be calculated by `len(byte_array)`. It is convenient to set
-                this parameter in case `byte_array` is a pointer to dynamic
-                array which size cannot be calculated manually.
-            skip_last_bits: int, default = 0; Last given number of bits of the
-                last byte wont be considered as the part of the current bit
-                field.
-                Suppose you have defined bit field with byte_array
-                [0xff, 0xff]. With `skip_last_bits`=0 size of the bit field
-                will be 16 bits, but with `skip_last_bits`=3 the size is equal
-                to 13.
-                This argument should be no bigger than 7.
-            skip_byte_size_checking: bool, default = False; If set to False
-                than each given int will be checked to have no more than 8
-                significant bits.
-                In case this check is disabled and one of the given numbers
-                is bigger than 8 bits, any higher bits will be omited.
-            grouping: int, default = _GroupingType.group_by_byte (==8); Defines
-                the size of the items in the bit field. For example, if
-                grouping is set to 10, than indexing inside this container will
-                give 10-bit numbers.
-
-        """
-        if not (skip_last_bits < 8):
-            raise ValueError(
-                "you can't skip more than 7 bits of the last byte, just pass "
-                "the one byte less")
-
-        self._grouping_size = (
-            grouping.value if isinstance(grouping, _GroupingType)
-            else grouping
-        )
-
-        if not (self._grouping_size >= 1):
-            raise ValueError("grouping size cannot be less than 1")
-
-        self._bytes_len = bytes_size or len(byte_array)
-        self._bit_size = self._bytes_len * 8 - skip_last_bits
-
-        if self._bit_size % self._grouping_size:  # != 0
-            raise ValueError(
-                "invalid combination of `skil_last_bits` and `grouping`; some "
-                "of the last bits won't be ever indexed")
-
-        if not skip_byte_size_checking:
-            for index, byte in enumerate(self._byte_array):
-                if byte.bit_count() > 8:
-                    raise ValueError(
-                        f"number at position {index} is equal to {byte} has "
-                        "more than 8 significant bits")
-
-        self._byte_array = byte_array
-        self._number = None
-        self._skip_last_bits = skip_last_bits
-
-    @staticmethod
-    def _copy_bytes(
-        byte_array: c_definitions.c_uint8_p, bytes_size: int
-    # ) -> list[int]:  # For Python3.10
-    ) -> typing.List[int]:
-        return byte_array[:bytes_size]
+class GenomeResidue(bits._BitField):
 
     @classmethod
     def from_dynamic_array(
         cls,
-        byte_array: c_definitions.c_uint8_p,
-        bytes_size: int,
-        copy_bytes: bool = False,
-        *args, **kwargs
-    ):
-        """Creates a bit field from pointer to uint8_t.
-
-        Arguments:
-            copy_bytes: bool, default = False; Set this to True in case the
-                memory behind `byte_array` will be freed soon.
-            *args, **kwargs; The rest of the parameters which will be passed
-                into standard constructor.
-        """
-        if copy_bytes:
-            byte_array = _BitField._copy_bytes(byte_array, bytes_size)
-
-        return cls(
-            byte_array=byte_array,
-            bytes_size=bytes_size,
-            *args, **kwargs
-        )
-
-    def to_dynamic_array(
-        self,
-        realloc: bool = False
-    # ) -> tuple[int, c_definitions.c_uint8_p]:  # For Python3.10
-    ) -> typing.Tuple[int, c_definitions.c_uint8_p]:
-        """Allocates dynamic array (if wasn't allocated yet) for the bytes
-        inside this bit field.
-
-        Arguments:
-            realloc: bool, default = False; If True then new array will be
-                allocated.
-
-        Returns:
-            tuple[0], int; Size of the array.
-            tuple[1], c_uint8_p; The array itself.
-        """
-
-        if (
-            isinstance(self._byte_array, c_definitions.c_uint8_p) and
-            not realloc
-        ):
-            return self._bytes_len, self._byte_array
-
-        return self._bytes_len, (c_definitions.c_uint8_p * self._bytes_len)(
-            *map(c_definitions.c_uint8, self._byte_array))
-
-    @property
-    def number(self) -> int:
-        if self._number is None:
-            self._number = int.from_bytes(self._byte_array, byteorder="big")
-            self._number >>= self._skip_last_bits  # Cut off last unneeded bits
-        return self._number
-
-    @property
-    def bit_length(self):
-        return self._bit_size
-
-    @property
-    def groups_length(self):
-        """Return number of groups inside the bit field.
-        """
-        return self._bit_size // self._grouping_size
-
-    def __len__(self) -> int:
-        """Returns number of groups.
-        """
-        return self.groups_length
-
-    def _get_by_index(self, index: int) -> int:
-        """Get a single number from bit field by its index.
-        """
-        bit_start = \
-            self._bit_size - index * self._grouping_size - self._grouping_size
-
-        if bit_start < 0:
-            raise IndexError
-
-        return self.number & (_max_for_bit(self._grouping_size) << bit_start)
-
-
-class GenomeResidue(_BitField):
-
-    @classmethod
-    def from_dynamic_array(
-        cls,
-        byte_array: c_definitions.c_uint8_p,
+        byte_array: definitions.c_uint8_p,
         bit_size: int,
         copy_bytes: bool = False,
         *args, **kwargs
     ):
 
-        full_bytes_size = (bit_size // 8) + 1
+        full_bytes_size = math.ceil(bit_size / 8)
 
         return super().from_dynamic_array(
             byte_array=byte_array,
             copy_bytes=copy_bytes,
             bytes_size=full_bytes_size,
             skip_last_bits=(full_bytes_size * 8 - bit_size),
-            grouping=_GroupingType.group_by_bit,
+            grouping=bits._GroupingType.group_by_bit,
             skip_byte_size_checking=True
         )
 
 
-class Genome(_IterableContainer, _HasStructBackend):
+class Genome(containers._LazyIterableContainer, _HasStructBackend):
     def __init__(
         self,
         pool: "GenePool",
         metadata: str,
         # genes: list[Gene],  # For Python3.10
-        genes: typing.Union[lazy._LazyStub, typing.List[Gene]],
+        genes: typing.Union[None, typing.List[Gene]],
         genes_residue: GenomeResidue = None,
-        genome_struct_ref: c_definitions.genome_struct_p = None,
+        genome_struct_ref: definitions.libc.genome_p = None,
     ):
+        """
+        Pass either genes and genes_residue or genome_struct_ref.
+        """
+
+        super().__init__()
+
         self._metadata = metadata
-        self._residue = genes_residue
+
+        if (genes or genes_residue) and genome_struct_ref:
+            raise TypeError(
+                "Pass either `genes` and `genes_residue` or "
+                "`genome_struct_ref`")
+
+        if bool(genes) != bool(genes_residue):
+            raise TypeError(
+                "Both `genes` and `genes_residue` should be set or undefined.")
+
         self._struct_ref = genome_struct_ref
         self._pool = pool
 
-        if isinstance(genes, lazy._LazyStub):
-            self._genes = genes.initialize(pool=self)
+        if genome_struct_ref:
+            self.iter_caching_on = True
+            residue_size = genome_struct_ref.contents.residue_size_bits
+            if residue_size == 0:
+                self._residue = None
+            else:
+                self._residue = GenomeResidue.from_dynamic_array(
+                    byte_array=genome_struct_ref.contents.residue,
+                    bit_size=residue_size,
+                    copy_bytes=False
+                )
         else:
-            self._genes = genes
+            self.iter_caching_on = False
+            self._residue = genes_residue
+
+        self._genes = genes
 
     def __repr__(self):
-        return f"<Genome with {len(self)} genes>"
+        size = len(self) or "unknown number of"
+        return f"<Genome with {size} genes>"
 
-    def _generate_struct_ref(self) -> c_definitions.genome_struct_p:
+    def _generate_struct_ref(self) -> definitions.libc.genome_p:
         super()._generate_struct_ref()
         metadata = self._metadata.encode("utf-8")
-        return c_definitions.ctypes.pointer(c_definitions.genome_struct_t(
+        return definitions.ctypes.pointer(definitions.libc.genome(
             len(self),
             metadata,
             len(metadata),
@@ -472,14 +294,19 @@ class Genome(_IterableContainer, _HasStructBackend):
             self._residue.to_dynamic_array()
         ))
 
+    def _get_by_index_cached(self, index: int) -> Gene:
+        struct_ref = definitions.libc.get_gene_in_genome_by_index(
+            self.struct_ref, index, self.pool.struct_ref)
+        return Gene.from_struct(pool=self.pool, struct_ref=struct_ref)
+
     @property
     def pool(self):
         return self._pool
 
     @property
     # For Python3.10
-    # def _gene_bytes(self) -> tuple[int, c_definitions.gene_p]:
-    def _gene_bytes(self) -> typing.Tuple[int, c_definitions.gene_p]:
+    # def _gene_bytes(self) -> tuple[int, definitions.libc.gene_byte_p]:
+    def _gene_bytes(self) -> typing.Tuple[int, definitions.libc.gene_byte_p]:
         """Returns array if bytes for genes. If the genome has no its struct
         yet, then new array will be allocated.
         """
@@ -487,8 +314,8 @@ class Genome(_IterableContainer, _HasStructBackend):
             return self.struct.genes
 
         else:
-            return c_definitions.generate_genes_byte_array(
-                (c_definitions.gene_struct_p * len(self))(
+            return definitions.libc.generate_genes_byte_array(
+                (definitions.libc.gene_p * len(self))(
                     *[gene.struct_ref for gene in self.genes],
                     self._pool._struct,
                     len(self.genes)
@@ -503,37 +330,27 @@ class Genome(_IterableContainer, _HasStructBackend):
     def from_struct(
         cls,
         pool: "GenePool",
-        genome_struct_ref: c_definitions.genome_struct_p
+        genome_struct_ref: definitions.libc.genome_p
     ):
         genome_struct = genome_struct_ref.contents
-        gene_structs_p = [
-            c_definitions.get_gene_in_genome_by_index(
-                genome_struct_ref,
-                index,
-                pool.struct_ref)
-            for index in range(genome_struct.length)
-        ]
 
         return cls(
             pool=pool,
             metadata=bytes(
                 genome_struct.metadata[:genome_struct.metadata_byte_size]
             ).decode("utf-8"),
-            genes=[
-                Gene.from_struct(pool=pool, struct_ref=gene_struct_p)
-                for gene_struct_p in gene_structs_p
-            ],
-            genes_residue=GenomeResidue.from_dynamic_array(
-                byte_array=genome_struct.residue,
-                bit_size=genome_struct.residue_size_bits,
-                copy_bytes=False
-
-            ),
+            genes=None,
+            genes_residue=None,
             genome_struct_ref=genome_struct_ref
         )
 
     def __len__(self) -> int:
-        return len(self.genes)
+        if self._struct_ref:
+            return self._struct_ref.contents.length
+        elif self.genes:
+            return len(self.genes)
+        else:
+            return None
 
     def _get_by_index(self, index: int) -> Gene:
         return self.genes[index]
@@ -561,7 +378,19 @@ class Genome(_IterableContainer, _HasStructBackend):
         pass
 
 
-class GenePool(_IterableContainer, _HasStructBackend):
+class GeneratorMode(enum.Enum):
+    zeros = definitions.libc.generator_mode.GENERATE_ZEROS
+    random = definitions.libc.generator_mode.GENERATE_RANDOMNESS
+
+
+_GENOME_RETRIEVING_LIMIT = int(1e8)
+"""When genomes are being parsed from the pool, we're waiting for StopIteration
+to be raised. This constant is sorf of seat belt to prevent from infinite
+retrieving.
+"""
+
+
+class GenePool(containers._IterableContainer, _HasStructBackend):
 
     def __init__(
         self,
@@ -572,8 +401,11 @@ class GenePool(_IterableContainer, _HasStructBackend):
         weight_part_bit_size: int,
         # genomes: list[Genome] = None,  # For Python3.10
         genomes: typing.List[Genome] = None,
-        struct_ref: c_definitions.pool_struct_p = None
+        struct_ref: definitions.libc.pool_p = None
     ):
+
+        super().__init__()
+
         # ! genomes may be not initialized yet, if class was created by
         # ! from_file_dump method
 
@@ -587,11 +419,50 @@ class GenePool(_IterableContainer, _HasStructBackend):
 
         self._range_starts = None
 
+    def __del__(self):
+        if self.struct_ref is not None:
+            definitions.libc.close_pool(self.struct_ref)
+
     def __repr__(self):
-        return f"<GenePool with {len(self)} genomes>"
+        size = len(self) or "unknown number of"
+        return f"<GenePool with {size} genomes>"
 
     @classmethod
-    def from_struct(cls, struct_ref: c_definitions.pool_struct_t):
+    def generate(
+        cls,
+        organisms_num: int,
+        node_id_part_size: int, weight_part_size: int,
+        input_neurons_number: int, output_neurons_number: int,
+        genome_bit_size: int,
+        generator_mode: GeneratorMode = GeneratorMode.random
+    ):
+        """Generates new pool.
+        """
+        population = definitions.libc.create_pool_in_file(
+            organisms_num,
+            node_id_part_size, weight_part_size,
+            input_neurons_number, output_neurons_number,
+            genome_bit_size,
+            generator_mode.value)
+
+        instance = cls.from_struct(
+            struct_ref=population.contents.pool,
+            genomes_structs_ref=population.contents.genomes,
+            genomes_structs_vector_size=(
+                population.contents.pool.contents.organisms_number))
+
+        return instance
+
+    @classmethod
+    def from_struct(
+        cls,
+        struct_ref: definitions.libc.pool_p,
+        genomes_structs_ref: definitions.libc.genome_p_p = None,
+        genomes_structs_vector_size: int = None
+    ):
+        """
+        If genomes is not given, they'll be parsed from the pool.
+        """
 
         struct = struct_ref.contents
 
@@ -609,18 +480,28 @@ class GenePool(_IterableContainer, _HasStructBackend):
 
         genomes = []
 
+        if genomes_structs_ref:
+            structs_generator = (
+                genomes_structs_ref[index]
+                for index in range(genomes_structs_vector_size))
+            next_genome = lambda: next(structs_generator)  # noqa731
+        else:
+            read_next = definitions.libc.read_next_genome
+            next_genome = lambda: read_next(struct_ref)  # noqa731
+
         try:
-            genome_struct_p = c_definitions.read_next_genome(struct_ref)
-            errors.check_errors()
-            genomes.append(Genome.from_struct(
-                pool=instance, genome_struct_ref=genome_struct_p
-            ))
+            for _ in range(_GENOME_RETRIEVING_LIMIT):
+                genome_struct_p = next_genome()
+                errors.check_errors()  # may raise StopIteration
+                genomes.append(Genome.from_struct(
+                    pool=instance, genome_struct_ref=genome_struct_p
+                ))
 
         except StopIteration:
             pass
 
         finally:
-            c_definitions.reset_genome_cursor(struct_ref)
+            definitions.libc.reset_genome_cursor(struct_ref)
 
         instance._genomes = genomes
 
@@ -630,23 +511,23 @@ class GenePool(_IterableContainer, _HasStructBackend):
     def from_file_dump(cls, address: str) -> "GenePool":
         """Read pool from file dump.
         """
-        pool_struct_p = c_definitions.read_pool(address.encode("utf-8"))
+        pool_struct_p = definitions.libc.read_pool(address.encode("utf-8"))
         errors.check_errors()
         return cls.from_struct(pool_struct_p)
 
     def dump_to_file(self, address: str):
         """Dump the pool into the file with given address.
         """
-        c_definitions.write_pool(
+        definitions.libc.write_pool(
             address.encode("utf-8"),
             self.struct_ref, self.genome_structs_vector)
         errors.check_errors()
 
-    def _generate_struct_ref(self) -> c_definitions.pool_struct_p:
+    def _generate_struct_ref(self) -> definitions.libc.pool_p:
         """Generate C struct pool_struct_p for this gene pool.
         """
         metadata = self.metadata.encode("utf-8")
-        return c_definitions.ctypes.pointer(c_definitions.pool_struct_t(
+        return definitions.ctypes.pointer(definitions.libc.pool(
             len(self),  # organisms_number
             self._input_neurons_number,
             self._output_neurons_number,
@@ -670,7 +551,7 @@ class GenePool(_IterableContainer, _HasStructBackend):
 
     @property
     def nodes_capacity(self) -> int:
-        return _max_for_bit(self._node_id_part_bit_size)
+        return bits._max_for_bit(self._node_id_part_bit_size)
 
     @property
     def node_id_part_bit_size(self) -> int:
@@ -717,9 +598,9 @@ class GenePool(_IterableContainer, _HasStructBackend):
         return self._range_starts
 
     @property
-    def genome_structs_vector(self) -> c_definitions.genome_struct_p_p:
-        return c_definitions.ctypes.pointer(
-            (c_definitions.genome_struct_p * len(self))(
+    def genome_structs_vector(self) -> definitions.libc.genome_p_p:
+        return definitions.ctypes.pointer(
+            (definitions.libc.genome_p * len(self))(
                 *[genome.struct_ref for genome in self.genomes]
             )
         )
@@ -737,10 +618,15 @@ class GenePool(_IterableContainer, _HasStructBackend):
         """A coefficient, which satisfies the following condition:
         > weight_unnormalized / COEFF = weight.
         """
-        return _max_for_bit(self.gene_bits_size)
+        return bits._max_for_bit(self.gene_bits_size)
 
     def __len__(self) -> int:
-        return len(self.genomes)
+        if self._struct_ref:
+            return self.struct.organisms_number
+        elif self.genomes:
+            return len(self.genomes)
+        else:
+            return None
 
     def _get_by_index(self, index: int) -> Genome:
         return self.genomes[index]

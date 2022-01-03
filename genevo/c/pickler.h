@@ -1,3 +1,11 @@
+/*
+
+This module contains methods for dumping the pool into file and vice versa.
+For all operations network byte order (big-endian) is used, so it'll work a
+little slower on little-endian platform because of byte swappings.
+
+ */
+
 #pragma once
 
 #include <stdlib.h>
@@ -12,27 +20,31 @@
 
 #include <arpa/inet.h>
 
-#include "gene_pool.h"
+#include "pool.h"
 #include "error.h"
 #include "files.h"
+#include "types.h"
+#include "bit_manipulations.h"
 
-// Even the empty pool file should be at least 64 bits long.
-#define POOL_FILE_MIN_SAFE_BIT_SIZE 64
+// Even the empty pool file should be at least 256 bits long.
+#define POOL_FILE_MIN_SAFE_BIT_SIZE 256
 
-#define POOL_INITIAL_BYTE           (uint8_t) 0xAB
-#define POOL_META_INITIAL_BYTE      (uint8_t) 0xBC
-#define POOL_META_TERMINAL_BYTE     (uint8_t) 0xCD
-#define POOL_TERMINAL_BYTE          (uint8_t) 0xFF
+typedef uint8_t file_control_byte_t;
 
-#define GENOME_INITIAL_BYTE         (uint8_t) 0xA0
-#define GENOME_META_INITIAL_BYTE    (uint8_t) 0xDE
-#define GENOME_META_TERMINAL_BYTE   (uint8_t) 0xEF
-#define GENOME_RESIDUE_BYTE         (uint8_t) 0xA2
-#define GENOME_TERMINAL_BYTE        (uint8_t) 0xA1
+#define POOL_INITIAL_BYTE           (file_control_byte_t)0xAB
+#define POOL_META_INITIAL_BYTE      (file_control_byte_t)0xBC
+#define POOL_META_TERMINAL_BYTE     (file_control_byte_t)0xCD
+#define POOL_TERMINAL_BYTE          (file_control_byte_t)0xFF
+
+#define GENOME_INITIAL_BYTE         (file_control_byte_t)0xA0
+#define GENOME_META_INITIAL_BYTE    (file_control_byte_t)0xDE
+#define GENOME_META_TERMINAL_BYTE   (file_control_byte_t)0xEF
+#define GENOME_RESIDUE_BYTE         (file_control_byte_t)0xA2
+#define GENOME_TERMINAL_BYTE        (file_control_byte_t)0xA1
 
 /*
 
-! The notation defined in gene_pool.h is used here. (So MNSb means the size of
+! The notation defined in pool.h is used here. (So MNSb means the size of
   metadata of a genome in bits, for example.)
 
 Structure of the genome in the memory is the following:
@@ -62,13 +74,13 @@ If the size of the genome cannot be aligned to size of the single gene (i.e.
 genome contains some terminal bits that are not anough to form the new gene),
 the residue can be placed after GENOME_RESIDUE_BYTE.
 
-*/
+ */
 
 typedef struct genome_preamble_s {
-    uint8_t   initial_byte;
-    uint32_t  genes_number;
-    uint16_t  metadata_byte_size;
-    uint8_t   metadata_initial_byte;
+    file_control_byte_t    initial_byte;
+    genome_length_t        length;
+    genome_metadata_size_t metadata_byte_size;
+    file_control_byte_t    metadata_initial_byte;
 } __attribute__((packed, aligned(1))) genome_file_preamble_t;
 
 /*
@@ -101,56 +113,151 @@ POOL_TERMINAL_BYTE                    8            End byte used to verify
   means, maximum OGSb value can be 255. Maximum value for number, which consists
   of 255 bits is 5.789604e+76, which is pretty large.
 
-*/
+ */
 
 typedef struct pool_file_preamble_s {
-    uint8_t  initial_byte;
-    uint64_t organisms_number;
-    uint64_t input_neurons_number;
-    uint64_t output_neurons_number;
-    uint8_t  node_id_part_bit_size;
-    uint8_t  weight_part_bit_size;
-    uint16_t metadata_byte_size;
-    uint8_t  metadata_initial_byte;
+    file_control_byte_t        initial_byte;
+    pool_organisms_num_t       organisms_number;
+    pool_neurons_num_t         input_neurons_number;
+    pool_neurons_num_t         output_neurons_number;
+    pool_gene_node_id_part_t   node_id_part_bit_size;
+    pool_gene_weight_part_t    weight_part_bit_size;
+    pool_metadata_size_t       metadata_byte_size;
+    file_control_byte_t        metadata_initial_byte;
 } __attribute__((packed, aligned(1))) pool_file_preamble_t;
 
-/*
-
-All data structures is being dumped into the file using using network byte
-order which is big-endian.
-
-*/
-
-#define hton16 htons
-#define ntoh16 ntohs
-#define hton32 htonl
-#define ntoh32 ntohl
-#define hton64(x) ((((uint64_t)htonl(x)) << 32) + htonl((x) >> 32))
-#define ntoh64(x) ((((uint64_t)ntohl(x)) << 32) + ntohl((x) >> 32))
 
 void copy_bitslots_to_uint64(
-    uint8_t *slots, uint64_t *number,
+    const byte_t *slots, uint64_t * const number,
     uint8_t start, uint8_t end);
 
 void copy_uint64_to_bitslots(
-    uint64_t *number, uint8_t *slots,
+    const uint64_t *number, byte_t * const slots,
     uint8_t start, uint8_t number_size
 );
 
-uint8_t * point_gene_in_genome_by_index(genome_t *, uint32_t index, pool_t *);
-uint8_t * point_gene_by_index(uint8_t *genes, uint32_t index, pool_t *pool);
-gene_t * get_gene_in_genome_by_index(genome_t *, uint32_t, pool_t *);
-gene_t * get_gene_by_index(uint8_t *genes, uint32_t index, pool_t *);
-gene_t * get_gene_by_pointer(uint8_t *gene_start_byte, pool_t *);
+/* @function point_gene_in_genome_by_index
+ * @return uint8*
+ * @argument genome*
+ * @argument uint32
+ * @argument pool*
+ */
+uint8_t * point_gene_in_genome_by_index(genome_t * const, uint32_t index, pool_t *);
 
+/* @function point_gene_by_index
+ * @return uint8*
+ * @argument uint8*
+ * @argument uint32
+ * @argument pool*
+ */
+uint8_t * point_gene_by_index(gene_byte_t * const genes, uint32_t index, pool_t * const pool);
+
+/* @function get_gene_in_genome_by_index
+ * @return gene*
+ * @argument genome*
+ * @argument uint32
+ * @argument pool*
+ */
+gene_t * get_gene_in_genome_by_index(genome_t * const, uint32_t, pool_t * const);
+
+/* @function get_gene_by_index
+ * @return gene*
+ * @argument uint8*
+ * @argument uint32
+ * @argument pool*
+ */
+gene_t * get_gene_by_index(gene_byte_t * const genes, uint32_t index, pool_t * const);
+
+/* @function get_gene_by_pointer
+ * @return gene*
+ * @argument uint8
+ * @argument pool*
+ */
+gene_t * get_gene_by_pointer(gene_byte_t * const gene_start_byte, pool_t * const);
+
+void open_file_for_pool(
+    const char *address, pool_t * const pool, genome_t ** const genomes);
+void close_file_for_pool(pool_t * const pool);
+
+/* @flags save_pool_flag
+ * @type uint8
+ * @flag POOL_COPY_DATA                (1 << 0)
+ * @flag POOL_COPY_METADATA            (1 << 1)
+ * @flag POOL_ASSIGN_GENOME_POINTERS   (1 << 2)
+ * @flag POOL_ASSIGN_METADATA_POINTERS (1 << 3)
+ * @flag POOL_REWRITE_DESCRIPTION      (1 << 4)
+ */
+typedef uint8_t save_pool_flag_t;
+#define POOL_COPY_DATA                (save_pool_flag_t)(1 << 0)
+#define POOL_COPY_METADATA            (save_pool_flag_t)(1 << 1)
+#define POOL_ASSIGN_GENOME_POINTERS   (save_pool_flag_t)(1 << 2)
+#define POOL_ASSIGN_METADATA_POINTERS (save_pool_flag_t)(1 << 3)
+#define POOL_REWRITE_DESCRIPTION      (save_pool_flag_t)(1 << 4)
+
+/* @function save_pool
+ * @return void
+ * @argument pool*
+ * @argument genome**
+ * @argument save_pool_flag
+ */
+void save_pool(pool_t * const, genome_t ** const, save_pool_flag_t flags);
+
+/* @function read_pool
+ * @return pool*
+ * @argument char*
+ */
 pool_t * read_pool(const char *address);
-void close_pool(pool_t *pool);
-void write_pool(const char *address, pool_t *pool, genome_t **genomes);
-gene_byte_t * generate_genes_byte_array(gene_t **, pool_t *, uint64_t length);
-void free_genes_byte_array(gene_byte_t *array);
 
-genome_t * read_next_genome(pool_t *pool);
-void reset_genome_cursor(pool_t *pool);
+/* @function write_pool
+ * @return void
+ * @argument char*
+ * @argument pool*
+ * @argument genome**
+ */
+void write_pool(const char *address, pool_t * const, genome_t ** const);
 
-genome_t ** read_genomes(pool_t *pool);
-void free_genomes_ptrs(genome_t ** genomes);
+/* @function close_pool
+ * @return void
+ * @argument pool*
+ */
+void close_pool(pool_t * const);
+
+/* @function genes_to_byte_array
+ * @return uint8
+ * @argument gene**
+ * @argument pool*
+ * @argument uint64
+ */
+gene_byte_t * genes_to_byte_array(gene_t **, pool_t *, uint64_t length);
+
+/* @function free_genes_byte_array
+ * @return void
+ * @argument uint8*
+ */
+void free_genes_byte_array(gene_byte_t * const);
+
+
+/* @function read_next_genome
+ * @return genome*
+ * @argument pool*
+ */
+genome_t * read_next_genome(pool_t * const);
+
+/* @function reset_genome_cursor
+ * @return void
+ * @argument pool*
+ */
+void reset_genome_cursor(pool_t * const);
+
+
+/* @function read_genomes
+ * @return genome**
+ * @argument pool*
+ */
+genome_t ** read_genomes(pool_t * const);
+
+/* @function free_genomes_ptrs
+ * @return void
+ * @argument genome**
+ */
+void free_genomes_ptrs(genome_t ** const);

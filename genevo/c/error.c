@@ -2,9 +2,9 @@
 
 #include <stdio.h>
 
-uint8_t ERROR_LEVEL = 0;
+err_status_t ERROR_LEVEL = 0;
 
-const char * get_err_string(const uint8_t errcode) {
+const char * get_err_string(const err_status_t errcode) {
 
 	switch (errcode) {
 		case ERR_OK:
@@ -15,6 +15,16 @@ const char * get_err_string(const uint8_t errcode) {
 			break;
 		case ERR_OUT_OF_BOUNDS:
 			return ERR_OUT_OF_BOUNDS_STR;
+			break;
+		case ERR_INCOMPATIBLE_FLAGS:
+			return ERR_INCOMPATIBLE_FLAGS_STR;
+			break;
+		case ERR_WRONG_FLAG:
+			return ERR_WRONG_FLAG_STR;
+			break;
+		case ERR_NOT_ENOUGH_PARAMS:
+			return ERR_NOT_ENOUGH_PARAMS_STR;
+			break;
 		case ERR_FILE_CANNOT_OPEN:
 			return ERR_FILE_CANNOT_OPEN_STR;
 			break;
@@ -29,6 +39,9 @@ const char * get_err_string(const uint8_t errcode) {
 			break;
 		case ERR_FILE_CANNOT_WRITE:
 			return ERR_FILE_CANNOT_WRITE_STR;
+			break;
+		case ERR_FILE_CANNOT_STRETCH_READ:
+			return ERR_FILE_CANNOT_STRETCH_READ_STR;
 			break;
 		case ERR_POOL_CORRUPT_TOO_SMALL:
 			return ERR_POOL_CORRUPT_TOO_SMALL_STR;
