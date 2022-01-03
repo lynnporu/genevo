@@ -447,12 +447,12 @@ and output ranges. New ID to `_ID` and type to `_CONNECTION_TYPE_VAR`.
 
  */
 #define ASSIGN_TYPE_BY_ID(_ID,                                                 \
-                           _INPUT_RANGE_SIZE, _OUTPUT_RANGE_SIZE,              \
-                           _NODES_CAPACITY,                                    \
-                           _CONNECTION_TYPE_VAR, _DIRECTION)                   \
+                          _INPUT_RANGE_SIZE, _OUTPUT_RANGE_SIZE,               \
+                          _NODES_CAPACITY,                                     \
+                          _CONNECTION_TYPE_VAR, _DIRECTION)                    \
 {                                                                              \
-    if (_ID < _INPUT_RANGE_SIZE)                                               \
-        _CONNECTION_TYPE_VAR |= GENE_  ## _DIRECTION ## _IS_INPUT;             \
+    if (_ID < _INPUT_RANGE_SIZE) {                                             \
+        _CONNECTION_TYPE_VAR |= GENE_  ## _DIRECTION ## _IS_INPUT; }           \
     else                                                                       \
     if (_ID > _NODES_CAPACITY - _OUTPUT_RANGE_SIZE) {                          \
         _CONNECTION_TYPE_VAR |= GENE_ ## _DIRECTION ## _IS_OUTPUT;             \
