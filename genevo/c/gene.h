@@ -34,6 +34,39 @@ typedef struct gene_structure_s {
 #define SIGNED_DENORMALIZED(_BIT_WIDTH) \
     { .bit_width = _BIT_WIDTH, .is_signed = true, .is_denormalized = true }
 
+/*
+
+Simple network structure
+==========================
+
+Simple network's gene defines a connection between two neurons. All the neurons
+are enumerated by the ID. Connection's strength is defined by the float number
+in the range [-1; 1].
+
+Each gene contains 3 numbers: ID of outcome node, ID of income node, weight
+(the first two has the same bit width). Node capacity of the network is defined
+by the largest number 'ID of ... node' can hold.
+
+Let's say, each node has 2.5 connections average (income and outcome + some
+possibility of connections to other neurons). That means, for pool of 100
+neurons we'll get 250 connections. Let's call it 'density'. Knowing gene size,
+nodes capacity and the density we can calculate the size of the genome. Those
+are given in 'den=...' columns in the table below.
+
+                          Types of simple network
+
+Name       Constant       Node        Byte    den=1.5    den=2.5    den=4.0
+                          capacity    size
+------     -----------    ----------  ------  ---------  ---------  ---------
+roundworm  gene_Sn_9_14   512         4       ~3 Kb      ~5.2 Kb    ~8.2 Kb
+leech      gene_Sn_14_20  ~16K        6       144 Kb     240 Kb     384 Kb
+lobster    gene_Sn_17_22  ~1.3M       7       ~1.4 Mb    ~2.9 Mb    3.5 Mb
+guppy      gene_Sn_17_22  ~4.2M       8       48 Mb      80 Mb      128 Mb
+frog       gene_Sn_22_20  ~16.8M      9       216 Mb     360 Mb     576 Mb
+cat        gene_Sn_30_28  ~1B         11      ~16.5 Gb   ~27.5 Gb   44 Gb
+
+ */
+
 #define DECLARE_GENE_SIMP_NETWORK(_HUMAN_NAME, _NODE_ID_WIDTH, _WEIGHT_WIDTH)  \
     const gene_structure_t gene_Sn_ ## _NODE_ID_WIDTH ## _ ## _WEIGHT_WIDTH = {\
         .capacity = 3,                                                         \
@@ -67,4 +100,3 @@ DECLARE_GENE_SIMP_NETWORK(frog, 24, 24);
 // Felis catus (Cat), ~760e6
 // Size = 11 bytes, capacity = 1_073_741_824 nodes, width precision = 3.725e-9
 DECLARE_GENE_SIMP_NETWORK(cat, 30, 28)
-
