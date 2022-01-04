@@ -91,7 +91,7 @@ DECLARE_GENE_SIMP_NETWORK(roundworm, 9, 14);
 
 // Hirudinea (Leech), ~10e3 neurons
 // Size = 6 bytes, capacity = 16_384 nodes, weight precision = 9.536e-7
-DECLARE_GENE_SIMP_NETWORK(leech, 14, 20)
+DECLARE_GENE_SIMP_NETWORK(leech, 14, 20);
 
 // Nephropidae (Lobster), ~100e3 neurons
 // Size = 7 bytes, capacity = 1_310_72 nodes, weight precision = 2.384e-7
@@ -99,7 +99,7 @@ DECLARE_GENE_SIMP_NETWORK(lobster, 17, 22);
 
 // Poecilia reticulata (Guppy fish), ~4.3e6 neurons
 // Size = 8 bytes, capacity = 4_194_304 nodes, weight precision = 9.536e-7
-DECLARE_GENE_SIMP_NETWORK(guppy, 22, 20)
+DECLARE_GENE_SIMP_NETWORK(guppy, 22, 20);
 
 // Anura (Frog), ~16e6 neurons
 // Size = 9 bytes, capacity = 16_777_216 nodes, weight precision = 5.960e-8
@@ -107,4 +107,4 @@ DECLARE_GENE_SIMP_NETWORK(frog, 24, 24);
 
 // Felis catus (Cat), ~760e6
 // Size = 11 bytes, capacity = 1_073_741_824 nodes, weight precision = 3.725e-9
-DECLARE_GENE_SIMP_NETWORK(cat, 30, 28)
+DECLARE_GENE_SIMP_NETWORK(cat, 30, 28);
