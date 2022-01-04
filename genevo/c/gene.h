@@ -58,12 +58,16 @@ are given in 'den=...' columns in the table below.
 Name       Constant       Node        Byte    den=1.5    den=2.5    den=4.0
                           capacity    size
 ------     -----------    ----------  ------  ---------  ---------  ---------
+plant      gene_Sn_5_6    32          2       96 b       160 b      0.25 Kb
 roundworm  gene_Sn_9_14   512         4       ~3 Kb      ~5.2 Kb    ~8.2 Kb
 leech      gene_Sn_14_20  ~16K        6       144 Kb     240 Kb     384 Kb
 lobster    gene_Sn_17_22  ~1.3M       7       ~1.4 Mb    ~2.9 Mb    3.5 Mb
 guppy      gene_Sn_17_22  ~4.2M       8       48 Mb      80 Mb      128 Mb
 frog       gene_Sn_22_20  ~16.8M      9       216 Mb     360 Mb     576 Mb
 cat        gene_Sn_30_28  ~1B         11      ~16.5 Gb   ~27.5 Gb   44 Gb
+
+Plants don't actually have any brain, this type of the network was added just
+for fun.
 
  */
 
@@ -77,26 +81,30 @@ cat        gene_Sn_30_28  ~1B         11      ~16.5 Gb   ~27.5 Gb   44 Gb
     const gene_structure_t                                                     \
     gene_Sn_ ## _HUMAN_NAME = gene_Sn_ ## _NODE_ID_WIDTH ## _ ## _WEIGHT_WIDTH;
 
+// This is just for fun
+// Size = 2 bytes, capacity = 32 nodes, weight precision = 0.15625
+DECLARE_GENE_SIMP_NETWORK(plant, 5, 6);
+
 // Caenorhabditis elegans, 302 neurons
-// Size = 4 bytes, capacity = 512 nodes, width precision = 6.106e-5
+// Size = 4 bytes, capacity = 512 nodes, weight precision = 6.106e-5
 DECLARE_GENE_SIMP_NETWORK(roundworm, 9, 14);
 
 // Hirudinea (Leech), ~10e3 neurons
-// Size = 6 bytes, capacity = 16_384 nodes, width precision = 9.536e-7
+// Size = 6 bytes, capacity = 16_384 nodes, weight precision = 9.536e-7
 DECLARE_GENE_SIMP_NETWORK(leech, 14, 20)
 
 // Nephropidae (Lobster), ~100e3 neurons
-// Size = 7 bytes, capacity = 1_310_72 nodes, width precision = 2.384e-7
+// Size = 7 bytes, capacity = 1_310_72 nodes, weight precision = 2.384e-7
 DECLARE_GENE_SIMP_NETWORK(lobster, 17, 22);
 
 // Poecilia reticulata (Guppy fish), ~4.3e6 neurons
-// Size = 8 bytes, capacity = 4_194_304 nodes, width precision = 9.536e-7
+// Size = 8 bytes, capacity = 4_194_304 nodes, weight precision = 9.536e-7
 DECLARE_GENE_SIMP_NETWORK(guppy, 22, 20)
 
 // Anura (Frog), ~16e6 neurons
-// Size = 9 bytes, capacity = 16_777_216 nodes, width precision = 5.960e-8
+// Size = 9 bytes, capacity = 16_777_216 nodes, weight precision = 5.960e-8
 DECLARE_GENE_SIMP_NETWORK(frog, 24, 24);
 
 // Felis catus (Cat), ~760e6
-// Size = 11 bytes, capacity = 1_073_741_824 nodes, width precision = 3.725e-9
+// Size = 11 bytes, capacity = 1_073_741_824 nodes, weight precision = 3.725e-9
 DECLARE_GENE_SIMP_NETWORK(cat, 30, 28)
