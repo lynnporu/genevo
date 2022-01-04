@@ -128,12 +128,12 @@ typedef struct pool_file_preamble_s {
 
 
 void copy_bitslots_to_uint64(
-    const byte_t *slots, uint64_t * const number,
-    uint8_t start, uint8_t end);
+    const byte_t * const slots, uint64_t * const number,
+    const uint8_t start, const uint8_t end);
 
 void copy_uint64_to_bitslots(
-    const uint64_t *number, byte_t * const slots,
-    uint8_t start, uint8_t number_size
+    const uint64_t * const number, byte_t * const slots,
+    const uint8_t start, const uint8_t number_size
 );
 
 /* @function point_gene_in_genome_by_index
@@ -142,7 +142,8 @@ void copy_uint64_to_bitslots(
  * @argument uint32
  * @argument pool*
  */
-uint8_t * point_gene_in_genome_by_index(genome_t * const, uint32_t index, pool_t *);
+uint8_t * point_gene_in_genome_by_index(
+    const genome_t * const, const uint32_t, const pool_t * const);
 
 /* @function point_gene_by_index
  * @return uint8*
@@ -150,7 +151,8 @@ uint8_t * point_gene_in_genome_by_index(genome_t * const, uint32_t index, pool_t
  * @argument uint32
  * @argument pool*
  */
-uint8_t * point_gene_by_index(gene_byte_t * const genes, uint32_t index, pool_t * const pool);
+uint8_t * point_gene_by_index(
+    const gene_byte_t * const genes, const uint32_t, const pool_t * const);
 
 /* @function get_gene_in_genome_by_index
  * @return gene*
@@ -158,7 +160,8 @@ uint8_t * point_gene_by_index(gene_byte_t * const genes, uint32_t index, pool_t 
  * @argument uint32
  * @argument pool*
  */
-gene_t * get_gene_in_genome_by_index(genome_t * const, uint32_t, pool_t * const);
+gene_t * get_gene_in_genome_by_index(
+    const genome_t * const, const uint32_t, const pool_t * const);
 
 /* @function get_gene_by_index
  * @return gene*
@@ -166,17 +169,18 @@ gene_t * get_gene_in_genome_by_index(genome_t * const, uint32_t, pool_t * const)
  * @argument uint32
  * @argument pool*
  */
-gene_t * get_gene_by_index(gene_byte_t * const genes, uint32_t index, pool_t * const);
+gene_t * get_gene_by_index(
+    const gene_byte_t * const, const uint32_t index, const pool_t * const);
 
 /* @function get_gene_by_pointer
  * @return gene*
  * @argument uint8
  * @argument pool*
  */
-gene_t * get_gene_by_pointer(gene_byte_t * const gene_start_byte, pool_t * const);
+gene_t * get_gene_by_pointer(const gene_byte_t * const, const pool_t * const);
 
 void open_file_for_pool(
-    const char *address, pool_t * const pool, genome_t ** const genomes);
+    const char *address, pool_t * const, genome_t ** const);
 void close_file_for_pool(pool_t * const pool);
 
 /* @flags save_pool_flag

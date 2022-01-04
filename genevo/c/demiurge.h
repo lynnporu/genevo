@@ -22,7 +22,8 @@
  * @argument uint32
  * @argument uint8
  */
-void fill_with_randomness(uint8_t *destination, uint32_t bytes, uint8_t bits);
+void fill_with_randomness(
+    uint8_t *destination, uint32_t bytes, const uint8_t bits);
 
 /* @enum generator_mode
  * @type uint8
@@ -35,8 +36,8 @@ typedef enum generator_mode_e {
 } generator_mode_t;
 
 void generate_random_genome_data(
-    genome_t * const, uint8_t gene_byte_size,
-    generator_mode_t
+    genome_t * const, const uint8_t gene_byte_size,
+    const generator_mode_t
 );
 
 /* @function allocate_genome
@@ -47,9 +48,9 @@ void generate_random_genome_data(
  * @argument uint32
  */
 genome_t * allocate_genome(
-    bool allocate_data,
-    genome_length_t, uint8_t gene_bytes_size,
-    uint32_t genome_bit_size
+    const bool allocate_data,
+    const genome_length_t, const uint8_t gene_bytes_size,
+    const uint32_t genome_bit_size
 );
 
 /* @function allocate_genome_vector
@@ -61,9 +62,9 @@ genome_t * allocate_genome(
  * @argument uint32
  */
 genome_t ** allocate_genome_vector (
-    pool_organisms_num_t, bool allocate_data,
-    genome_length_t, pool_gene_byte_size_t,
-    uint32_t genome_bit_size
+    const pool_organisms_num_t, const bool allocate_data,
+    const genome_length_t, const pool_gene_byte_size_t,
+    const uint32_t genome_bit_size
 );
 
 /* @function destroy_genomes_vector
@@ -74,7 +75,8 @@ genome_t ** allocate_genome_vector (
  * @argument genome**
  */
 void destroy_genomes_vector(
-    pool_organisms_num_t, bool deallocate_data, bool destroy_each_genome,
+    const pool_organisms_num_t,
+    const bool deallocate_data, const bool destroy_each_genome,
     genome_t ** const genomes
 );
 
@@ -83,7 +85,7 @@ void destroy_genomes_vector(
  * @argument genome*
  * @argument bool
  */
-void destroy_genome(genome_t * const genome, bool deallocate_data);
+void destroy_genome(genome_t * const genome, const bool deallocate_data);
 
 /* @function assign_genome_metadata
  * @return void
@@ -92,7 +94,7 @@ void destroy_genome(genome_t * const genome, bool deallocate_data);
  * @argument char*
  */
 void assign_genome_metadata(
-    genome_t * const, genome_metadata_size_t, const char *metadata
+    genome_t * const, const genome_metadata_size_t, const char *metadata
 );
 
 /* @function delete_genome_metadata
@@ -111,7 +113,7 @@ pool_t * allocate_pool();
  * @argument pool*
  * @argument bool
  */
-void destroy_pool(pool_t * const pool, bool close_file);
+void destroy_pool(pool_t * const pool, const bool close_file);
 
 /* @function assign_pool_metadata
  * @return void
@@ -120,7 +122,7 @@ void destroy_pool(pool_t * const pool, bool close_file);
  * @argument char*
  */
 void assign_pool_metadata(
-    pool_t * const pool, pool_metadata_size_t, const char* metadata
+    pool_t * const pool, const pool_metadata_size_t, const char* metadata
 );
 
 /* @function delete_pool_metadata
@@ -138,7 +140,7 @@ void delete_pool_metadata(pool_t * const pool);
  */
 void fill_pool(
     const char *address, population_t * const,
-    generator_mode_t
+    const generator_mode_t
 );
 
 /* @function create_pool_in_file
@@ -152,12 +154,12 @@ void fill_pool(
  * @argument generator_mode
  */
 population_t * create_pool_in_file(
-    pool_organisms_num_t,
-    pool_gene_node_id_part_t, pool_gene_weight_part_t,
-    pool_neurons_num_t input_neurons_number,
-    pool_neurons_num_t output_neurons_number,
-    uint64_t genome_bit_size,
-    generator_mode_t
+    const pool_organisms_num_t,
+    const pool_gene_node_id_part_t, const pool_gene_weight_part_t,
+    const pool_neurons_num_t input_neurons_number,
+    const pool_neurons_num_t output_neurons_number,
+    const uint64_t genome_bit_size,
+    const generator_mode_t
 );
 
 char * alloc_name_for_pool(pool_t *);
@@ -171,6 +173,6 @@ char * alloc_name_for_pool(pool_t *);
  */
 void destroy_population(
     population_t * const population,
-    bool destroy_genomes, bool deallocate_genomes_data,
-    bool close_pool_file
+    const bool destroy_genomes, const bool deallocate_genomes_data,
+    const bool close_pool_file
 );

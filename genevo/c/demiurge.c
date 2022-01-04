@@ -16,7 +16,8 @@ Now destination has memory dump `???????? ?0000000`, where `?` is some random
 bit.
 
  */
-void fill_with_randomness(uint8_t *destination, uint32_t bytes, uint8_t bits) {
+void fill_with_randomness(
+	uint8_t * destination, uint32_t bytes, const uint8_t bits) {
 
 	#ifndef SKIP_RND_SEED_CHECK
 		ENSURE_RND_SEED_IS_SET;
@@ -55,8 +56,8 @@ For this function genome->length and genome->residue_size_bits should be set.
 
  */
 void generate_genome_data(
-	genome_t * const genome, uint8_t gene_byte_size,
-	generator_mode_t generator_mode
+	genome_t * const genome, const uint8_t gene_byte_size,
+	const generator_mode_t generator_mode
 ) {
 
 	if (generator_mode == GENERATE_RANDOMNESS) {
@@ -84,15 +85,16 @@ Residue size will be calcualted and assigned to genome->residue_size_bits,
 
  */
 genome_t * allocate_genome(
-	bool allocate_data,
-	genome_length_t length, uint8_t gene_bytes_size,
-	uint32_t genome_bit_size
+	const bool allocate_data,
+	const genome_length_t length, const uint8_t gene_bytes_size,
+	const uint32_t genome_bit_size
 ) {
 
 	genome_t * const genome = malloc(sizeof(genome_t));
 
-	uint64_t genome_byte_size = gene_bytes_size * length;
-	uint16_t residue_size_bits = genome_bit_size - BYTES_TO_BITS(genome_byte_size);
+	const uint64_t genome_byte_size = gene_bytes_size * length;
+	const uint16_t residue_size_bits =
+		genome_bit_size - BYTES_TO_BITS(genome_byte_size);
 
 	if (allocate_data) {
 		genome->genes = malloc(genome_byte_size);
@@ -112,9 +114,9 @@ genome_t * allocate_genome(
 }
 
 genome_t ** allocate_genome_vector(
-	pool_organisms_num_t size, bool allocate_data,
-	genome_length_t genes_number, uint8_t gene_bytes_size,
-	uint32_t genome_bit_size
+	const pool_organisms_num_t size, const bool allocate_data,
+	const genome_length_t genes_number, const uint8_t gene_bytes_size,
+	const uint32_t genome_bit_size
 ) {
 
 	// allocate each genome and genomes vector
@@ -129,7 +131,8 @@ genome_t ** allocate_genome_vector(
 }
 
 void destroy_genomes_vector(
-	pool_organisms_num_t size, bool deallocate_data, bool destroy_each_genome,
+	const pool_organisms_num_t size,
+	const bool deallocate_data, const bool destroy_each_genome,
 	genome_t ** const genomes
 ) {
 	if (destroy_each_genome)
@@ -142,7 +145,7 @@ void destroy_genomes_vector(
 	free(genomes);
 }
 
-void destroy_genome(genome_t * const genome, bool deallocate_data) {
+void destroy_genome(genome_t * const genome, const bool deallocate_data) {
 
 	if (deallocate_data) {
 		if (genome->genes != NULL) free(genome->genes);
@@ -156,7 +159,7 @@ void destroy_genome(genome_t * const genome, bool deallocate_data) {
 }
 
 void assign_genome_metadata(
-	genome_t * const genome, genome_metadata_size_t metadata_byte_size,
+	genome_t * const genome, const genome_metadata_size_t metadata_byte_size,
 	const char *metadata
 ) {
 
@@ -183,7 +186,7 @@ pool_t * allocate_pool() {
 
 }
 
-void destroy_pool(pool_t * const pool, bool close_file) {
+void destroy_pool(pool_t * const pool, const bool close_file) {
 
 	if (close_file) close_file_for_pool(pool);
 	delete_pool_metadata(pool);
@@ -193,7 +196,7 @@ void destroy_pool(pool_t * const pool, bool close_file) {
 }
 
 void assign_pool_metadata(
-	pool_t * const pool, pool_metadata_size_t metadata_byte_size,
+	pool_t * const pool, const pool_metadata_size_t metadata_byte_size,
 	const char *metadata
 ) {
 
@@ -217,11 +220,11 @@ created based on current timestamp and a pointer to the pool.
 ! This function allocates new memory, which should be freed after use.
 
  */
-char * alloc_name_for_pool(pool_t *pool) {
+char * alloc_name_for_pool(pool_t * const pool) {
 
-	uint64_t number = time(NULL) + (uint64_t)pool;
+	const uint64_t number = time(NULL) + (uint64_t)pool;
 	// maximum size of uint64 in hex is 9 symbols + ".pool"
-	char *address = calloc(sizeof(char), 9 + 5);
+	char * const address = calloc(sizeof(char), 9 + 5);
 
 	// in case printed string is less than (9 + 5), symbols, the last bit is
 	// \0 anyway, so it will suit well for functions taking (const char *)
@@ -243,7 +246,7 @@ pool_t must be set:
  */
 void fill_pool(
 	const char *address, population_t * const population,
-	generator_mode_t generator_mode
+	const generator_mode_t generator_mode
 ) {
 
 	#ifndef ERROR_ON_EMPTY_FILENAME_FOR_POOL
@@ -287,13 +290,13 @@ void fill_pool(
 }
 
 population_t * create_pool_in_file(
-	pool_organisms_num_t organisms_number,
-	pool_gene_node_id_part_t node_id_bit_size,
-	pool_gene_weight_part_t weight_bit_size,
-	pool_neurons_num_t input_neurons_number,
-	pool_neurons_num_t output_neurons_number,
-	uint64_t genome_bit_size,
-	generator_mode_t generator_mode
+	const pool_organisms_num_t organisms_number,
+	const pool_gene_node_id_part_t node_id_bit_size,
+	const pool_gene_weight_part_t weight_bit_size,
+	const pool_neurons_num_t input_neurons_number,
+	const pool_neurons_num_t output_neurons_number,
+	const uint64_t genome_bit_size,
+	const generator_mode_t generator_mode
 ) {
 
 	pool_t * const pool = allocate_pool();
@@ -304,7 +307,7 @@ population_t * create_pool_in_file(
 	pool->node_id_part_bit_size = node_id_bit_size;
 	pool->weight_part_bit_size = weight_bit_size;
 
-	uint8_t gene_bit_size =
+	const uint8_t gene_bit_size =
 		pool->node_id_part_bit_size * 2 + pool->weight_part_bit_size;
 
 	if (gene_bit_size % 8 /*!= 0*/) {
@@ -315,7 +318,7 @@ population_t * create_pool_in_file(
 
 	pool->gene_bytes_size = BITS_TO_BYTES(gene_bit_size);
 
-	genome_length_t genes_number = genome_bit_size / gene_bit_size;
+	const genome_length_t genes_number = genome_bit_size / gene_bit_size;
 
 	genome_t ** const genomes = allocate_genome_vector(
 		organisms_number, false /* allocate data  */,
@@ -344,8 +347,8 @@ deallocate_genomes_data will be passed into destroy_genome.
  */
 void destroy_population(
 	population_t * const population,
-	bool destroy_genomes, bool deallocate_genomes_data,
-	bool close_pool_file
+	const bool destroy_genomes, const bool deallocate_genomes_data,
+	const bool close_pool_file
 ) {
 
 	destroy_genomes_vector(

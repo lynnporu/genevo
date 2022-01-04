@@ -30,7 +30,7 @@ This module contains methods for dumping gene pool into file and vice versa.
 
 pool_t * read_pool(const char *address) {
 
-    file_map_t *mapping = open_file(address, OPEN_MODE_READ, 0);
+    file_map_t * const mapping = open_file(address, OPEN_MODE_READ, 0);
     if (ERROR_LEVEL != ERR_OK) return NULL;
 
     MAPPING_FAIL_CONDITION(
@@ -60,7 +60,7 @@ pool_t * read_pool(const char *address) {
          preamble->node_id_part_bit_size) % 8 != 0,
         ERR_GENE_NOT_ALIGNED);
 
-    pool_t *pool = malloc(sizeof(pool_t));
+    pool_t * const pool = malloc(sizeof(pool_t));
 
     pool->file_mapping = mapping;
 
@@ -86,7 +86,9 @@ pool_t * read_pool(const char *address) {
 
 }
 
-void open_file_for_pool(const char *address, pool_t *pool, genome_t **genomes) {
+void open_file_for_pool(
+    const char *address,
+    pool_t * const pool, genome_t ** const genomes) {
 
     ERROR_LEVEL = 0;
 
@@ -112,7 +114,8 @@ void open_file_for_pool(const char *address, pool_t *pool, genome_t **genomes) {
                 genomes[genome_i]->residue_size_bits) +
             sizeof(GENOME_TERMINAL_BYTE);
 
-    file_map_t *mapping = open_file(address, OPEN_MODE_WRITE, file_size - 1);
+    file_map_t * const mapping =
+        open_file(address, OPEN_MODE_WRITE, file_size - 1);
     if (ERROR_LEVEL != ERR_OK) return;
 
     pool->file_mapping = mapping;
@@ -124,7 +127,7 @@ void close_file_for_pool(pool_t * const pool) {
 }
 
 void save_pool(
-    pool_t * const pool, genome_t ** const genomes, save_pool_flag_t flags
+    pool_t * const pool, genome_t ** const genomes, const save_pool_flag_t flags
 ) {
 
     ERROR_LEVEL = ERR_OK;
@@ -137,7 +140,7 @@ void save_pool(
         return;
     }
 
-    pool_file_preamble_t *pool_preamble = pool->file_mapping->data;
+    pool_file_preamble_t * const pool_preamble = pool->file_mapping->data;
     if (flags & POOL_REWRITE_DESCRIPTION) {
         pool_preamble->initial_byte         = POOL_INITIAL_BYTE;
         COPY_MEMBER_HTON(organisms_number,        pool, pool_preamble);
@@ -149,7 +152,7 @@ void save_pool(
         pool_preamble->metadata_initial_byte = POOL_META_INITIAL_BYTE;
     }
 
-    byte_t *pool_metadata = &pool_preamble->metadata_initial_byte + 1;
+    byte_t * const pool_metadata = &pool_preamble->metadata_initial_byte + 1;
 
     // copy pool meta bytes
     if (flags & POOL_COPY_METADATA)
@@ -172,7 +175,7 @@ void save_pool(
         genome_itr++
     ) {
 
-        genome_t *current_genome = genomes[genome_itr];
+        genome_t * const current_genome = genomes[genome_itr];
 
         if (flags & POOL_REWRITE_DESCRIPTION) {
             genome_preamble->initial_byte = GENOME_INITIAL_BYTE;
@@ -181,7 +184,8 @@ void save_pool(
             genome_preamble->metadata_initial_byte = GENOME_META_INITIAL_BYTE;
         }
 
-        byte_t *genome_metadata = &genome_preamble->metadata_initial_byte + 1;
+        byte_t * const genome_metadata =
+            &genome_preamble->metadata_initial_byte + 1;
 
         // copy genome meta bytes
         if (flags & POOL_COPY_METADATA)
@@ -197,11 +201,17 @@ void save_pool(
 
         #define GENES_BYTES_SIZE (current_genome->length * pool->gene_bytes_size)
 
-        void *genome_meta_terminal_byte =
+        void * const genome_meta_terminal_byte =
             genome_metadata + current_genome->metadata_byte_size;
-        void *residue_byte = genome_meta_terminal_byte + 1 + GENES_BYTES_SIZE;
-        void *residue_start = residue_byte + 1 + sizeof(current_genome->residue_size_bits);
-        void *terminal_byte = residue_start + residue_size_bytes;
+
+        void * const residue_byte =
+            genome_meta_terminal_byte + 1 + GENES_BYTES_SIZE;
+
+        void * const residue_start =
+            residue_byte + 1 + sizeof(current_genome->residue_size_bits);
+
+        void * const terminal_byte =
+            residue_start + residue_size_bytes;
 
         if (flags & POOL_REWRITE_DESCRIPTION) {
             *(uint8_t *)genome_meta_terminal_byte = GENOME_META_TERMINAL_BYTE;
@@ -281,14 +291,14 @@ genome_t * read_next_genome(pool_t * const pool) {
         return NULL;
     }
 
-    genome_t* genome = malloc(sizeof(genome_t));
+    genome_t * const genome = malloc(sizeof(genome_t));
 
     COPY_MEMBER_NTOH(length,             preamble, genome);
     COPY_MEMBER_NTOH(metadata_byte_size, preamble, genome);
 
     genome->metadata = &preamble->metadata_initial_byte + 1;
 
-    void *genome_meta_terminal_byte =
+    void * const genome_meta_terminal_byte =
         genome->metadata + genome->metadata_byte_size;
 
     if (*(uint8_t *)genome_meta_terminal_byte != GENOME_META_TERMINAL_BYTE) {
@@ -298,7 +308,7 @@ genome_t * read_next_genome(pool_t * const pool) {
 
     genome->genes = genome_meta_terminal_byte + 1;
 
-    void * residue_byte = (
+    void * const residue_byte = (
         genome->genes +
         pool->gene_bytes_size * genome->length);
 
@@ -314,7 +324,7 @@ genome_t * read_next_genome(pool_t * const pool) {
     genome->residue =
         residue_byte + sizeof(uint8_t) + sizeof_member(genome_t, residue_size_bits);
 
-    void * terminal_byte =
+    void * const terminal_byte =
         genome->residue + BITS_TO_BYTES(genome->residue_size_bits);
 
     if (*(uint8_t *)terminal_byte != GENOME_TERMINAL_BYTE) {
@@ -360,7 +370,8 @@ number == 0b00000000...0000000010101111, sizeof(number) == 64
 
  */
 void copy_bitslots_to_uint64(
-    const gene_byte_t* slots, uint64_t * const number, uint8_t start, uint8_t end
+    const gene_byte_t * const slots, uint64_t * const number,
+    const uint8_t start, const uint8_t end
 ) {
 
     const uint8_t byte_offset = start / 8,
@@ -409,28 +420,31 @@ Does the opposite to copy_bitslots_to_uint64.
 
  */
 void copy_uint64_to_bitslots(
-    const uint64_t *number, gene_byte_t * const slots, uint8_t start, uint8_t number_size
+    const uint64_t *number, gene_byte_t * const slots,
+    const uint8_t start, const uint8_t number_size
 ) {
 
-    uint8_t byte_offset = start / 8,
-            bit_offset = start % 8;
+    const uint8_t byte_offset = start / 8,
+                  bit_offset = start % 8;
     
-    uint64_t copy_number = *number << (64 - bit_offset - number_size);
+    const uint64_t copy_number = *number << (64 - bit_offset - number_size);
     
     *(uint64_t *)(slots + byte_offset) |= HTON(copy_number);
 
 }
 
 uint8_t * point_gene_in_genome_by_index(
-    genome_t * const genome, uint32_t index, pool_t * const pool
+    const genome_t * const genome,
+    const uint32_t index, const pool_t * const pool
 ) {
     return genome->genes + (pool->gene_bytes_size * index);
 }
 
 uint8_t * point_gene_by_index(
-    gene_byte_t * const genes, uint32_t index, pool_t * const pool
+    const gene_byte_t * const genes,
+    const uint32_t index, const pool_t * const pool
 ) {
-    return genes + (pool->gene_bytes_size * index);
+    return (gene_byte_t *)genes + (pool->gene_bytes_size * index);
 }
 
 /*
@@ -470,9 +484,11 @@ and output ranges. New ID to `_ID` and type to `_CONNECTION_TYPE_VAR`.
 }
 
 
-gene_t * get_gene_by_pointer(gene_byte_t * const gene_start_byte, pool_t * const pool) {
+gene_t * get_gene_by_pointer(
+    const gene_byte_t * const gene_start_byte, const pool_t * const pool
+) {
 
-    gene_t *gene = malloc(sizeof(gene_t));
+    gene_t * const gene = malloc(sizeof(gene_t));
 
     copy_bitslots_to_uint64(
         gene_start_byte,
@@ -522,7 +538,8 @@ gene_t * get_gene_by_pointer(gene_byte_t * const gene_start_byte, pool_t * const
 }
 
 gene_t * get_gene_in_genome_by_index(
-    genome_t * const genome, uint32_t index, pool_t * const pool
+    const genome_t * const genome,
+    const uint32_t index, const pool_t * const pool
 ) {
 
     #ifndef SKIP_CHECK_BOUNDS
@@ -539,7 +556,9 @@ gene_t * get_gene_in_genome_by_index(
 
 }
 
-gene_t * get_gene_by_index(gene_byte_t * const genes, uint32_t index, pool_t * const pool) {
+gene_t * get_gene_by_index(
+    const gene_byte_t * const genes,
+    const uint32_t index, const pool_t * const pool) {
 
     return get_gene_by_pointer(
         point_gene_by_index(genes, index, pool),
@@ -557,15 +576,15 @@ gene_byte_t * genes_to_byte_array(
 
     // 8 auxiliary bytes is malloc'ed here, because
     // copy_uint64_to_bitslots can cause writing out of bounds.
-    gene_byte_t *array = malloc(GENES_ARRAY_SIZE + 8);
+    gene_byte_t * const array = malloc(GENES_ARRAY_SIZE + 8);
     memset(array, 0, GENES_ARRAY_SIZE);
 
     #undef GENES_ARRAY_SIZE
 
     uint64_t nodes_capacity = MAX_FOR_BIT_WIDTH(pool->gene_bytes_size);
 
-    gene_byte_t* start_byte;
-    gene_t* gene;
+    gene_byte_t *start_byte;
+    gene_t      *gene;
     for (uint64_t counter = 0; counter < length; counter++) {
 
         start_byte = array + counter * pool->gene_bytes_size;

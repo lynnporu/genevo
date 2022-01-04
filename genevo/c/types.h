@@ -18,8 +18,8 @@ order which is big-endian.
 #   error "Sorry, no support for platforms other than big or little endian."
 #endif
 
-uint64_t ntohll(uint64_t);
-uint64_t htonll(uint64_t);
+uint64_t ntohll(const uint64_t);
+uint64_t htonll(const uint64_t);
 
 #define HTON(_VARIABLE) _Generic((_VARIABLE),  \
     uint16_t: htons,                           \
