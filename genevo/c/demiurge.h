@@ -176,3 +176,9 @@ void destroy_population(
     const bool destroy_genomes, const bool deallocate_genomes_data,
     const bool close_pool_file
 );
+
+/* @function destroy_population_object
+ * @return void
+ * @argument population*
+ */
+void destroy_population_object(population_t * const population);

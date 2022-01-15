@@ -359,3 +359,13 @@ void destroy_population(
 	free(population);
 
 }
+
+/*
+
+Dellocate genomes vector and population struct, but don't any of data.
+
+*/
+void destroy_population_object(population_t * const population) {
+	free(population->genomes);
+	free(population);
+}
