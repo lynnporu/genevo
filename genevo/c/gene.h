@@ -13,6 +13,8 @@ it to store any amount of information in the gene.
 #include <stdint.h>
 #include <stdbool.h>
 
+#define MAXIMUM_GENE_CAPACITY 3
+
 typedef uint8_t gene_number_width_t;
 
 typedef struct gene_number_s {
@@ -25,7 +27,7 @@ typedef uint8_t gene_capacity_t;
 
 typedef struct gene_structure_s {
     const gene_capacity_t  capacity; // number of numbers
-    const gene_number_t    numbers[];
+    const gene_number_t    numbers[MAXIMUM_GENE_CAPACITY];
 } gene_structure_t;
 
 #define UNSIGNED_NORMALIZED(_BIT_WIDTH) \
@@ -74,10 +76,9 @@ for fun.
 #define DECLARE_GENE_SIMP_NETWORK(_HUMAN_NAME, _NODE_ID_WIDTH, _WEIGHT_WIDTH)  \
     const gene_structure_t gene_Sn_ ## _NODE_ID_WIDTH ## _ ## _WEIGHT_WIDTH = {\
         .capacity = 3,                                                         \
-        .numbers = {                                                           \
-            UNSIGNED_NORMALIZED(_NODE_ID_WIDTH),                               \
-            UNSIGNED_NORMALIZED(_NODE_ID_WIDTH),                               \
-            SIGNED_DENORMALIZED(_WEIGHT_WIDTH)   }};                           \
+        .numbers = { UNSIGNED_NORMALIZED(_NODE_ID_WIDTH),                      \
+                     UNSIGNED_NORMALIZED(_NODE_ID_WIDTH),                      \
+                     SIGNED_DENORMALIZED(_WEIGHT_WIDTH) }};                    \
     const gene_structure_t                                                     \
     gene_Sn_ ## _HUMAN_NAME = gene_Sn_ ## _NODE_ID_WIDTH ## _ ## _WEIGHT_WIDTH;
 
