@@ -13,6 +13,8 @@ it to store any amount of information in the gene.
 #include <stdint.h>
 #include <stdbool.h>
 
+#include "bit_manipulations.h"
+
 #define MAXIMUM_GENE_CAPACITY 3
 
 typedef uint8_t gene_number_width_t;
@@ -23,12 +25,25 @@ typedef struct gene_number_s {
     const bool                  is_denormalized;
 } gene_number_t;
 
-typedef uint8_t gene_capacity_t;
+typedef uint8_t  gene_capacity_t;
+typedef uint8_t  gene_structure_class_t;
+typedef uint32_t gene_structure_id_t;
+
+#define GENE_STRUCTURE_ID_INSTANCE_WIDTH \
+    (( sizeof(gene_structure_id_t) - sizeof(gene_structure_class_t) ) * 8)
 
 typedef struct gene_structure_s {
-    const gene_capacity_t  capacity; // number of numbers
-    const gene_number_t    numbers[MAXIMUM_GENE_CAPACITY];
+    const gene_structure_id_t id;
+    const gene_capacity_t     capacity; // number of numbers
+    const gene_number_t       numbers[MAXIMUM_GENE_CAPACITY];
 } gene_structure_t;
+
+#define GENE_STRUCTURE_ID(_CLASS_ID, _INSTANCE_ID)                             \
+    (   (                                                                      \
+            (gene_structure_class_t)(_CLASS_ID) <<                             \
+            (GENE_STRUCTURE_ID_INSTANCE_WIDTH)                                 \
+        ) | (_INSTANCE_ID)                                                     \
+    )
 
 #define UNSIGNED_NORMALIZED(_BIT_WIDTH) \
     { .bit_width = _BIT_WIDTH, .is_signed = false, .is_denormalized = false }
@@ -71,10 +86,26 @@ cat        gene_Sn_30_28  ~1B         11      ~16.5 Gb   ~27.5 Gb   44 Gb
 Plants don't actually have any brain, this type of the network was added just
 for fun.
 
+                     Instance identifiers of this network
+
+Name       Id (HEX)
+------     -----------
+plant      01000506
+roundworm  0100090e
+leech      01000e14
+lobster    01001116
+guppy      01001614
+frog       01001818
+cat        01001e1c
+
  */
+
+#define SIMP_NETWORK_IDENTIFIER (gene_structure_class_t)1
 
 #define DECLARE_GENE_SIMP_NETWORK(_HUMAN_NAME, _NODE_ID_WIDTH, _WEIGHT_WIDTH)  \
     const gene_structure_t gene_Sn_ ## _NODE_ID_WIDTH ## _ ## _WEIGHT_WIDTH = {\
+        .id = GENE_STRUCTURE_ID(                                               \
+            SIMP_NETWORK_IDENTIFIER, (_NODE_ID_WIDTH << 8) | _WEIGHT_WIDTH),   \
         .capacity = 3,                                                         \
         .numbers = { UNSIGNED_NORMALIZED(_NODE_ID_WIDTH),                      \
                      UNSIGNED_NORMALIZED(_NODE_ID_WIDTH),                      \
