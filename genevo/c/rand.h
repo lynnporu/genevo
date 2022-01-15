@@ -15,7 +15,7 @@ extern bool seed_initialized;
   */
 void set_seed(uint32_t);
 
-uint64_t xorshift128p();
+uint64_t xorshift128p() __attribute__((pure));
 
 #define RANDOM_WORD_BYTE_SIZE 8
 #define next_random64 xorshift128p
