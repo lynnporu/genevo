@@ -51,18 +51,20 @@ cat        01001e1c
 
  */
 
+namespace simple_network {
+
+typedef GeneStructure<3> GeneSn;
+
 #define DECLARE(_HUMAN_NAME, _NODE_ID_WIDTH, _WEIGHT_WIDTH)                    \
-    constexpr GeneStructure<3> gene_ ## _NODE_ID_WIDTH ## _ ## _WEIGHT_WIDTH = {\
+    constexpr GeneSn gene_ ## _NODE_ID_WIDTH ## _ ## _WEIGHT_WIDTH = {         \
         .id = GENE_STRUCTURE_ID(                                               \
             simple_network::class_id, (_NODE_ID_WIDTH << 8) | _WEIGHT_WIDTH),  \
         .capacity = 3,                                                         \
         .numbers = { UNSIGNED_NORMALIZED(_NODE_ID_WIDTH),                      \
                      UNSIGNED_NORMALIZED(_NODE_ID_WIDTH),                      \
                      SIGNED_DENORMALIZED(_WEIGHT_WIDTH) }};                    \
-    constexpr GeneStructure<3>                                                 \
+    constexpr GeneSn                                                           \
     gene_ ## _HUMAN_NAME = gene_ ## _NODE_ID_WIDTH ## _ ## _WEIGHT_WIDTH;
-
-namespace simple_network {
 
 constexpr gene_structure_class_t class_id = 1;
 
@@ -94,6 +96,6 @@ DECLARE(frog, 24, 24);
 // Size = 11 bytes, capacity = 1_073_741_824 nodes, weight precision = 3.725e-9
 DECLARE(cat, 30, 28);
 
-}
-
 #undef DECLARE
+
+}
