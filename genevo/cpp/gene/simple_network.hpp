@@ -53,20 +53,20 @@ cat        01001e1c
 
 namespace simple_network {
 
-typedef GeneStructure<3> GeneSn;
+typedef DefinedGeneStructure<3> GeneSn;
 
 #define DECLARE(_HUMAN_NAME, _NODE_ID_WIDTH, _WEIGHT_WIDTH)                    \
-    constexpr GeneSn gene_ ## _NODE_ID_WIDTH ## _ ## _WEIGHT_WIDTH = {         \
+    const GeneSn gene_ ## _NODE_ID_WIDTH ## _ ## _WEIGHT_WIDTH = {             \
         .id = GENE_STRUCTURE_ID(                                               \
             simple_network::class_id, (_NODE_ID_WIDTH << 8) | _WEIGHT_WIDTH),  \
         .capacity = 3,                                                         \
         .numbers = { UNSIGNED_NORMALIZED(_NODE_ID_WIDTH),                      \
                      UNSIGNED_NORMALIZED(_NODE_ID_WIDTH),                      \
                      SIGNED_DENORMALIZED(_WEIGHT_WIDTH) }};                    \
-    constexpr GeneSn                                                           \
+    const GeneSn                                                               \
     gene_ ## _HUMAN_NAME = gene_ ## _NODE_ID_WIDTH ## _ ## _WEIGHT_WIDTH;
 
-constexpr gene_structure_class_t class_id = 1;
+const gene_structure_class_t class_id = 1;
 
 // This is just for fun
 // Size = 2 bytes, capacity = 32 nodes, weight precision = 0.15625

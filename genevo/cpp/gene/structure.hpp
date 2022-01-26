@@ -25,10 +25,13 @@ struct GeneNumber {
 
 typedef std::uint8_t gene_capacity_t;
 
-template<gene_capacity_t structure_size = 3>
 struct GeneStructure {
 	gene_structure_id_t id;
-	gene_capacity_t     capacity;
+	gene_capacity_t     capacity;	
+};
+
+template<gene_capacity_t structure_size = 3>
+struct DefinedGeneStructure: public GeneStructure {
 	GeneNumber          numbers[structure_size];
 };
 
