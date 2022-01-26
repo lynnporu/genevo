@@ -3,6 +3,8 @@
 #include <unistd.h>
 #include <fcntl.h>
 
+#include <cstdio>
+
 #include "memory.hpp"
 
 VirtualMemory::VirtualMemory(
@@ -68,16 +70,16 @@ RAMemory::~RAMemory() {
 
 const MemorySegment& Memory::take() {
 
-    const auto segment = new MemorySegment(*this, 0);
-
+    const auto segment = new MemorySegment(
+        *this, this->size, 0 /* start */);
     return *segment;
 
 }
 
 const MemorySegment& Memory::take(const std::size_t size) {
 
-    const auto segment = new MemorySegment(*this, 0);
-
+    throw "This function is not implemented yet.";
+    const auto segment = new MemorySegment(*this, 0, 0);
     return *segment;
 
 }
@@ -86,15 +88,21 @@ const MemorySegment& Memory::take(
     const std::size_t start, const std::size_t stop
 ) {
 
-    const auto segment = new MemorySegment(*this, 0);
-
+    const auto segment = new MemorySegment(
+        *this, stop - start + 1 /* size */, start);
     return *segment;
 
 }
 
 void Memory::to_file(const char* file_address) {
 
-    ;
+    FILE* fp;
+    std::fopen(file_address, "a+");
+    size_t written = std::fwrite(this->pointer, 1, this->size, fp);
+    std::fclose(fp);
+    if (written < this->size)
+        // throw error
+        ;
 
 }
 
