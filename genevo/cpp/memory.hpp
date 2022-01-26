@@ -4,8 +4,6 @@
 #include <cstdint>
 #include <string>
 
-#include "statuses.hpp"
-
 class Memory;
 class VirtualMemory;
 class CPUMemory;
@@ -21,13 +19,13 @@ class Memory {
 public:
 	Memory();
 	~Memory();
-	virtual void resize(size_t) = 0;
+	virtual void resize(const std::size_t) = 0;
 	/* takes the whole memory. */
 	virtual MemorySegment take() = 0;
 	/* takes a segment of a defined size somewhere in the memory. */
-	virtual MemorySegment take(size_t) = 0;
+	virtual MemorySegment take(const std::size_t) = 0;
 	/* takes defined range of the memory. */
-	virtual MemorySegment take(size_t, size_t) = 0;
+	virtual MemorySegment take(const std::size_t, const std::size_t) = 0;
 	virtual void to_file(const char*) = 0;
 
 private:
@@ -41,7 +39,7 @@ private:
 class VirtualMemory : public virtual Memory {
 
 public:
-	VirtualMemory(const char*, size_t);
+	VirtualMemory(const char*, const std::size_t);
 	~VirtualMemory();
 
 };
@@ -51,7 +49,7 @@ public:
 class RAMemory : public virtual Memory {
 
 public:
-	RAMemory(size_t);
+	RAMemory(const std::size_t);
 	~RAMemory();
 
 };
@@ -66,18 +64,20 @@ public:
 	MemorySegment();
 	~MemorySegment();
 	void reset_cursor();
-	void set_cursor(size_t);
-	void set_every_byte(byte_t);
+	void set_cursor(const std::size_t);
+	void set_every_byte(const byte_t);
 	/* copy from the source in range [start; stop]. stop = -1 means copying to
 	 * the end. */
-	void copy_from(MemorySegment, size_t start = 0, size_t stop = -1);
+	void copy_from(
+		const MemorySegment,
+		const std::size_t start = 0, const std::size_t stop = -1);
 	/* enlarge size of the segment. */
-	void ask_more(size_t);
-	constexpr byte_t& operator[](size_t) const;
+	void ask_more(const std::size_t);
+	constexpr byte_t& operator[](const std::size_t) const;
 
 private:
-	Memory& source;
-	size_t cursor;
-	size_t size;
+	const Memory& source;
+	std::size_t cursor;
+	std::size_t size;
 
 };
