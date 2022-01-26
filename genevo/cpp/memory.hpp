@@ -78,9 +78,7 @@ class MemorySegment {
 public:
 	MemorySegment(const Memory&, std::size_t size, std::size_t start);
 	~MemorySegment();
-	void reset_cursor();
-	void set_cursor(const std::size_t);
-	void set_every_byte(const byte_t);
+	inline void set_every_byte(const byte_t);
 	/* copy from the source in range [start; stop]. stop = -1 means copying to
 	 * the end. */
 	void copy_from(
@@ -91,9 +89,11 @@ public:
 	/* enlarge size of the segment. */
 	constexpr byte_t& operator[](const std::size_t) const;
 
-private:
+protected:
 	const Memory& source;
-	std::size_t cursor;
+
+private:
+	std::size_t start;
 	std::size_t size;
 
 };

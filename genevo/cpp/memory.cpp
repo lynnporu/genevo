@@ -113,7 +113,7 @@ MemorySegment::MemorySegment(
     source(memory)
 {
 
-    this->set_cursor(start);
+    this->start = start;
     this->size = size;
 
 }
