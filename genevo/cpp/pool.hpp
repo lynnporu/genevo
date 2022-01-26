@@ -66,3 +66,5 @@ public:
 	// redefine reproduce method
 
 };
+
+typedef Pool Population;
