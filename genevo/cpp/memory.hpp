@@ -4,6 +4,8 @@
 #include <cstdint>
 #include <string>
 
+typedef std::uint8_t byte_t;
+
 class Memory;
 class VirtualMemory;
 class CPUMemory;
@@ -14,22 +16,29 @@ class MemorySegment;
  * here segments for your needs. This memory can be writed only through the
  * segments.
  */
+
+enum class MemoryMode {
+	read  = 1 << 0,
+	write = 1 << 1
+};
+
 class Memory {
 
 public:
-	Memory();
 	~Memory();
-	virtual void resize(const std::size_t) = 0;
+	void resize(const std::size_t);
 	/* takes the whole memory. */
-	virtual MemorySegment take() = 0;
+	const MemorySegment& take();
 	/* takes a segment of a defined size somewhere in the memory. */
-	virtual MemorySegment take(const std::size_t) = 0;
+	const MemorySegment& take(const std::size_t);
 	/* takes defined range of the memory. */
-	virtual MemorySegment take(const std::size_t, const std::size_t) = 0;
-	virtual void to_file(const char*) = 0;
+	const MemorySegment& take(const std::size_t, const std::size_t);
+	void to_file(const char*);
 
-private:
-	void*       start;
+protected:
+	// forbids instantiating this class
+	Memory();
+	byte_t*       pointer;
 	std::size_t size;
 
 };
@@ -39,8 +48,12 @@ private:
 class VirtualMemory : public virtual Memory {
 
 public:
-	VirtualMemory(const char*, const std::size_t);
+	VirtualMemory(const char*, MemoryMode, const std::size_t = 0);
 	~VirtualMemory();
+
+protected:
+	int file_descriptor;
+	static void resize_file(int, std::size_t);
 
 };
 
@@ -54,14 +67,12 @@ public:
 
 };
 
-typedef std::uint8_t byte_t;
-
 /* Represents a segment in the Memory.
  */
 class MemorySegment {
 
 public:
-	MemorySegment();
+	MemorySegment(const Memory&, std::size_t size, std::size_t start);
 	~MemorySegment();
 	void reset_cursor();
 	void set_cursor(const std::size_t);
