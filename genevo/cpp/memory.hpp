@@ -24,6 +24,8 @@ enum class MemoryMode {
 
 class Memory {
 
+friend class MemorySegment;
+
 public:
 	~Memory();
 	void resize(const std::size_t);
@@ -38,7 +40,7 @@ public:
 protected:
 	// forbids instantiating this class
 	Memory();
-	byte_t*       pointer;
+	byte_t*     pointer;
 	std::size_t size;
 
 };
@@ -53,6 +55,8 @@ public:
 
 protected:
 	int file_descriptor;
+
+private:
 	static void resize_file(int, std::size_t);
 
 };
@@ -80,10 +84,11 @@ public:
 	/* copy from the source in range [start; stop]. stop = -1 means copying to
 	 * the end. */
 	void copy_from(
-		const MemorySegment,
+		const MemorySegment&,
 		const std::size_t start = 0, const std::size_t stop = -1);
+	void copy_from(
+    	byte_t *const, const std::size_t, const std::size_t);
 	/* enlarge size of the segment. */
-	void ask_more(const std::size_t);
 	constexpr byte_t& operator[](const std::size_t) const;
 
 private:

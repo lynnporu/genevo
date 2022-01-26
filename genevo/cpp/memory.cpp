@@ -4,6 +4,7 @@
 #include <fcntl.h>
 
 #include <cstdio>
+#include <cstring>
 
 #include "memory.hpp"
 
@@ -117,8 +118,39 @@ MemorySegment::MemorySegment(
 
 }
 
-void MemorySegment::set_cursor(const std::size_t position) {
+inline void MemorySegment::set_every_byte(const byte_t byte) {
+    std::memset(
+        this->source.pointer + this->start, byte, this->size);
+}
 
-    this->cursor = position;
+void MemorySegment::copy_from(
+    const MemorySegment& from, const std::size_t start, std::size_t stop
+) {
+
+    if (stop - start <= this->size)
+        throw "Tried to fill the segment with more stuff than its size";
+
+    std::memcpy(
+        this->source.pointer + this->start,
+        from.source.pointer + start,
+        stop - start);
+
+}
+
+void MemorySegment::copy_from(
+    byte_t *const source, const std::size_t start, const std::size_t stop
+) {
+
+    if (stop - start <= this->size)
+        throw "Tried to fill the segment with more stuff than its size";
+
+    std::memcpy(
+        this->source.pointer + this->start, source + start, stop - start);
+
+}
+
+constexpr byte_t& MemorySegment::operator[](const std::size_t index) const {
+
+    return *(byte_t *)(this->source.pointer + this->start + index);
 
 }
