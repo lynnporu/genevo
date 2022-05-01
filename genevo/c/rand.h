@@ -3,8 +3,10 @@
 #include <time.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <stdbool.h>
+#include <math.h>
 
-#include "stdbool.h"
+#include "bit_manipulations.h"
 
 #define ENSURE_RND_SEED_IS_SET { if (!seed_initialized) set_seed(time(NULL)); }
 extern bool seed_initialized;
@@ -17,5 +19,13 @@ void set_seed(uint32_t);
 
 uint64_t xorshift128p() __attribute__((pure));
 
-#define RANDOM_WORD_BYTE_SIZE 8
-#define next_random64 xorshift128p
+#define next_urandom64 xorshift128p
+
+#define MAX_FOR_64 0xffffffffffffUL
+
+#define next_urandom64_in_range(_A, _B) ({                                     \
+    double _A_ = (_A);                                                         \
+    double _B_ = (_B);                                                         \
+    (uint64_t)roundl(                                                          \
+        _A_ + ((_B_ - _A_) / MAX_FOR_64) * (double)next_urandom64());          \
+})
