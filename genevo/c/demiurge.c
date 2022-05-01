@@ -27,7 +27,7 @@ void fill_with_randomness(
 
 	#define FILL_NEXT(_SIZE, _TYPE)                                            \
 		if (bytes >= _SIZE) {                                                  \
-			*(_TYPE *)destination = next_random64();                           \
+			*(_TYPE *)destination = next_urandom64();                           \
 			destination += _SIZE;                                              \
 			bytes -= _SIZE;                                                    \
 			continue;                                                          \
@@ -35,7 +35,7 @@ void fill_with_randomness(
 
 	while (bytes > 0) {
 		// this will work faster than just filling all the bytes
-		// with next_random64()
+		// with next_urandom64()
 		FILL_NEXT(8, uint64_t);
 		FILL_NEXT(4, uint32_t);
 		FILL_NEXT(2, uint16_t);
@@ -46,7 +46,7 @@ void fill_with_randomness(
 
 	// partially fill one left byte
 
-	*(uint8_t *)destination = (uint8_t)next_random64() << (8 - bits);
+	*(uint8_t *)destination = (uint8_t)next_urandom64() << (8 - bits);
 
 }
 
