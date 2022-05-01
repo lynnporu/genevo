@@ -47,3 +47,74 @@ void flip_bits_in_genome_with_probability(
         genome->length * pool->gene_bytes_size,
         probability);
 }
+
+void change_genes_with_probability(
+    gene_byte_t * const genes,
+    pool_gene_byte_size_t gene_size, genome_length_t genes_number,
+    gene_mutation_mode_t mode, double probability
+) {
+
+    #ifndef SKIP_LCG_RND_SEED_CHECK
+        ENSURE_LCG_RND_SEED_IS_SET;
+    #endif
+
+    gene_byte_t * new_genes = malloc(
+        sizeof(gene_byte_t) * gene_size * genes_number);
+
+    for (
+        genome_length_t trial = 0;
+        trial < TRIALS_TO_MAKE_PROBABILITY(genes_number, probability);
+        trial++
+    ) {
+
+        uint64_t position = next_urandom64_in_range(0, genes_number);
+
+        // This variable used if mode == REPEAT_NEIGHBOR_GENES
+        // If neighbor_gene is `-1`, then previous gene will be repeated.
+        // In case it is equal to `1`, the next one is the candidate.
+        int8_t neighbor_gene = 0;
+
+        switch (mode) {
+
+            case RANDOMIZE_GENES:
+                fill_bytes_with_randomness(
+                    genes + position * gene_size,
+                    gene_size);
+                break;
+
+            case REPEAT_NEIGHBOR_GENES:
+                if (position == 0)
+                    neighbor_gene = 1;
+                else
+                if (position == genes_number - 1)
+                    neighbor_gene = -1;
+                else
+                    // maps {0; 1} -> {-1; 1}
+                    neighbor_gene = (next_fast_random() % 1) * 2 - 1;
+
+                memcpy(
+                    genes + position * gene_size,
+                    genes + (position * gene_size) + (gene_size * neighbor_gene),
+                    gene_size);
+            break;
+
+            default:
+            case ZERO_GENES:
+                memset(genes + position, 0, gene_size);
+            break;
+
+        }
+
+    }
+
+}
+
+void change_genes_in_genome_with_probability(
+    const genome_t *genome, const pool_t *pool,
+    gene_mutation_mode_t mode, double probability
+) {
+    change_genes_with_probability(
+        genome->genes,
+        pool->gene_bytes_size, genome->length,
+        mode, probability);
+}
