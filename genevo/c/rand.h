@@ -8,14 +8,17 @@
 
 #include "bit_manipulations.h"
 
-#define ENSURE_RND_SEED_IS_SET { if (!seed_initialized) set_seed(time(NULL)); }
-extern bool seed_initialized;
+// xorshift128p generator
 
-/* @function set_seed
+#define ENSURE_XORSHIFT128P_RND_SEED_IS_SET \
+    { if (!xorshift128p_seed_initialized) set_xorshift128p_seed(time(NULL)); }
+extern bool xorshift128p_seed_initialized;
+
+/* @function set_xorshift128p_seed
  * @return void
  * @argument uint32
   */
-void set_seed(uint32_t);
+void set_xorshift128p_seed(uint32_t);
 
 uint64_t xorshift128p() __attribute__((pure));
 
@@ -29,6 +32,20 @@ uint64_t xorshift128p() __attribute__((pure));
     (uint64_t)roundl(                                                          \
         _A_ + ((_B_ - _A_) / MAX_FOR_64) * (double)next_urandom64());          \
 })
+
+// linear congruent generator
+
+#define ENSURE_LCG_RND_SEED_IS_SET \
+    { if (!lcg_seed_initialized) set_lcg_seed(time(NULL)); }
+extern bool lcg_seed_initialized;
+
+void set_lcg_seed(uint32_t);
+
+uint32_t lcg_rand() __attribute__((pure));
+
+#define next_fast_random lcg_rand
+
+// ...other functions
 
 #define fill_bytes_with_randomness(_DESTINATION, _BYTES)                       \
     fill_with_randomness(_DESTINATION, _BYTES, 0)
