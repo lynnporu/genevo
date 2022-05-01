@@ -10,21 +10,6 @@
 #include "pickler.h"
 #include "bit_manipulations.h"
 
-#define fill_bytes_with_randomness(_DESTINATION, _BYTES)                       \
-    fill_with_randomness(_DESTINATION, _BYTES, 0)
-
-#define fill_bits_with_randomness(_DESTINATION, _BITS)                         \
-    fill_with_randomness(_DESTINATION, (uint32_t)(_BITS / 8), _BITS % 8)
-
-/* @function fill_with_randomness
- * @return void
- * @argument uint8*
- * @argument uint32
- * @argument uint8
- */
-void fill_with_randomness(
-    uint8_t *destination, uint32_t bytes, const uint8_t bits);
-
 /* @enum generator_mode
  * @type uint8
  * @member GENERATE_RANDOMNESS (1 << 0)

@@ -29,3 +29,19 @@ uint64_t xorshift128p() __attribute__((pure));
     (uint64_t)roundl(                                                          \
         _A_ + ((_B_ - _A_) / MAX_FOR_64) * (double)next_urandom64());          \
 })
+
+#define fill_bytes_with_randomness(_DESTINATION, _BYTES)                       \
+    fill_with_randomness(_DESTINATION, _BYTES, 0)
+
+#define fill_bits_with_randomness(_DESTINATION, _BITS)                         \
+    fill_with_randomness(_DESTINATION, (uint32_t)(_BITS / 8), _BITS % 8)
+
+/* @function fill_with_randomness
+ * @return void
+ * @argument uint8*
+ * @argument uint32
+ * @argument uint8
+ */
+void fill_with_randomness(
+    uint8_t *destination, uint32_t bytes, const uint8_t bits);
+
