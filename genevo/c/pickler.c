@@ -567,6 +567,10 @@ gene_t * get_gene_by_index(
 
 }
 
+void free_gene(gene_t * gene) {
+    free(gene);
+}
+
 gene_byte_t * genes_to_byte_array(
     gene_t ** const genes, pool_t * const pool, uint64_t length
 ) {

@@ -179,6 +179,11 @@ gene_t * get_gene_by_index(
  */
 gene_t * get_gene_by_pointer(const gene_byte_t * const, const pool_t * const);
 
+/* @function free_gene
+ * @return void
+*/
+void free_gene(gene_t *);
+
 void open_file_for_pool(
     const char *address, pool_t * const, genome_t ** const);
 void close_file_for_pool(pool_t * const pool);
