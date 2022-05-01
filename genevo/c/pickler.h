@@ -174,7 +174,7 @@ gene_t * get_gene_by_index(
 
 /* @function get_gene_by_pointer
  * @return gene*
- * @argument uint8
+ * @argument uint8*
  * @argument pool*
  */
 gene_t * get_gene_by_pointer(const gene_byte_t * const, const pool_t * const);
