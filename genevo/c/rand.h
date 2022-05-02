@@ -43,6 +43,13 @@ uint32_t lcg_rand() __attribute__((pure));
 
 #define next_fast_random lcg_rand
 
+#define next_fast_random_in_range(_A, _B) ({                                   \
+    double _A_ = (_A);                                                         \
+    double _B_ = (_B);                                                         \
+    (uint32_t)roundl(                                                          \
+        _A_ + ((_B_ - _A_) / MAX_FOR_32) * (double)next_fast_random());        \
+})
+
 // ...other functions
 
 #define fill_bytes_with_randomness(_DESTINATION, _BYTES)                       \

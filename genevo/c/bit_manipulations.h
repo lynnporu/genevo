@@ -7,7 +7,7 @@
 #define BITS_TO_BYTES_REMAINDER(_BITS_NUM) ((_BITS_NUM) % 8)
 #define BYTES_TO_BITS(_BYTES_NUM) ((_BYTES_NUM) * 8)
 
-#define MAX_FOR_64 0xffffffffffffUL
+#define MAX_FOR_64 0xffffffffffff
 #define MAX_FOR_32 0xffffff
 
 #define MAX_FOR_BIT_WIDTH(_BIT_SIZE) \

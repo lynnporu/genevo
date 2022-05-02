@@ -33,9 +33,10 @@ void flip_bits_in_genome_with_probability(
  * @member REPEAT_NEIGHBOR_GENES (1 << 2)
  */
 typedef enum gene_mutation_mode_e {
-    RANDOMIZE_GENES       = (uint8_t)(1 << 0),
-    ZERO_GENES            = (uint8_t)(1 << 1),
-    REPEAT_NEIGHBOR_GENES = (uint8_t)(1 << 2)
+    RANDOMIZE_GENES       =  (uint8_t)(1 << 0),
+    ZERO_GENES            =  (uint8_t)(1 << 1),
+    REPEAT_NEIGHBOR_GENES =  (uint8_t)(1 << 2),
+    COMBINE_GENES_MUTATION = (uint8_t)(1 << 7)
 } gene_mutation_mode_t;
 
 /* @function change_genes_with_probability
@@ -47,7 +48,8 @@ typedef enum gene_mutation_mode_e {
  * @argument double
  */
 void change_genes_with_probability(
-    gene_byte_t * const, pool_gene_byte_size_t, genome_length_t
+    gene_byte_t * const,
+    pool_gene_byte_size_t, genome_length_t,
     gene_mutation_mode_t, double probability
 );
 

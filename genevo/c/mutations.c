@@ -74,6 +74,9 @@ void change_genes_with_probability(
         // In case it is equal to `1`, the next one is the candidate.
         int8_t neighbor_gene = 0;
 
+        if (mode == COMBINE_GENES_MUTATION)
+            mode = 1 << next_fast_random_in_range(0, 2);
+
         switch (mode) {
 
             case RANDOMIZE_GENES:
@@ -90,7 +93,7 @@ void change_genes_with_probability(
                     neighbor_gene = -1;
                 else
                     // maps {0; 1} -> {-1; 1}
-                    neighbor_gene = (next_fast_random() % 1) * 2 - 1;
+                    neighbor_gene = ((uint8_t)next_fast_random() % 1) * 2 - 1;
 
                 memcpy(
                     genes + position * gene_size,
