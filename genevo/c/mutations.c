@@ -118,3 +118,47 @@ void change_genes_in_genome_with_probability(
         pool->gene_bytes_size, genome->length,
         mode, probability);
 }
+
+void crossover_genomes(
+    const genome_t *child,
+    const genome_t * const * const parents, const uint32_t parents_num,
+    const pool_t *pool,
+    double blend_coefficient
+) {
+
+    if (blend_coefficient <= 0 || blend_coefficient >= 1) {
+        ERROR_LEVEL = ERR_WRONG_PARAMS;
+        return;
+    }
+
+    state_machine_t *blender = generate_state_machine(parents_num);
+
+    for (uint32_t i = 0; i < parents_num; i++) {
+        for (uint32_t j = 0; j < parents_num; j++) {
+
+            if (i == j)
+                blender->transitions[i][j] = 1 - blend_coefficient;
+            else
+                blender->transitions[i][j] = blend_coefficient / (parents_num - 1);
+
+        }
+    }
+
+    init_state_machine(blender, next_fast_random_in_range(0, parents_num));
+
+    gene_byte_t *writer_position = child->genes;
+    for (genome_length_t gene_i = 0; gene_i < child->length; gene_i++) {
+
+        memcpy(
+            writer_position,
+            parents[blender->current_state]->genes,
+            pool->gene_bytes_size);
+
+        writer_position += pool->gene_bytes_size * gene_i;
+        machine_next_state(blender);
+
+    }
+
+    destroy_state_machine(blender);
+
+}

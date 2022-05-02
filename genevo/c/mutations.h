@@ -6,6 +6,7 @@
 
 #include "pool.h"
 #include "rand.h"
+#include "state_machine.h"
 
 /* @function flip_bits_with_probability
  * @return void

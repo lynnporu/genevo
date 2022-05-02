@@ -53,6 +53,11 @@ extern err_status_t ERROR_LEVEL;
 #define ERR_NOT_ENOUGH_PARAMS_STR           "Some of the mandatory parameters "\
                                             "were not set."
 
+#define ERR_WRONG_PARAMS                    (err_status_t)0xe4
+#define ERR_WRONG_PARAMS_STR                "Some of the arguments you've "    \
+                                            "passed is wrong. Check the "      \
+                                            "reference."
+
 
 // Gene pool file errors =======================================================
 
