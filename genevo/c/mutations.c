@@ -58,9 +58,6 @@ void change_genes_with_probability(
         ENSURE_LCG_RND_SEED_IS_SET;
     #endif
 
-    gene_byte_t * new_genes = malloc(
-        sizeof(gene_byte_t) * gene_size * genes_number);
-
     for (
         genome_length_t trial = 0;
         trial < TRIALS_TO_MAKE_PROBABILITY(genes_number, probability);
@@ -103,7 +100,7 @@ void change_genes_with_probability(
 
             default:
             case ZERO_GENES:
-                memset(genes + position, 0, gene_size);
+                memset(genes + position * gene_size, 0, gene_size);
             break;
 
         }
