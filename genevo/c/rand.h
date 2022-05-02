@@ -24,8 +24,6 @@ uint64_t xorshift128p() __attribute__((pure));
 
 #define next_urandom64 xorshift128p
 
-#define MAX_FOR_64 0xffffffffffffUL
-
 #define next_urandom64_in_range(_A, _B) ({                                     \
     double _A_ = (_A);                                                         \
     double _B_ = (_B);                                                         \
