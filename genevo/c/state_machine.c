@@ -46,6 +46,7 @@ int cdf_items_comparator(const void *item1_void, const void *item2_void) {
 void init_state_machine(state_machine_t *machine, const uint32_t initial_state) {
 
 	machine->current_state = initial_state;
+	machine->prev_state = initial_state;
 
 	uint32_t state_i, state_j;
 	for (state_i = 0; state_i < machine->states_number; state_i++) {
@@ -84,10 +85,13 @@ void machine_next_state(state_machine_t *machine) {
 
 	const uint32_t state_i = machine->current_state;
 	for(uint32_t state_j = 0; state_j < machine->states_number; state_j++) {
+
 		if (random_value <= machine->cdf_transitions[state_i][state_j].value) {
+			machine->prev_state = machine->current_state;
 			machine->current_state = machine->cdf_transitions[state_i][state_j].x;
 			return;
 		}
+
 	}
 
 }

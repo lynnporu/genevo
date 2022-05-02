@@ -38,6 +38,7 @@ typedef struct state_machine_s {
     cdf_item_t          **cdf_transitions;
     uint32_t              states_number;
     uint32_t              current_state;
+    uint32_t              prev_state;
 } state_machine_t;
 
 /* @function generate_state_machine
