@@ -8,23 +8,25 @@ state_machine_t * generate_state_machine(const uint32_t states_number) {
 	machine->current_state = 0;
 	machine->prev_state = 0;
 
-	ASSIGN_MALLOC_ARRAY(machine->transitions,     state_probability_t *, states_number);
-	ASSIGN_MALLOC_ARRAY(machine->cdf_transitions, cdf_item_t *,          states_number);
+	ASSIGN_MALLOC_LINKS_ARRAY(machine->transitions,     state_probability_t, states_number);
+	ASSIGN_MALLOC_LINKS_ARRAY(machine->cdf_transitions, cdf_item_t,          states_number);
 
 	if (
 		machine->transitions == NULL ||
 		machine->cdf_transitions == NULL
-	) ALLOC_ERROR(destroy_state_machine, machine, RETURN_NULL_ON_ERR);
+	) DESTROY_AND_EXIT(destroy_state_machine, machine, RETURN_NULL_ON_ERR);
 
 	for (uint32_t state_i = 0; state_i < states_number; state_i++) {
 
-		ASSIGN_CALLOC_ARRAY(machine->transitions[state_i],     state_probability_t, states_number);
-		ASSIGN_MALLOC_ARRAY(machine->cdf_transitions[state_i], cdf_item_t,          states_number);
+		ASSIGN_CALLOC_ARRAY(
+			machine->transitions[state_i], state_probability_t, states_number);
+		ASSIGN_MALLOC_ARRAY(
+			machine->cdf_transitions[state_i], cdf_item_t, states_number);
 
 		if (
 			machine->transitions[state_i] == NULL ||
 			machine->cdf_transitions[state_i] == NULL
-		) ALLOC_ERROR(destroy_state_machine, machine, RETURN_NULL_ON_ERR);
+		) DESTROY_AND_EXIT(destroy_state_machine, machine, RETURN_NULL_ON_ERR);
 
 		machine->states_number++;
 
