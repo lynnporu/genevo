@@ -3,6 +3,16 @@
 #include <stdint.h>
 #include <math.h>
 
+#define FLOAT_COMPARISON_PRESICION 1e-5
+
+#define FLOAT_IS_NEAR(_NUMBER, _CENTER)                                        \
+    (abs(_CENTER - _NUMBER) <= FLOAT_COMPARISON_PRESICION)
+
+#define FLOAT_IN_RANGE(_NUMBER, _A, _B)                                        \
+    (_A - FLOAT_COMPARISON_PRESICION >= _NUMBER &&                             \
+     _B + FLOAT_COMPARISON_PRESICION <= _NUMBER)
+
+
 #define BITS_TO_BYTES(_BITS_NUM) (uint32_t)ceil((_BITS_NUM) / 8)
 #define BITS_TO_BYTES_REMAINDER(_BITS_NUM) ((_BITS_NUM) % 8)
 #define BYTES_TO_BITS(_BYTES_NUM) ((_BYTES_NUM) * 8)
