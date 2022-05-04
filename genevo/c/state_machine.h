@@ -1,3 +1,4 @@
+#pragma once
 /*
 
 This header implements state machine.
@@ -7,7 +8,9 @@ This header implements state machine.
 #include <stdint.h>
 #include <stdlib.h>
 
+#include "error.h"
 #include "rand.h"
+#include "memory.h"
 #include "bit_manipulations.h"
 
 #define STATE_MACHINE_FAST_RANDOM      0

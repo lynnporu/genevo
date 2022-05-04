@@ -2,16 +2,31 @@
 
 state_machine_t * generate_state_machine(const uint32_t states_number) {
 
-	state_machine_t *machine = malloc(sizeof(state_machine_t));
-	machine->transitions = malloc(sizeof(state_probability_t *) * states_number);
-	machine->cdf_transitions = malloc(sizeof(cdf_item_t *) * states_number);
+	DECLARE_MALLOC_OBJECT(state_machine_t, machine, RETURN_NULL_ON_ERR);
 
+	machine->states_number = 0;
+	machine->current_state = 0;
+	machine->prev_state = 0;
 
-	for (uint32_t state_i = 0; state_i < machine->states_number; state_i++) {
+	ASSIGN_MALLOC_ARRAY(machine->transitions,     state_probability_t *, states_number);
+	ASSIGN_MALLOC_ARRAY(machine->cdf_transitions, cdf_item_t *,          states_number);
 
-		machine->transitions[state_i] = calloc(
-			states_number, sizeof(state_probability_t));
-		machine->cdf_transitions[state_i] = malloc(sizeof(cdf_item_t) * states_number);
+	if (
+		machine->transitions == NULL ||
+		machine->cdf_transitions == NULL
+	) ALLOC_ERROR(destroy_state_machine, machine, RETURN_NULL_ON_ERR);
+
+	for (uint32_t state_i = 0; state_i < states_number; state_i++) {
+
+		ASSIGN_CALLOC_ARRAY(machine->transitions[state_i],     state_probability_t, states_number);
+		ASSIGN_MALLOC_ARRAY(machine->cdf_transitions[state_i], cdf_item_t,          states_number);
+
+		if (
+			machine->transitions[state_i] == NULL ||
+			machine->cdf_transitions[state_i] == NULL
+		) ALLOC_ERROR(destroy_state_machine, machine, RETURN_NULL_ON_ERR);
+
+		machine->states_number++;
 
 	}
 
@@ -21,14 +36,16 @@ state_machine_t * generate_state_machine(const uint32_t states_number) {
 
 void destroy_state_machine(state_machine_t *machine) {
 
+	// machine->states_number will always contain number of items that were
+	// actually allocated
 	for (uint32_t state_i = 0; state_i < machine->states_number; state_i++) {
-		free(machine->transitions[state_i]);
-		free(machine->cdf_transitions[state_i]);
+		FREE_NOT_NULL(machine->transitions[state_i]);
+		FREE_NOT_NULL(machine->cdf_transitions[state_i]);
 	}
 
-	free(machine->transitions);
-	free(machine->cdf_transitions);
-	free(machine);
+	FREE_NOT_NULL(machine->transitions);
+	FREE_NOT_NULL(machine->cdf_transitions);
+	FREE_NOT_NULL(machine);
 
 }
 
