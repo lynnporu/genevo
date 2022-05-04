@@ -25,6 +25,7 @@ little slower on little-endian platform because of byte swappings.
 #include "files.h"
 #include "types.h"
 #include "bit_manipulations.h"
+#include "memory.h"
 
 // Even the empty pool file should be at least 256 bits long.
 #define POOL_FILE_MIN_SAFE_BIT_SIZE 256
