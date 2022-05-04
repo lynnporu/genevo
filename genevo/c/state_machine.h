@@ -67,4 +67,4 @@ void init_state_machine(state_machine_t *machine, const uint32_t initial_state);
  * @return void
  * @argument state_machine*
  */
-void machine_next_state(state_machine_t *machine);
+void machine_next_state(state_machine_t * const machine);

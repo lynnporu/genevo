@@ -106,7 +106,7 @@ void init_state_machine(state_machine_t *machine, const uint32_t initial_state) 
 
 }
 
-void machine_next_state(state_machine_t *machine) {
+void machine_next_state(state_machine_t * const machine) {
 
 	#if   STATE_MACHINE_RANDOMNESS_MODE == STATE_MACHINE_XORSHIFT_RANDOM
 	state_probability_t random_value = next_urandom64() / MAX_FOR_64;

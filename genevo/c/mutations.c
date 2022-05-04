@@ -121,30 +121,10 @@ void change_genes_in_genome_with_probability(
 
 void crossover_genomes(
     const genome_t *child,
-    const genome_t * const * const parents, const uint32_t parents_num,
-    const pool_t *pool,
-    double blend_coefficient
+    const genome_t * const * const parents,
+    const pool_gene_byte_size_t gene_size,
+    state_machine_t * const blender
 ) {
-
-    if (blend_coefficient <= 0 || blend_coefficient >= 1) {
-        ERROR_LEVEL = ERR_WRONG_PARAMS;
-        return;
-    }
-
-    state_machine_t *blender = generate_state_machine(parents_num);
-
-    for (uint32_t i = 0; i < parents_num; i++) {
-        for (uint32_t j = 0; j < parents_num; j++) {
-
-            if (i == j)
-                blender->transitions[i][j] = 1 - blend_coefficient;
-            else
-                blender->transitions[i][j] = blend_coefficient / (parents_num - 1);
-
-        }
-    }
-
-    init_state_machine(blender, next_fast_random_in_range(0, parents_num));
 
     gene_byte_t *writer_position = child->genes;
     for (genome_length_t gene_i = 0; gene_i < child->length; gene_i++) {
@@ -152,10 +132,75 @@ void crossover_genomes(
         memcpy(
             writer_position,
             parents[blender->current_state]->genes,
-            pool->gene_bytes_size);
+            gene_size);
 
-        writer_position += pool->gene_bytes_size * gene_i;
+        writer_position += gene_size * gene_i;
         machine_next_state(blender);
+
+    }
+
+}
+
+void pool_reproduction(
+    pool_organisms_num_t genomes_number, pool_organisms_num_t combinations_number,
+    uint8_t combination_length, double blend_coefficient,
+    const pool_t *source_population, const pool_t *dest_population
+) {
+
+    if (blend_coefficient <= 0 || blend_coefficient >= 1) {
+        ERROR_LEVEL = ERR_WRONG_PARAMS;
+        return;
+    }
+
+    state_machine_t *blender = generate_state_machine(combination_length);
+
+    for (uint32_t i = 0; i < combination_length; i++) {
+        for (uint32_t j = 0; j < combination_length; j++) {
+
+            if (i == j)
+                blender->transitions[i][j] = 1 - blend_coefficient;
+            else
+                blender->transitions[i][j] = blend_coefficient / (combination_length - 1);
+
+        }
+    }
+
+    init_state_machine(blender, next_fast_random_in_range(0, combination_length));
+    if (ERROR_LEVEL != ERR_OK) {
+        destroy_state_machine(blender);
+        return;
+    }
+
+    DECLARE_MALLOC_ARRAY(
+        pool_organisms_num_t, combination, combination_length,
+        DESTROY_AND_EXIT(destroy_state_machine, blender, RETURN_VOID_ON_ERR));
+
+    for (
+        pool_organisms_num_t combination_counter = 0;
+        combination_counter < combinations_number;
+        combination_counter++
+    ) {
+
+        uint8_t generation_counter = 0;
+
+        // here we should generate set of N non repetitive numbers. instead of
+        // checking whether newly generated number is already in the
+        // combination, we hope that random generator is chaotic enough.
+        // moreover we make XOR with the previous element to avoid two
+        // repetitions in a row.
+
+        combination[generation_counter++] =
+            next_urandom64_in_range(0, genomes_number);
+
+        while (generation_counter++ < combination_length) {
+            // make XOR with previous item in the combination to decrease the
+            // probability of repetetive generations.
+            combination[generation_counter] =
+                next_urandom64_in_range(0, genomes_number) ^
+                combination[generation_counter - 1];
+        }
+
+        // .. do something with the combination
 
     }
 
