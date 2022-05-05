@@ -141,6 +141,25 @@ void crossover_genomes(
 
 }
 
+/*
+
+Simple brute-force O(n^2 - n) algorithm. It could be effective to use
+sorting on big arrays, but since combination_length usually equals
+to at most 10, sorting becomes a little overkill.
+
+*/
+bool combination_has_duplicates(
+    pool_organisms_num_t *combination, uint8_t combination_length
+) {
+
+    for (uint8_t genome_i = 0; genome_i < combination_length; genome_i++)
+        for (uint8_t genome_j = 0; genome_j < combination_length; genome_j++)
+            if (combination[genome_i] == combination[genome_j])
+                return true;
+
+    return false;
+}
+
 void pool_reproduction(
     pool_organisms_num_t genomes_number, pool_organisms_num_t combinations_number,
     uint8_t combination_length, double blend_coefficient,
@@ -181,24 +200,9 @@ void pool_reproduction(
         combination_counter++
     ) {
 
-        uint8_t generation_counter = 0;
-
-        // here we should generate set of N non repetitive numbers. instead of
-        // checking whether newly generated number is already in the
-        // combination, we hope that random generator is chaotic enough.
-        // moreover we make XOR with the previous element to avoid two
-        // repetitions in a row.
-
-        combination[generation_counter++] =
-            next_urandom64_in_range(0, genomes_number);
-
-        while (generation_counter++ < combination_length) {
-            // make XOR with previous item in the combination to decrease the
-            // probability of repetetive generations.
-            combination[generation_counter] =
-                next_urandom64_in_range(0, genomes_number) ^
-                combination[generation_counter - 1];
-        }
+        do for (uint8_t i = 0; i < combination_length; i++) 
+            combination[i] = next_urandom64_in_range(0, genomes_number);
+        while (!combination_has_duplicates(combination));
 
         // .. do something with the combination
 
