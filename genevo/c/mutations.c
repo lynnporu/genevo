@@ -33,8 +33,8 @@ void flip_bits_with_probability(
         trial++
     ) {
         uint64_t position = next_urandom64_in_range(0, bytes_number * 8),
-                 byte     = position / 8,
-                 bit      = position % 8;
+                 byte     = position / 8;
+        uint8_t  bit      = position % 8;
         ((uint8_t * const)bytes)[byte] ^= 1 << bit;
     }
 }
