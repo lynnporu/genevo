@@ -120,8 +120,7 @@ void change_genes_in_genome_with_probability(
 }
 
 void crossover_genomes(
-    const genome_t *child,
-    const genome_t * const * const parents,
+    const genome_t *child, const genome_t * const * const parents,
     const pool_gene_byte_size_t gene_size,
     state_machine_t * const blender
 ) {
@@ -178,16 +177,10 @@ void pool_reproduction(
 
     state_machine_t *blender = generate_state_machine(combination_length);
 
-    for (uint32_t i = 0; i < combination_length; i++) {
-        for (uint32_t j = 0; j < combination_length; j++) {
-
-            if (i == j)
-                blender->transitions[i][j] = 1 - blend_coefficient;
-            else
-                blender->transitions[i][j] = blend_coefficient / (combination_length - 1);
-
-        }
-    }
+    state_machine_diag_distribution(
+        blender,
+        1 - blend_coefficient,
+        blend_coefficient / (combination_length - 1));
 
     init_state_machine(blender, next_fast_random_in_range(0, combination_length));
     if (ERROR_LEVEL != ERR_OK) {

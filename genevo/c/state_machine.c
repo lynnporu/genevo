@@ -106,6 +106,30 @@ void init_state_machine(state_machine_t *machine, const uint32_t initial_state) 
 
 }
 
+/*
+
+Set matrix of distribution by given diagonal and non-diagonal elements.
+E.g. if diag_probs=A, non_diag_probs=B, then matrix would be
+	[ A B B
+	  B A B
+	  B B A ]
+
+*/
+void state_machine_diag_distribution(
+	state_machine_t *machine,
+	state_probability_t diag_probs, state_probability_t non_diag_probs
+) {
+
+	for (uint32_t i = 0; i < machine->states_number; i++)
+		for (uint32_t j = 0; j < machine->states_number; j++)
+
+			if (i == j)
+				machine->transitions[i][j] = diag_probs;
+			else
+				machine->transitions[i][j] = non_diag_probs;
+
+}
+
 void machine_next_state(state_machine_t * const machine) {
 
 	#if   STATE_MACHINE_RANDOMNESS_MODE == STATE_MACHINE_XORSHIFT_RANDOM
