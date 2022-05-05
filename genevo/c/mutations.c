@@ -129,9 +129,14 @@ void crossover_genomes(
     gene_byte_t *writer_position = child->genes;
     for (genome_length_t gene_i = 0; gene_i < child->length; gene_i++) {
 
+        const genome_t *parent = parents[blender->current_state];
+
+        // TODO: prevent running out of genes to copy
+        if (parent->length < gene_i) break;
+
         memcpy(
             writer_position,
-            parents[blender->current_state]->genes,
+            parent->genes + gene_size * gene_i,
             gene_size);
 
         writer_position += gene_size * gene_i;
