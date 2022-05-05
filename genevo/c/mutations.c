@@ -164,10 +164,12 @@ bool combination_has_duplicates(
     return false;
 }
 
-void pool_reproduction(
-    pool_organisms_num_t genomes_number, pool_organisms_num_t combinations_number,
+void crossover_genomes_combinations(
+    pool_organisms_num_t parents_number, pool_organisms_num_t children_number,
     uint8_t combination_length, double blend_coefficient,
-    const pool_t *source_population, const pool_t *dest_population
+    const genome_t * const * const genomes_parents,
+    genome_t * const * const genomes_children,
+    const pool_gene_byte_size_t gene_size
 ) {
 
     if (blend_coefficient <= 0 || blend_coefficient >= 1) {
@@ -192,19 +194,30 @@ void pool_reproduction(
         pool_organisms_num_t, combination, combination_length,
         DESTROY_AND_EXIT(destroy_state_machine, blender, RETURN_VOID_ON_ERR));
 
+    DECLARE_MALLOC_LINKS_ARRAY(
+        const genome_t, genomes_combination, combination_length,
+        DESTROY_AND_EXIT(destroy_state_machine, blender, RETURN_VOID_ON_ERR));
+
     for (
         pool_organisms_num_t combination_counter = 0;
-        combination_counter < combinations_number;
+        combination_counter < children_number;
         combination_counter++
     ) {
 
         do for (uint8_t i = 0; i < combination_length; i++) 
-            combination[i] = next_urandom64_in_range(0, genomes_number);
+            combination[i] = next_urandom64_in_range(0, parents_number);
         while (!combination_has_duplicates(combination));
 
-        // .. do something with the combination
+        for (uint8_t i = 0; i < combination_length; i++)
+            genomes_combination[i] = genomes_parents[combination[i]];
+
+        crossover_genomes(
+            genomes_children[combination_counter], genomes_combination,
+            gene_size, blender);
 
     }
+
+    FREE(combination);
 
     destroy_state_machine(blender);
 
