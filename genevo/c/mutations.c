@@ -217,7 +217,7 @@ void crossover_genomes_combinations(
 
     }
 
-    FREE(combination);
+    FREE_NOT_NULL(combination);
 
     destroy_state_machine(blender);
 

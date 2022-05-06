@@ -40,15 +40,20 @@ genome_t * allocate_genome(
 	const uint32_t genome_bit_size
 ) {
 
-	genome_t * const genome = malloc(sizeof(genome_t));
+	DECLARE_MALLOC_OBJECT(genome_t, genome, RETURN_NULL_ON_ERR);
 
 	const uint64_t genome_byte_size = gene_bytes_size * length;
 	const uint16_t residue_size_bits =
 		genome_bit_size - BYTES_TO_BITS(genome_byte_size);
 
 	if (allocate_data) {
+
 		genome->genes = malloc(genome_byte_size);
 		genome->residue = malloc(BITS_TO_BYTES(residue_size_bits));
+
+		if (genome->genes == NULL || genomes->residue == NULL)
+			RAISE_MALLOC_ERR(RETURN_NULL_ON_ERR);
+
 	} else {
 		genome->genes = NULL;
 		genome->residue = NULL;
@@ -69,8 +74,7 @@ genome_t ** allocate_genome_vector(
 	const uint32_t genome_bit_size
 ) {
 
-	// allocate each genome and genomes vector
-	genome_t ** const genomes = malloc(sizeof(genome_t *) * size);
+	DECLARE_MALLOC_LINKS_ARRAY(genome_t, genomes, size, RETURN_NULL_ON_ERR);
 
 	for(pool_organisms_num_t genome_itr = 0; genome_itr < size; genome_itr++)
 		genomes[genome_itr] = allocate_genome(
@@ -98,8 +102,8 @@ void destroy_genomes_vector(
 void destroy_genome(genome_t * const genome, const bool deallocate_data) {
 
 	if (deallocate_data) {
-		if (genome->genes != NULL) free(genome->genes);
-		if (genome->residue != NULL) free(genome->residue);
+		FREE_NOT_NULL(genome->genes);
+		FREE_NOT_NULL(genome->residue);
 	}
 
 	delete_genome_metadata(genome);
@@ -115,19 +119,20 @@ void assign_genome_metadata(
 
 	delete_genome_metadata(genome);
 	genome->metadata = malloc(metadata_byte_size);
+	if (genome->metadata == NULL) RAISE_MALLOC_ERR(RETURN_NULL_ON_ERR);
 	memcpy(genome->metadata, metadata, metadata_byte_size);
 
 }
 
 void delete_genome_metadata(genome_t * const genome) {
 
-	if (genome->metadata != NULL) free(genome->metadata);
+	FREE_NOT_NULL(genome->metadata);
 
 }
 
 pool_t * allocate_pool() {
 
-	pool_t * const pool = malloc(sizeof(pool_t));
+	DECLARE_CONST_MALLOC_OBJECT(pool_t, pool, RETURN_NULL_ON_ERR);
 
 	pool->metadata = NULL;
 	pool->metadata_byte_size = 0;
@@ -152,13 +157,14 @@ void assign_pool_metadata(
 
 	delete_pool_metadata(pool);
 	pool->metadata = malloc(metadata_byte_size);
+	if (pool->metadata == NULL) RAISE_MALLOC_ERR(RETURN_NULL_ON_ERR);
 	memcpy(pool->metadata, metadata, metadata_byte_size);
 
 }
 
 void delete_pool_metadata(pool_t * const pool) {
 
-	if (pool->metadata != NULL) free(pool->metadata);
+	FREE_NOT_NULL(pool->metadata);
 
 }
 
@@ -174,7 +180,7 @@ char * alloc_name_for_pool(pool_t * const pool) {
 
 	const uint64_t number = time(NULL) + (uint64_t)pool;
 	// maximum size of uint64 in hex is 9 symbols + ".pool"
-	char * const address = calloc(sizeof(char), 9 + 5);
+	DECLARE_CONST_CALLOC_ARRAY(char, address, 9 + 5, RETURN_NULL_ON_ERR);
 
 	// in case printed string is less than (9 + 5), symbols, the last bit is
 	// \0 anyway, so it will suit well for functions taking (const char *)
@@ -275,7 +281,7 @@ population_t * create_pool_in_file(
 		genes_number, pool->gene_bytes_size, genome_bit_size
 	);
 
-	population_t * const population = malloc(sizeof(population_t));
+	DECLARE_CONST_MALLOC_OBJECT(population_t, population, RETURN_NULL_ON_ERR);
 
 	population->pool = pool;
 	population->genomes = genomes;
