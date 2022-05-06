@@ -6,11 +6,11 @@
 #define FLOAT_COMPARISON_PRESICION 1e-5
 
 #define FLOAT_IS_NEAR(_NUMBER, _CENTER)                                        \
-    (abs(_CENTER - _NUMBER) <= FLOAT_COMPARISON_PRESICION)
+    (abs((_CENTER) - (_NUMBER)) <= FLOAT_COMPARISON_PRESICION)
 
 #define FLOAT_IN_RANGE(_NUMBER, _A, _B)                                        \
-    (_A - FLOAT_COMPARISON_PRESICION >= _NUMBER &&                             \
-     _B + FLOAT_COMPARISON_PRESICION <= _NUMBER)
+    ((_A) - FLOAT_COMPARISON_PRESICION >= (_NUMBER) &&                             \
+     (_B) + FLOAT_COMPARISON_PRESICION <= (_NUMBER))
 
 
 #define BITS_TO_BYTES(_BITS_NUM) (uint32_t)ceil((_BITS_NUM) / 8)
