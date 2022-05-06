@@ -51,7 +51,7 @@ genome_t * allocate_genome(
 		genome->genes = malloc(genome_byte_size);
 		genome->residue = malloc(BITS_TO_BYTES(residue_size_bits));
 
-		if (genome->genes == NULL || genomes->residue == NULL)
+		if (genome->genes == NULL || genome->residue == NULL)
 			RAISE_MALLOC_ERR(RETURN_NULL_ON_ERR);
 
 	} else {
@@ -119,7 +119,7 @@ void assign_genome_metadata(
 
 	delete_genome_metadata(genome);
 	genome->metadata = malloc(metadata_byte_size);
-	if (genome->metadata == NULL) RAISE_MALLOC_ERR(RETURN_NULL_ON_ERR);
+	if (genome->metadata == NULL) RAISE_MALLOC_ERR(RETURN_VOID_ON_ERR);
 	memcpy(genome->metadata, metadata, metadata_byte_size);
 
 }
@@ -157,7 +157,7 @@ void assign_pool_metadata(
 
 	delete_pool_metadata(pool);
 	pool->metadata = malloc(metadata_byte_size);
-	if (pool->metadata == NULL) RAISE_MALLOC_ERR(RETURN_NULL_ON_ERR);
+	if (pool->metadata == NULL) RAISE_MALLOC_ERR(RETURN_VOID_ON_ERR);
 	memcpy(pool->metadata, metadata, metadata_byte_size);
 
 }

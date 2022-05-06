@@ -63,6 +63,15 @@ void destroy_state_machine(state_machine_t *machine);
  */
 void init_state_machine(state_machine_t *machine, const uint32_t initial_state);
 
+/* @function state_machine_diag_distribution
+ * @argument double
+ * @argument double
+ */
+void state_machine_diag_distribution(
+    state_machine_t *,
+    state_probability_t diag_probs, state_probability_t non_diag_probs
+);
+
 /* @function generate_state_machine
  * @return void
  * @argument state_machine*
