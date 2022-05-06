@@ -206,7 +206,7 @@ void crossover_genomes_combinations(
 
         do for (uint8_t i = 0; i < combination_length; i++) 
             combination[i] = next_urandom64_in_range(0, parents_number);
-        while (!combination_has_duplicates(combination));
+        while (combination_has_duplicates(combination));
 
         for (uint8_t i = 0; i < combination_length; i++)
             genomes_combination[i] = genomes_parents[combination[i]];
