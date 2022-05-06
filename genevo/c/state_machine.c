@@ -64,7 +64,7 @@ int cdf_items_comparator(const void *item1_void, const void *item2_void) {
 
 void init_state_machine(state_machine_t *machine, const uint32_t initial_state) {
 
-	#ifdef STATE_MACHINE_CHECK_DISTRIBUTION
+	#ifdef STATE_MACHINE_CHECK_DISTRIBUTION_ON_INIT
 	for (uint32_t row_i = 0; row_i < machine->states_number; row_i++) {
 		double row_sum = 0;
 		for (uint32_t column_i = 0; column_i < machine->states_number; column_i++)
@@ -119,6 +119,16 @@ void state_machine_diag_distribution(
 	state_machine_t *machine,
 	state_probability_t diag_probs, state_probability_t non_diag_probs
 ) {
+
+	#ifdef STATE_MACHINE_CHECK_DISTRIBUTION
+	if (!FLOAT_IS_NEAR(
+		diag_probs + (machine->states_number - 1) * non_diag_probs,
+		1
+	)) {
+		ERROR_LEVEL = ERR_SM_WRONG_DISTRIBUTION;
+		return;
+	}
+	#endif
 
 	for (uint32_t i = 0; i < machine->states_number; i++)
 		for (uint32_t j = 0; j < machine->states_number; j++)
