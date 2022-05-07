@@ -97,9 +97,9 @@ void init_state_machine(state_machine_t *machine, const uint32_t initial_state) 
 			cdf_items_comparator);
 
 		// sum up values
-		for (state_j = 1; state_j < machine->states_number; state_j++) {\
+		for (state_j = 1; state_j < machine->states_number; state_j++) {
 			machine->cdf_transitions[state_i][state_j].value +=
-				machine->transitions[state_i][state_j - 1];
+				machine->cdf_transitions[state_i][state_j - 1].value;
 		}
 
 	}
