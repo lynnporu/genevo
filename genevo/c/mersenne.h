@@ -1,3 +1,8 @@
+#include <stdbool.h>
+#include <time.h>
+#include <stdlib.h>
+
+/* generates a random number on [0, 2^64-1]-interval */
 unsigned long long mersenne_genrand64_int64(void);
 
 /* generates a random number on [0, 2^63-1]-interval */

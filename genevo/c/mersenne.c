@@ -78,10 +78,15 @@ static int mersenne_mti=MERSENNE_NN+1;
 #define mt mersenne_mt
 #define mti mersenne_mti
 
+bool mersenne_seed_initialized = false;
+
 /* initializes mt[MERSENNE_NN] with a seed */
 void mersenne_init_genrand64(unsigned long long seed)
 {
-    mt[0] = seed;
+    mersenne_seed_initialized = true;
+    srand(seed);
+
+    mt[0] = rand();
     for (mti=1; mti<MERSENNE_NN; mti++) 
         mt[mti] =  (6364136223846793005ULL * (mt[mti-1] ^ (mt[mti-1] >> 62)) + mti);
 }

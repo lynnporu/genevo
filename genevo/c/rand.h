@@ -7,6 +7,7 @@
 #include <math.h>
 
 #include "bit_manipulations.h"
+#include "mersenne.h"
 
 // xorshift128p generator
 
@@ -63,6 +64,12 @@ uint32_t lcg_rand() __attribute__((pure));
     double _R  = next_fast_random();                                           \
     (_A_ + ((_B_ - _A_) / MAX_FOR_32) * _R);                                   \
 })
+
+// Mersenne twister
+
+#define ENSURE_MERSENNE_RND_SEED_IS_SET \
+    { if(!mersenne_seed_initialized) void mersenne_init_genrand64(time(NULL)); }
+extern bool mersenne_seed_initialized;
 
 // ...other functions
 
