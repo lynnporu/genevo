@@ -44,6 +44,17 @@ uint64_t xorshift128p() {
     return t + s;
 }
 
+uint32_t xorshift128p32() {
+    uint64_t t = xorshift128p_rand_state.seed.x[0];
+    uint64_t const s = xorshift128p_rand_state.seed.x[1];
+    xorshift128p_rand_state.seed.x[0] = s;
+    t ^= t << 23;       // a
+    t ^= t >> 18;       // b
+    t ^= s ^ (s >> 5);  // c
+    xorshift128p_rand_state.seed.x[1] = t;
+    return (t + s) % MAX_FOR_32;
+}
+
 /*
     
 Linear Congruential Generator
@@ -75,7 +86,7 @@ void set_lcg_seed(uint32_t new_seed) {
 
 }
 
-inline uint32_t lcg_rand() {
+uint32_t lcg_rand() {
     lcg_rand_state.seed = 214013 * lcg_rand_state.seed + 2531011;
     return (lcg_rand_state.seed >> 16) & 0x7FFF;
 }
