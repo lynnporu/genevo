@@ -25,7 +25,8 @@ Flip every bit in given bytes sequention with probability `probability`.
 
 */
 void flip_bits_with_probability(
-    gene_byte_t * const bytes, uint64_t bytes_number, double probability
+    gene_byte_t * const bytes, uint64_t bytes_number,
+    mutation_probability_t probability
 ) {
     for (
         uint64_t trial = 0;
@@ -44,7 +45,8 @@ void flip_bits_with_probability(
 }
 
 void flip_bits_in_genome_with_probability(
-    const genome_t *genome, const pool_t *pool, double probability
+    const genome_t *genome, const pool_t *pool,
+    mutation_probability_t probability
 ) {
     flip_bits_with_probability(
         genome->genes,
@@ -57,6 +59,7 @@ void change_genes_with_probability(
     pool_gene_byte_size_t gene_size, genome_length_t genes_number,
     gene_mutation_mode_t mode, double probability
     pool_gene_byte_size_t gene_byte_size, genome_length_t genes_number,
+    gene_mutation_mode_t mode, mutation_probability_t probability
 ) {
 
     #ifndef SKIP_LCG_RND_SEED_CHECK
@@ -121,7 +124,7 @@ void change_genes_with_probability(
 
 void change_genes_in_genome_with_probability(
     const genome_t *genome, const pool_t *pool,
-    gene_mutation_mode_t mode, double probability
+    gene_mutation_mode_t mode, mutation_probability_t probability
 ) {
     change_genes_with_probability(
         genome->genes,

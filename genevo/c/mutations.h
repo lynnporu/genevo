@@ -8,6 +8,9 @@
 #include "rand.h"
 #include "state_machine.h"
 
+
+typedef double mutation_probability_t;
+
 /* @function flip_bits_with_probability
  * @return void
  * @argument uint8*
@@ -15,7 +18,7 @@
  * @argument double
  */
 void flip_bits_with_probability(
-    gene_byte_t * const, uint64_t bits_number, double probability);
+    gene_byte_t * const, uint64_t bits_number, mutation_probability_t);
 
 /* @function flip_bits_in_genome_with_probability
  * @return void
@@ -24,7 +27,7 @@ void flip_bits_with_probability(
  * @argument double
  */
 void flip_bits_in_genome_with_probability(
-    const genome_t *genome, const pool_t *pool, double probability
+    const genome_t *genome, const pool_t *pool, mutation_probability_t
 );
 
 /* @enum gene_mutation_mode
@@ -51,7 +54,7 @@ typedef enum gene_mutation_mode_e {
 void change_genes_with_probability(
     gene_byte_t * const,
     pool_gene_byte_size_t, genome_length_t,
-    gene_mutation_mode_t, double probability
+    gene_mutation_mode_t, mutation_probability_t probability
 );
 
 /* @function change_genes_in_genome_with_probability
@@ -63,7 +66,7 @@ void change_genes_with_probability(
  */
 void change_genes_in_genome_with_probability(
     const genome_t *genome, const pool_t *pool,
-    gene_mutation_mode_t mode, double probability
+    gene_mutation_mode_t mode, mutation_probability_t probability
 );
 
 #define MUTATIONS_XORSHIFT_FOR_RANDOM64  0
