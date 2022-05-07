@@ -173,3 +173,16 @@ typedef struct population_s {
     pool_t     *pool;
     genome_t  **genomes;
 } population_t;
+
+
+/* @enum duplicating_mode
+ * @type uint8
+ * @member DUPLICATION_COPY_LINKS (1 << 0)
+ * @member DUPLICATION_COPY_DATA  (1 << 1)
+ * @member DUPLICATION_LEAVE_NULL (1 << 2)
+ */
+typedef enum duplicating_mode_e {
+    DUPLICATION_COPY_LINKS =       (uint8_t)(1 << 0),
+    DUPLICATION_COPY_DATA  =       (uint8_t)(1 << 1),
+    DUPLICATION_LEAVE_NULL =       (uint8_t)(1 << 2)
+} duplicating_mode_t;

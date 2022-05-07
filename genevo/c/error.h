@@ -53,6 +53,11 @@ extern err_status_t ERROR_LEVEL;
 #define ERR_NOT_ENOUGH_PARAMS_STR           "Some of the mandatory parameters "\
                                             "were not set."
 
+#define ERR_WRONG_PARAMS                    (err_status_t)0xe4
+#define ERR_WRONG_PARAMS_STR                "Some of the arguments you've "    \
+                                            "passed is wrong. Check the "      \
+                                            "reference."
+
 
 // Gene pool file errors =======================================================
 
@@ -144,3 +149,9 @@ extern err_status_t ERROR_LEVEL;
 #define ERR_GENE_WEIGHT_TOO_LARGE_STR       "Weight part of the gene is "      \
                                             "bigger than 64 bits. Those are  " \
                                             "not supported."
+
+// State machine ===============================================================
+
+#define ERR_SM_WRONG_DISTRIBUTION           (err_status_t)0x41
+#define ERR_SM_WRONG_DISTRIBUTION_STR       "Wrong distribution were given to "\
+                                            "the state machine."

@@ -25,6 +25,7 @@ little slower on little-endian platform because of byte swappings.
 #include "files.h"
 #include "types.h"
 #include "bit_manipulations.h"
+#include "memory.h"
 
 // Even the empty pool file should be at least 256 bits long.
 #define POOL_FILE_MIN_SAFE_BIT_SIZE 256
@@ -174,10 +175,15 @@ gene_t * get_gene_by_index(
 
 /* @function get_gene_by_pointer
  * @return gene*
- * @argument uint8
+ * @argument uint8*
  * @argument pool*
  */
 gene_t * get_gene_by_pointer(const gene_byte_t * const, const pool_t * const);
+
+/* @function free_gene
+ * @return void
+*/
+void free_gene(gene_t *);
 
 void open_file_for_pool(
     const char *address, pool_t * const, genome_t ** const);

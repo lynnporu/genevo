@@ -60,7 +60,7 @@ pool_t * read_pool(const char *address) {
          preamble->node_id_part_bit_size) % 8 != 0,
         ERR_GENE_NOT_ALIGNED);
 
-    pool_t * const pool = malloc(sizeof(pool_t));
+    DECLARE_CONST_MALLOC_OBJECT(pool_t, pool, RETURN_NULL_ON_ERR);
 
     pool->file_mapping = mapping;
 
@@ -291,7 +291,7 @@ genome_t * read_next_genome(pool_t * const pool) {
         return NULL;
     }
 
-    genome_t * const genome = malloc(sizeof(genome_t));
+    DECLARE_CONST_MALLOC_OBJECT(genome_t, genome, RETURN_NULL_ON_ERR);
 
     COPY_MEMBER_NTOH(length,             preamble, genome);
     COPY_MEMBER_NTOH(metadata_byte_size, preamble, genome);
@@ -341,7 +341,9 @@ genome_t * read_next_genome(pool_t * const pool) {
 
 genome_t ** read_genomes(pool_t * const pool) {
 
-    genome_t ** genomes = malloc(sizeof(genome_t) * pool->organisms_number);
+    DECLARE_MALLOC_LINKS_ARRAY(
+        genome_t, genomes, pool->organisms_number,
+        RETURN_NULL_ON_ERR);
 
     for(uint64_t cursor = 0; cursor <= pool->organisms_number; cursor++)
         genomes[cursor] = read_next_genome(pool);
@@ -488,7 +490,7 @@ gene_t * get_gene_by_pointer(
     const gene_byte_t * const gene_start_byte, const pool_t * const pool
 ) {
 
-    gene_t * const gene = malloc(sizeof(gene_t));
+    DECLARE_CONST_MALLOC_OBJECT(gene_t, gene, RETURN_NULL_ON_ERR);
 
     copy_bitslots_to_uint64(
         gene_start_byte,
@@ -567,6 +569,10 @@ gene_t * get_gene_by_index(
 
 }
 
+void free_gene(gene_t * gene) {
+    free(gene);
+}
+
 gene_byte_t * genes_to_byte_array(
     gene_t ** const genes, pool_t * const pool, uint64_t length
 ) {
@@ -576,7 +582,9 @@ gene_byte_t * genes_to_byte_array(
 
     // 8 auxiliary bytes is malloc'ed here, because
     // copy_uint64_to_bitslots can cause writing out of bounds.
-    gene_byte_t * const array = malloc(GENES_ARRAY_SIZE + 8);
+    DECLARE_MALLOC_ARRAY(
+        gene_byte_t, array, GENES_ARRAY_SIZE + 8,
+        RETURN_NULL_ON_ERR);
     memset(array, 0, GENES_ARRAY_SIZE);
 
     #undef GENES_ARRAY_SIZE

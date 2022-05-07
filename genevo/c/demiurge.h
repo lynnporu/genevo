@@ -10,21 +10,6 @@
 #include "pickler.h"
 #include "bit_manipulations.h"
 
-#define fill_bytes_with_randomness(_DESTINATION, _BYTES)                       \
-    fill_with_randomness(_DESTINATION, _BYTES, 0)
-
-#define fill_bits_with_randomness(_DESTINATION, _BITS)                         \
-    fill_with_randomness(_DESTINATION, (uint32_t)(_BITS / 8), _BITS % 8)
-
-/* @function fill_with_randomness
- * @return void
- * @argument uint8*
- * @argument uint32
- * @argument uint8
- */
-void fill_with_randomness(
-    uint8_t *destination, uint32_t bytes, const uint8_t bits);
-
 /* @enum generator_mode
  * @type uint8
  * @member GENERATE_RANDOMNESS (1 << 0)
@@ -65,6 +50,51 @@ genome_t ** allocate_genome_vector (
     const pool_organisms_num_t, const bool allocate_data,
     const genome_length_t, const pool_gene_byte_size_t,
     const uint32_t genome_bit_size
+);
+
+/* @function duplicate_genome_vector
+ * @return genome**
+ * @argument uint64
+ * @argument genome_duplicating_mode
+ * @argument uint32
+ * @argument uint8
+ * @argument uint32
+ * @argument genome**
+ */
+genome_t ** duplicate_genome_vector (
+    const pool_organisms_num_t size, duplicating_mode_t mode,
+    const genome_length_t genes_number, const uint8_t gene_bytes_size,
+    const uint32_t genome_bit_size,
+    const genome_t * const * const src
+);
+
+/* @function copy_genome_vector
+ * @return void
+ * @argument uint64
+ * @argument genome_duplicating_mode
+ * @argument uint32
+ * @argument genome**
+ * @argument genome**
+ */
+void copy_genome_vector (
+    const pool_organisms_num_t size,
+    const genome_t * const * const src,
+    genome_t * const * const dst,
+    const pool_gene_byte_size_t gene_bytes_size,
+    duplicating_mode_t mode
+);
+
+/* @function copy_genome
+ * @return void
+ * @argument genome*
+ * @argument genome*
+ * @argument duplicating_mode
+ * @argument uint8
+ */
+void copy_genome(
+    const genome_t * const src, genome_t * const dst,
+    duplicating_mode_t mode,
+    pool_gene_byte_size_t gene_byte_size
 );
 
 /* @function destroy_genomes_vector
