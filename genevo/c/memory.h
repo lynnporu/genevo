@@ -29,6 +29,10 @@
     _TYPE * const _DESTINATION = calloc(sizeof(_TYPE), _SIZE);                 \
     _CHECK_NULL_DESTINATION(_DESTINATION, _EXIT_CODE);
 
+#define ASSIGN_MALLOC_OBJECT(_TYPE, _DESTINATION, _EXIT_CODE)                  \
+    _DESTINATION = malloc(sizeof(_TYPE));                                      \
+    _CHECK_NULL_DESTINATION(_DESTINATION, _EXIT_CODE);
+
 #define ASSIGN_MALLOC_ARRAY(_DESTINATION, _TYPE, _SIZE)                        \
     _DESTINATION = malloc(sizeof(_TYPE) * _SIZE);
 

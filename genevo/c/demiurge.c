@@ -85,6 +85,76 @@ genome_t ** allocate_genome_vector(
 
 }
 
+genome_t ** duplicate_genome_vector (
+	const pool_organisms_num_t size, duplicating_mode_t mode,
+	const genome_length_t genes_number,
+	const pool_gene_byte_size_t gene_bytes_size,
+	const uint32_t genome_bit_size,
+	const genome_t * const * const src
+) {
+
+	genome_t ** dst = allocate_genome_vector(
+		size,
+		mode == DUPLICATION_COPY_DATA,
+		genes_number, gene_bytes_size, genome_bit_size);
+
+	for (pool_organisms_num_t i = 0; i < size; i++) {
+		copy_genome(src[i], dst[i], mode, gene_bytes_size);
+	}
+
+	return dst;
+
+}
+
+void copy_genome_vector (
+	const pool_organisms_num_t size,
+	const genome_t * const * const src,
+	genome_t * const * const dst,
+	const pool_gene_byte_size_t gene_bytes_size,
+	duplicating_mode_t mode
+) {
+
+	for (pool_organisms_num_t i = 0; i < size; i++) {
+		copy_genome(src[i], dst[i], mode, gene_bytes_size);
+	}
+
+}
+
+void copy_genome(
+	const genome_t * const src, genome_t * const dst,
+	duplicating_mode_t mode,
+	pool_gene_byte_size_t gene_byte_size
+) {
+	dst->length = src->length;
+	dst->metadata_byte_size = src->metadata_byte_size;
+	dst->residue_size_bits = src->residue_size_bits;
+
+	switch (mode) {
+
+		case DUPLICATION_COPY_LINKS:
+			dst->metadata = src->metadata;
+			dst->genes = src->genes;
+			dst->residue = src->residue;
+			break;
+
+		case DUPLICATION_COPY_DATA:
+			memcpy(dst->metadata, src->metadata, dst->metadata_byte_size);
+			memcpy(dst->genes, src->genes, dst->length * gene_byte_size);
+			memcpy(dst->residue, src->residue, BYTES_TO_BITS(dst->residue_size_bits));
+			break;
+
+		default:
+		case DUPLICATION_LEAVE_NULL:
+			dst->metadata = NULL;
+			dst->genes = NULL;
+			dst->residue = NULL;
+			break;
+
+
+	}
+
+}
+
 void destroy_genomes_vector(
 	const pool_organisms_num_t size,
 	const bool deallocate_data, const bool destroy_each_genome,
