@@ -143,9 +143,11 @@ void state_machine_diag_distribution(
 void machine_next_state(state_machine_t * const machine) {
 
 	#if   STATE_MACHINE_RANDOMNESS_MODE == STATE_MACHINE_XORSHIFT_RANDOM
-	state_probability_t random_value = next_urandom64() / MAX_FOR_64;
+	state_probability_t random_value = next_double_urandom64_in_range(0, 1);
 	#elif STATE_MACHINE_RANDOMNESS_MODE == STATE_MACHINE_FAST_RANDOM
-	state_probability_t random_value = next_fast_random() / MAX_FOR_32;
+	state_probability_t random_value = next_double_fast_random_in_range(0, 1);
+	#elif STATE_MACHINE_RANDOMNESS_MODE == STATE_MACHINE_MERSENNE_RANDOM
+	state_probability_t random_value = mersenne_genrand64_real2();
 	#endif
 
 	const uint32_t state_i = machine->current_state;

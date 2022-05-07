@@ -27,8 +27,15 @@ uint64_t xorshift128p() __attribute__((pure));
 #define next_urandom64_in_range(_A, _B) ({                                     \
     double _A_ = (_A);                                                         \
     double _B_ = (_B);                                                         \
-    (uint64_t)roundl(                                                          \
-        _A_ + ((_B_ - _A_) / MAX_FOR_64) * (double)next_urandom64());          \
+    double _R  = next_urandom64();                                             \
+    (uint64_t)roundl(_A_ + ((_B_ - _A_) / MAX_FOR_64) * _R);                   \
+})
+
+#define next_double_urandom64_in_range(_A, _B) ({                              \
+    double _A_ = (_A);                                                         \
+    double _B_ = (_B);                                                         \
+    double _R  = next_urandom64();                                             \
+    (_A_ + ((_B_ - _A_) / MAX_FOR_64) * _R);                                   \
 })
 
 // linear congruent generator
@@ -46,8 +53,15 @@ uint32_t lcg_rand() __attribute__((pure));
 #define next_fast_random_in_range(_A, _B) ({                                   \
     double _A_ = (_A);                                                         \
     double _B_ = (_B);                                                         \
-    (uint32_t)roundl(                                                          \
-        _A_ + ((_B_ - _A_) / MAX_FOR_32) * (double)next_fast_random());        \
+    double _R  = next_fast_random();                                           \
+    (uint32_t)roundl(_A_ + ((_B_ - _A_) / MAX_FOR_32) * _R);                   \
+})
+
+#define next_double_fast_random_in_range(_A, _B) ({                                   \
+    double _A_ = (_A);                                                         \
+    double _B_ = (_B);                                                         \
+    double _R  = next_fast_random();                                           \
+    (_A_ + ((_B_ - _A_) / MAX_FOR_32) * _R);                                   \
 })
 
 // ...other functions

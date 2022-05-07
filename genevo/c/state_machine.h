@@ -10,12 +10,14 @@ This header implements state machine.
 
 #include "error.h"
 #include "rand.h"
+#include "mersenne.h"
 #include "memory.h"
 #include "bit_manipulations.h"
 
 #define STATE_MACHINE_FAST_RANDOM      0
 #define STATE_MACHINE_XORSHIFT_RANDOM  1
-#define STATE_MACHINE_RANDOMNESS_MODE MACHINE_XORSHIFT_RANDOM
+#define STATE_MACHINE_MERSENNE_RANDOM  2
+#define STATE_MACHINE_RANDOMNESS_MODE STATE_MACHINE_MERSENNE_RANDOM
 
 typedef double state_probability_t;
 
