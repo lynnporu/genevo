@@ -56,8 +56,6 @@ void flip_bits_in_genome_with_probability(
 
 void change_genes_with_probability(
     gene_byte_t * const genes,
-    pool_gene_byte_size_t gene_size, genome_length_t genes_number,
-    gene_mutation_mode_t mode, double probability
     pool_gene_byte_size_t gene_byte_size, genome_length_t genes_number,
     gene_mutation_mode_t mode, mutation_probability_t probability
 ) {
@@ -243,9 +241,7 @@ void crossover_genomes_combinations(
 void bottleneck_population(
     pool_organisms_num_t src_number, pool_organisms_num_t dst_number,   
     const genome_t * const * const src,
-    genome_t * const * const dst,
-    const pool_gene_byte_size_t gene_byte_size,
-    duplicating_mode_t mode
+    const genome_t ** const dst
 ) {
 
     state_machine_t *picker = generate_state_machine(src_number);
@@ -258,7 +254,52 @@ void bottleneck_population(
 
     for (pool_organisms_num_t dst_i = 0; dst_i < dst_number; dst_i++) {
         pool_organisms_num_t src_i = picker->current_state;
-        copy_genome(src[src_i], dst[dst_i], mode, gene_byte_size);
+        dst[dst_i] = src[src_i];
         machine_next_state(picker);
     }
+}
+
+void pairing_season(
+    const pool_organisms_num_t parents_number,
+    const pool_organisms_num_t children_number,
+    const replication_type_t replication_type, const blend_coefficient_t blend_coefficient,
+    const mutation_probability_t change_genes_prob, const gene_mutation_mode_t mutation_mode,
+    const mutation_probability_t flip_bits_prob,
+    const genome_t * const * const genomes_parents,
+    genome_t * const * const genomes_children,
+    const pool_gene_byte_size_t gene_byte_size
+) {
+
+    const genome_t ** bottleneck_source;
+
+    if (parents_number != children_number)
+        bottleneck_population(
+            parents_number, children_number, genomes_parents, bottleneck_source);
+
+    crossover_genomes_combinations(
+        parents_number, children_number,
+        replication_type, blend_coefficient,
+        (parents_number == children_number)
+            ? genomes_parents : bottleneck_source,
+        genomes_children,
+        gene_byte_size);
+
+    for (
+        pool_organisms_num_t genome_i = 0;
+        genome_i < children_number;
+        genome_i++
+    ) {
+
+        change_genes_with_probability(
+            genomes_children[genome_i]->genes,
+            gene_byte_size, genomes_children[genome_i]->length,
+            mutation_mode, change_genes_prob);
+
+        flip_bits_with_probability(
+            genomes_children[genome_i]->genes,
+            gene_byte_size * genomes_children[genome_i]->length,
+            flip_bits_prob);
+
+    }
+
 }

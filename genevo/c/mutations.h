@@ -4,10 +4,14 @@
 #include <math.h>
 #include <stdbool.h>
 
+#include "demiurge.h"
 #include "pool.h"
 #include "rand.h"
 #include "state_machine.h"
 
+#define MUTATIONS_XORSHIFT_FOR_RANDOM64  0
+#define MUTATIONS_MERSENNE_FOR_RANDOM64  1
+#define MUTATIONS_RANDOMNESS_MODE MUTATIONS_MERSENNE_FOR_RANDOM64
 
 typedef double mutation_probability_t;
 
@@ -69,6 +73,29 @@ void change_genes_in_genome_with_probability(
     gene_mutation_mode_t mode, mutation_probability_t probability
 );
 
-#define MUTATIONS_XORSHIFT_FOR_RANDOM64  0
-#define MUTATIONS_MERSENNE_FOR_RANDOM64  1
-#define MUTATIONS_RANDOMNESS_MODE MUTATIONS_MERSENNE_FOR_RANDOM64
+typedef uint8_t replication_type_t;
+typedef double blend_coefficient_t;
+
+/* @function pairing_season
+ * @return void
+ * @argument uint64_t
+ * @argument uint64_t
+ * @argument double
+ * @argument double
+ * @argument double
+ * @argument gene_mutation_mode
+ * @argument double
+ * @argument genome**
+ * @argument genome**
+ * @argument uint8_t
+ */
+void pairing_season(
+    const pool_organisms_num_t parents_number,
+    const pool_organisms_num_t children_number,
+    const replication_type_t, const blend_coefficient_t,
+    const mutation_probability_t change_genes_prob, const gene_mutation_mode_t,
+    const mutation_probability_t flip_bits_prob,
+    const genome_t * const * const genomes_parents,
+    genome_t * const * const genomes_children,
+    const pool_gene_byte_size_t
+);
