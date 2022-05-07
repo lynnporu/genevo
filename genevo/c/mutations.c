@@ -32,8 +32,12 @@ void flip_bits_with_probability(
         trial < TRIALS_TO_MAKE_PROBABILITY(bytes_number * 8, probability);
         trial++
     ) {
-        uint64_t position = next_urandom64_in_range(0, bytes_number * 8),
-                 byte     = position / 8;
+        #if   MUTATIONS_RANDOMNESS_MODE == MUTATIONS_XORSHIFT_FOR_RANDOM64
+        uint64_t position = next_urandom64_in_range(0, bytes_number * 8);
+        #elif MUTATIONS_RANDOMNESS_MODE == MUTATIONS_MERSENNE_FOR_RANDOM64
+        uint64_t position = next_mersenne_random64_in_range(0, bytes_number * 8);
+        #endif
+        uint64_t byte     = position / 8;
         uint8_t  bit      = position % 8;
         ((uint8_t * const)bytes)[byte] ^= 1 << bit;
     }
@@ -64,7 +68,11 @@ void change_genes_with_probability(
         trial++
     ) {
 
+        #if   MUTATIONS_RANDOMNESS_MODE == MUTATIONS_XORSHIFT_FOR_RANDOM64
         uint64_t position = next_urandom64_in_range(0, genes_number);
+        #elif MUTATIONS_RANDOMNESS_MODE == MUTATIONS_MERSENNE_FOR_RANDOM64
+        uint64_t position = next_mersenne_random64_in_range(0, genes_number);
+        #endif
 
         // This variable used if mode == REPEAT_NEIGHBOR_GENES
         // If neighbor_gene is `-1`, then previous gene will be repeated.
@@ -72,7 +80,8 @@ void change_genes_with_probability(
         int8_t neighbor_gene = 0;
 
         if (mode == COMBINE_GENES_MUTATION)
-            mode = 1 << next_fast_random_in_range(0, 2);
+            // maps [0; 2^32-1] -> {0; 1} -> {0; 2}
+            mode = 1 << ((next_fast_random() % 1) * 2);
 
         switch (mode) {
 
@@ -205,7 +214,11 @@ void crossover_genomes_combinations(
     ) {
 
         do for (uint8_t i = 0; i < combination_length; i++) 
+            #if   MUTATIONS_RANDOMNESS_MODE == MUTATIONS_XORSHIFT_FOR_RANDOM64
             combination[i] = next_urandom64_in_range(0, parents_number);
+            #elif MUTATIONS_RANDOMNESS_MODE == MUTATIONS_MERSENNE_FOR_RANDOM64
+            combination[i] = next_mersenne_random64_in_range(0, parents_number);
+            #endif
         while (combination_has_duplicates(combination, combination_length));
 
         for (uint8_t i = 0; i < combination_length; i++)

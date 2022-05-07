@@ -65,3 +65,7 @@ void change_genes_in_genome_with_probability(
     const genome_t *genome, const pool_t *pool,
     gene_mutation_mode_t mode, double probability
 );
+
+#define MUTATIONS_XORSHIFT_FOR_RANDOM64  0
+#define MUTATIONS_MERSENNE_FOR_RANDOM64  1
+#define MUTATIONS_RANDOMNESS_MODE MUTATIONS_MERSENNE_FOR_RANDOM64
