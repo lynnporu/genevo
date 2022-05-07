@@ -235,3 +235,26 @@ void crossover_genomes_combinations(
     destroy_state_machine(blender);
 
 }
+
+void bottleneck_population(
+    pool_organisms_num_t src_number, pool_organisms_num_t dst_number,   
+    const genome_t * const * const src,
+    genome_t * const * const dst,
+    const pool_gene_byte_size_t gene_byte_size,
+    duplicating_mode_t mode
+) {
+
+    state_machine_t *picker = generate_state_machine(src_number);
+    state_machine_uniform_distribution(picker);
+    #if   MUTATIONS_RANDOMNESS_MODE == MUTATIONS_XORSHIFT_FOR_RANDOM64
+    init_state_machine(picker, next_urandom64_in_range(0, src_number));
+    #elif MUTATIONS_RANDOMNESS_MODE == MUTATIONS_MERSENNE_FOR_RANDOM64    
+    init_state_machine(picker, next_mersenne_random64_in_range(0, src_number));
+    #endif
+
+    for (pool_organisms_num_t dst_i = 0; dst_i < dst_number; dst_i++) {
+        pool_organisms_num_t src_i = picker->current_state;
+        copy_genome(src[src_i], dst[dst_i], mode, gene_byte_size);
+        machine_next_state(picker);
+    }
+}

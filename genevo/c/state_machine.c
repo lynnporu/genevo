@@ -140,6 +140,21 @@ void state_machine_diag_distribution(
 
 }
 
+/*
+
+Set each cell of the matrix to equal value.
+
+*/
+void state_machine_uniform_distribution(state_machine_t *machine) {
+
+	for (uint32_t i = 0; i < machine->states_number; i++)
+		for (uint32_t j = 0; j < machine->states_number; j++)
+				machine->transitions[i][j] =
+					(state_probability_t)1 /
+					(state_probability_t)machine->states_number;
+
+}
+
 void machine_next_state(state_machine_t * const machine) {
 
 	#if   STATE_MACHINE_RANDOMNESS_MODE == STATE_MACHINE_XORSHIFT_RANDOM

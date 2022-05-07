@@ -38,7 +38,6 @@ typedef struct cdf_item_s {
  * @member uint32 current_state
  */
 typedef struct state_machine_s {
-    // upper triangle 2d matrix
     state_probability_t **transitions;
     cdf_item_t          **cdf_transitions;
     uint32_t              states_number;
@@ -73,6 +72,10 @@ void state_machine_diag_distribution(
     state_machine_t *,
     state_probability_t diag_probs, state_probability_t non_diag_probs
 );
+
+/* @function state_machine_uniform_distribution
+ */
+void state_machine_uniform_distribution(state_machine_t *);
 
 /* @function generate_state_machine
  * @return void
