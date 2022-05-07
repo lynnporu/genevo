@@ -36,7 +36,7 @@ Residue size will be calcualted and assigned to genome->residue_size_bits,
  */
 genome_t * allocate_genome(
 	const bool allocate_data,
-	const genome_length_t length, const uint8_t gene_bytes_size,
+	const genome_length_t length, const pool_gene_byte_size_t gene_bytes_size,
 	const uint32_t genome_bit_size
 ) {
 
@@ -70,7 +70,8 @@ genome_t * allocate_genome(
 
 genome_t ** allocate_genome_vector(
 	const pool_organisms_num_t size, const bool allocate_data,
-	const genome_length_t genes_number, const uint8_t gene_bytes_size,
+	const genome_length_t genes_number,
+	const pool_gene_byte_size_t gene_bytes_size,
 	const uint32_t genome_bit_size
 ) {
 

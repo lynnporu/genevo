@@ -56,6 +56,7 @@ void change_genes_with_probability(
     gene_byte_t * const genes,
     pool_gene_byte_size_t gene_size, genome_length_t genes_number,
     gene_mutation_mode_t mode, double probability
+    pool_gene_byte_size_t gene_byte_size, genome_length_t genes_number,
 ) {
 
     #ifndef SKIP_LCG_RND_SEED_CHECK
@@ -87,8 +88,8 @@ void change_genes_with_probability(
 
             case RANDOMIZE_GENES:
                 fill_bytes_with_randomness(
-                    genes + position * gene_size,
-                    gene_size);
+                    genes + position * gene_byte_size,
+                    gene_byte_size);
                 break;
 
             case REPEAT_NEIGHBOR_GENES:
@@ -102,14 +103,14 @@ void change_genes_with_probability(
                     neighbor_gene = ((uint8_t)next_fast_random() % 1) * 2 - 1;
 
                 memcpy(
-                    genes + position * gene_size,
-                    genes + (position * gene_size) + (gene_size * neighbor_gene),
-                    gene_size);
+                    genes + position * gene_byte_size,
+                    genes + (position * gene_byte_size) + (gene_byte_size * neighbor_gene),
+                    gene_byte_size);
             break;
 
             default:
             case ZERO_GENES:
-                memset(genes + position * gene_size, 0, gene_size);
+                memset(genes + position * gene_byte_size, 0, gene_byte_size);
             break;
 
         }
@@ -130,7 +131,7 @@ void change_genes_in_genome_with_probability(
 
 void crossover_genomes(
     const genome_t *child, const genome_t * const * const parents,
-    const pool_gene_byte_size_t gene_size,
+    const pool_gene_byte_size_t gene_byte_size,
     state_machine_t * const blender
 ) {
 
@@ -144,10 +145,10 @@ void crossover_genomes(
 
         memcpy(
             writer_position,
-            parent->genes + gene_size * gene_i,
-            gene_size);
+            parent->genes + gene_byte_size * gene_i,
+            gene_byte_size);
 
-        writer_position += gene_size * gene_i;
+        writer_position += gene_byte_size * gene_i;
         machine_next_state(blender);
 
     }
@@ -178,7 +179,7 @@ void crossover_genomes_combinations(
     uint8_t combination_length, double blend_coefficient,
     const genome_t * const * const genomes_parents,
     genome_t * const * const genomes_children,
-    const pool_gene_byte_size_t gene_size
+    const pool_gene_byte_size_t gene_byte_size
 ) {
 
     if (blend_coefficient <= 0 || blend_coefficient >= 1) {
@@ -226,7 +227,7 @@ void crossover_genomes_combinations(
 
         crossover_genomes(
             genomes_children[combination_counter], genomes_combination,
-            gene_size, blender);
+            gene_byte_size, blender);
 
     }
 
