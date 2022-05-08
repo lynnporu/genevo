@@ -24,6 +24,11 @@ const char * get_err_string(const err_status_t errcode);
  */
 extern err_status_t ERROR_LEVEL;
 
+#define RETURN_NULL return null;
+#define RETURN_VOID return;
+#define ERR_AND_RETURN(_STATUS, _EXIT_CODE) {                                  \
+    ERROR_LEVEL = _STATUS;                                                     \
+    _EXIT_CODE; }
 
 #define ERR_OK                              (err_status_t)0x00
 #define ERR_OK_STR                          "No errors."

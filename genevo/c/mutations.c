@@ -17,7 +17,7 @@ of trials from the equation:
 
 */
 #define TRIALS_TO_MAKE_PROBABILITY(_COLLECTION_SIZE, _PROBABILITY) \
-    LOG_ARBITRARY_BASE(1 - (1 / _COLLECTION_SIZE), -_PROBABILITY + 1)
+    LOG_ARBITRARY_BASE(1 - (1 / (float)_COLLECTION_SIZE), -_PROBABILITY + 1)
 
 /*
 
@@ -28,6 +28,10 @@ void flip_bits_with_probability(
     gene_byte_t * const bytes, uint64_t bytes_number,
     mutation_probability_t probability
 ) {
+
+    if (probability < 0 || probability >= 1)
+        ERR_AND_RETURN(ERR_WRONG_PARAMS, RETURN_VOID);
+
     for (
         uint64_t trial = 0;
         trial < TRIALS_TO_MAKE_PROBABILITY(bytes_number * 8, probability);
