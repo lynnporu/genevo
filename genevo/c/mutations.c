@@ -274,11 +274,13 @@ void pairing_season(
     const pool_gene_byte_size_t gene_bytes_size
 ) {
 
-    const genome_t ** bottleneck_source;
+    const genome_t ** bottleneck_source = NULL;
 
-    if (parents_number != children_number)
+    if (parents_number != children_number) {
+        ASSIGN_MALLOC_ARRAY(bottleneck_source, genome_t, children_number);
         bottleneck_population(
             parents_number, children_number, genomes_parents, bottleneck_source);
+    }
 
     crossover_genomes_combinations(
         parents_number, children_number,
@@ -287,6 +289,8 @@ void pairing_season(
             ? genomes_parents : bottleneck_source,
         genomes_children,
         gene_bytes_size);
+
+    FREE_NOT_NULL(bottleneck_source);
 
     if (!change_genes_prob && !flip_bits_prob) return;
 
