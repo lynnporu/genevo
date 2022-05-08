@@ -7,7 +7,7 @@
 int main(int argc, char *argv[]) {
 
     int iterations_number = 0;
-    int upper = 0, lower = 0;
+    int upper = 10, lower = 0;
 
     int opt;
     while ((opt = getopt(argc, argv, "i:ha:b:")) != -1){
@@ -23,8 +23,9 @@ int main(int argc, char *argv[]) {
                 upper = atoi(optarg);
                 break;
             case 'h':
-                printf("usage: rand_test -i <int>\n");
+                printf("usage: rand_test -i [int] -a [int] -b [int]\n");
                 printf("\t-i sets iterations number\n");
+                printf("\t-a and -b sets ranges\n");
         }
     }
 
