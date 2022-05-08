@@ -2,8 +2,6 @@
 *.sublime-workspace
 
 # C
-genevo/c/*_test.c
-genevo/c/tests
 genevo/c/temp
 genevo/c/bin
 logs--*
