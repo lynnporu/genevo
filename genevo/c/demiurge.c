@@ -6,17 +6,17 @@ For this function genome->length and genome->residue_size_bits should be set.
 
  */
 void generate_genome_data(
-	genome_t * const genome, const uint8_t gene_byte_size,
+	genome_t * const genome, const pool_gene_byte_size_t gene_bytes_size,
 	const generator_mode_t generator_mode
 ) {
 
 	if (generator_mode == GENERATE_RANDOMNESS) {
-		fill_bytes_with_randomness(genome->genes, genome->length * gene_byte_size);
+		fill_bytes_with_randomness(genome->genes, genome->length * gene_bytes_size);
 		fill_bits_with_randomness(genome->residue, genome->residue_size_bits);
 	}
 	else
 	if (generator_mode == GENERATE_ZEROS) {
-		memset(genome->genes, 0, genome->length * gene_byte_size);
+		memset(genome->genes, 0, genome->length * gene_bytes_size);
 		memset(genome->residue, 0, BITS_TO_BYTES(genome->residue_size_bits));
 	}
 	else {
@@ -123,7 +123,7 @@ void copy_genome_vector (
 void copy_genome(
 	const genome_t * const src, genome_t * const dst,
 	duplicating_mode_t mode,
-	pool_gene_byte_size_t gene_byte_size
+	pool_gene_byte_size_t gene_bytes_size
 ) {
 	dst->length = src->length;
 	dst->metadata_byte_size = src->metadata_byte_size;
@@ -139,7 +139,7 @@ void copy_genome(
 
 		case DUPLICATION_COPY_DATA:
 			memcpy(dst->metadata, src->metadata, dst->metadata_byte_size);
-			memcpy(dst->genes, src->genes, dst->length * gene_byte_size);
+			memcpy(dst->genes, src->genes, dst->length * gene_bytes_size);
 			memcpy(dst->residue, src->residue, BYTES_TO_BITS(dst->residue_size_bits));
 			break;
 

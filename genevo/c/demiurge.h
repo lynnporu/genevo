@@ -21,7 +21,7 @@ typedef enum generator_mode_e {
 } generator_mode_t;
 
 void generate_random_genome_data(
-    genome_t * const, const uint8_t gene_byte_size,
+    genome_t * const, const pool_gene_byte_size_t gene_bytes_size,
     const generator_mode_t
 );
 
@@ -34,7 +34,7 @@ void generate_random_genome_data(
  */
 genome_t * allocate_genome(
     const bool allocate_data,
-    const genome_length_t, const uint8_t gene_bytes_size,
+    const genome_length_t, const pool_gene_byte_size_t gene_bytes_size,
     const uint32_t genome_bit_size
 );
 
@@ -63,7 +63,7 @@ genome_t ** allocate_genome_vector (
  */
 genome_t ** duplicate_genome_vector (
     const pool_organisms_num_t size, duplicating_mode_t mode,
-    const genome_length_t genes_number, const uint8_t gene_bytes_size,
+    const genome_length_t genes_number, const pool_gene_byte_size_t gene_bytes_size,
     const uint32_t genome_bit_size,
     const genome_t * const * const src
 );
@@ -94,7 +94,7 @@ void copy_genome_vector (
 void copy_genome(
     const genome_t * const src, genome_t * const dst,
     duplicating_mode_t mode,
-    pool_gene_byte_size_t gene_byte_size
+    pool_gene_byte_size_t gene_bytes_size
 );
 
 /* @function destroy_genomes_vector
