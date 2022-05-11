@@ -1,4 +1,4 @@
-#include "heap.h"
+#include "rbtree.h"
 
 rbtree_t * allocate_rbtree() {
 
@@ -7,6 +7,12 @@ rbtree_t * allocate_rbtree() {
 	return tree;
 
 };
+
+void free_rbtree_node(rbtree_node_t *node) {
+
+	FREE_NOT_NULL(node);
+
+}
 
 void destroy_rbtree_traversal(rbtree_node_t *head) {
 
@@ -44,54 +50,6 @@ rbtree_node_t *allocate_empty_rbtree_node() {
 
 }
 
-void free_rbtree_node(rbtree_node_t *node) {
-
-	FREE_NOT_NULL(node);
-
-}
-
-void rbtree_bst_insert(rbtree_node_t **head, rbtree_node_t *node) {
-
-	rbtree_node_t *y = NULL,
-	              *x = *head;
-
-	while (x) {
-		y = x;
-		x = (node->id < x->id)
-			? x->left
-			: x->right;
-	}
-
-	node->parent = y;
-
-	if (node->id > y->id) y->right = node;
-	else                  y->left  = node;
-
-	node->color = RBTREE_NODE_RED;
-
-	rbtree_fixup(head, node);
-
-}
-
-rbtree_node_t *rbtree_insert(
-	rbtree_t *tree, rbtree_node_id_t id, void *object
-) {
-
-	rbtree_node_t *node = allocate_empty_rbtree_node();
-	node->stored_object = object;
-	node->id = id;
-
-	if (tree->head == NULL) {
-		node->color = RBTREE_NODE_BLACK;
-		tree->head = node;
-	}
-
-	else rbtree_bst_insert(&(tree->head), node);
-
-	return node;
-
-}
-
 static inline bool rbtree_uncle_is_red(rbtree_node_t *z) {
 
 	rbtree_node_t *y;
@@ -110,6 +68,51 @@ static inline bool rbtree_uncle_is_red(rbtree_node_t *z) {
 	}
 	else
 		return false;
+
+}
+
+
+void rbtree_left_rotate(rbtree_node_t **head, rbtree_node_t *x) {
+
+	rbtree_node_t *y;
+
+	if (!x || !x->right) return;
+
+	y = x->right;
+	x->right = y->left;
+
+	if (x->right != NULL) x->right->parent = x;
+
+	y->parent = x->parent;
+
+	if (x->parent == NULL)          (*head) = y;
+	else if (x == x->parent->left)  x->parent->left = y;
+	else                            x->parent->right = y;
+
+	y->left = x;
+	x->parent = y;
+
+}
+
+void rbtree_right_rotate(rbtree_node_t **head, rbtree_node_t *y) {
+
+	rbtree_node_t *x;
+
+	if (!y || !y->left) return;
+
+	x = y->left;
+	y->left = x->right;
+
+	if (x->right != NULL) x->right->parent = y;
+
+	x->parent =y->parent;
+
+	if (x->parent == NULL)          (*head) = x;
+	else if (y == y->parent->left)  y->parent->left = x;
+	else                            y->parent->right = x;
+
+	x->right = y;
+	y->parent = x;
 
 }
 
@@ -169,51 +172,48 @@ void rbtree_fixup(rbtree_node_t **head, rbtree_node_t *z) {
 
 	}
 
-	(*head)->color = BLACK;
+	(*head)->color = RBTREE_NODE_BLACK;
 
 }
 
+void rbtree_bst_insert(rbtree_node_t **head, rbtree_node_t *node) {
 
-void rbtree_left_rotate(rbtree_node_t **head, rbtree_node_t *x) {
+	rbtree_node_t *y = NULL,
+	              *x = *head;
 
-	rbtree_node_t *y;
+	while (x) {
+		y = x;
+		x = (node->id < x->id)
+			? x->left
+			: x->right;
+	}
 
-	if (!x || !x->right) return;
+	node->parent = y;
 
-	y = x->right;
-	x->right = y->left;
+	if (node->id > y->id) y->right = node;
+	else                  y->left  = node;
 
-	if (x->right != NULL) x->right->parent = x;
+	node->color = RBTREE_NODE_RED;
 
-	y->parent = x->parent;
-
-	if (x->parent == NULL)          (*head) = y;
-	else if (x == x->parent->left)  x->parent->left = y;
-	else                            x->parent->right = y;
-
-	y->left = x;
-	x->parent = y;
+	rbtree_fixup(head, node);
 
 }
 
-void rbtree_right_rotate(rbtree_node_t **head, rbtree_node_t *y) {
+rbtree_node_t *rbtree_insert(
+	rbtree_t *tree, rbtree_node_id_t id, void *object
+) {
 
-	rbtree_node_t *x;
+	rbtree_node_t *node = allocate_empty_rbtree_node();
+	node->stored_object = object;
+	node->id = id;
 
-	if (!y || !y->left) return;
+	if (tree->head == NULL) {
+		node->color = RBTREE_NODE_BLACK;
+		tree->head = node;
+	}
 
-	x = y->left;
-	y->left = x->right;
+	else rbtree_bst_insert(&(tree->head), node);
 
-	if (x->right != NULL) x->right->parent = y;
-
-	x->parent =y->parent;
-
-	if (x->parent == NULL)          (*head) = x;
-	else if (y == y->parent->left)  y->parent->left = x;
-	else                            y->parent->right = x;
-
-	x->right = y;
-	y->parent = x;
+	return node;
 
 }
