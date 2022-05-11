@@ -58,3 +58,11 @@ flip_bits_test:
 		-lm \
 		-o ./bin/flip_bits_test
 	rm flip_bits_test.*
+
+.PHONY: rbtree_test
+rbtree_test:
+	cp ./tests/rbtree_test.c .
+	gcc rbtree_test.c $(SRCS) \
+		-lm \
+		-o ./bin/rbtree_test -O3
+	rm rbtree_test.*
