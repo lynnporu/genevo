@@ -277,7 +277,8 @@ void pairing_season(
     const genome_t ** bottleneck_source = NULL;
 
     if (parents_number != children_number) {
-        ASSIGN_MALLOC_ARRAY(bottleneck_source, genome_t, children_number);
+        ASSIGN_MALLOC_ARRAY(
+            bottleneck_source, genome_t, children_number, RETURN_VOID_ON_ERR);
         bottleneck_population(
             parents_number, children_number, genomes_parents, bottleneck_source);
     }
