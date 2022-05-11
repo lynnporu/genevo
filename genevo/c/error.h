@@ -30,6 +30,12 @@ extern err_status_t ERROR_LEVEL;
     ERROR_LEVEL = _STATUS;                                                     \
     _EXIT_CODE; }
 
+#define CATCH_ERR(_STATUS, _EXIT_CODE) {                                       \
+    if (ERROR_LEVEL == _STATUS) _EXIT_CODE; }
+
+#define SWALLOW_ERR(_STATUS) {                                                 \
+    if (ERROR_LEVEL == _STATUS) ERROR_LEVEL = ERR_OK; }
+
 #define ERR_OK                              (err_status_t)0x00
 #define ERR_OK_STR                          "No errors."
 
@@ -62,6 +68,9 @@ extern err_status_t ERROR_LEVEL;
 #define ERR_WRONG_PARAMS_STR                "Some of the arguments you've "    \
                                             "passed is wrong. Check the "      \
                                             "reference."
+
+#define ERR_NULL_ACCESS_ERR                 (err_status_t)0xe5
+#define ERR_NULL_ACCESS_ERR_STR             "Programm tried to access NULL."
 
 
 // Gene pool file errors =======================================================
@@ -155,8 +164,13 @@ extern err_status_t ERROR_LEVEL;
                                             "bigger than 64 bits. Those are  " \
                                             "not supported."
 
-// State machine ===============================================================
+// Misc ========================================================================
 
 #define ERR_SM_WRONG_DISTRIBUTION           (err_status_t)0x41
 #define ERR_SM_WRONG_DISTRIBUTION_STR       "Wrong distribution were given to "\
                                             "the state machine."
+
+#define ERR_INSERT_RBTREE_DUPLICATE         (err_status_t)0x42
+#define ERR_INSERT_RBTREE_DUPLICATE_STR     "The element with such ID you've " \
+                                            "been trying to put into rb-tree " \
+                                            "already exists there."

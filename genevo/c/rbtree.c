@@ -50,6 +50,10 @@ rbtree_node_t *allocate_empty_rbtree_node() {
 
 }
 
+void destroy_rbtree_node(rbtree_node_t *node) {
+	FREE_NOT_NULL(node);
+}
+
 static inline bool rbtree_uncle_is_red(rbtree_node_t *z) {
 
 	rbtree_node_t *y;
@@ -171,16 +175,22 @@ void rbtree_fixup(rbtree_node_t **head, rbtree_node_t *z) {
 
 }
 
-void rbtree_bst_insert(rbtree_node_t **head, rbtree_node_t *node) {
+rbtree_node_t *rbtree_bst_insert(rbtree_node_t **head, rbtree_node_t *node) {
 
 	rbtree_node_t *y = NULL,
 	              *x = *head;
 
 	while (x) {
 		y = x;
-		x = (node->id < x->id)
-			? x->left
-			: x->right;
+			if (node->id < x->id)
+				x = x->left;
+		else
+			if (node->id > x->id)
+				x = x->right;
+		else { // node->id == x->id
+			ERROR_LEVEL = ERR_INSERT_RBTREE_DUPLICATE;
+			return x;
+		}
 	}
 
 	node->parent = y;
@@ -192,6 +202,8 @@ void rbtree_bst_insert(rbtree_node_t **head, rbtree_node_t *node) {
 
 	rbtree_fixup(head, node);
 
+	return NULL;
+
 }
 
 rbtree_node_t *rbtree_insert(
@@ -202,12 +214,19 @@ rbtree_node_t *rbtree_insert(
 	node->stored_object = object;
 	node->id = id;
 
+	rbtree_node_t *duplicate = NULL;
+
 	if (tree->head == NULL) {
 		node->color = RBTREE_NODE_BLACK;
 		tree->head = node;
 	}
 
-	else rbtree_bst_insert(&(tree->head), node);
+	else duplicate = rbtree_bst_insert(&(tree->head), node);
+
+	if (ERROR_LEVEL == ERR_INSERT_RBTREE_DUPLICATE && duplicate) {
+		destroy_rbtree_node(node);
+		return duplicate;
+	}
 
 	return node;
 

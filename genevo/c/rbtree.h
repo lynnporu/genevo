@@ -36,6 +36,6 @@ rbtree_t * allocate_rbtree();
 
 void destroy_rbtree(rbtree_t *);
 
-struct rbtree_node_s* rbtree_insert(rbtree_t *tree, rbtree_node_id_t id, void *object);
+rbtree_node_t* rbtree_insert(rbtree_t *tree, rbtree_node_id_t id, void *object);
 
-struct rbtree_node_s* rbtree_find(rbtree_t *tree, rbtree_node_id_t id);
+rbtree_node_t* rbtree_find(rbtree_t *tree, rbtree_node_id_t id);
