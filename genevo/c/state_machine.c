@@ -21,7 +21,7 @@ state_machine_t * generate_state_machine(const uint32_t states_number) {
 		ASSIGN_CALLOC_ARRAY(
 			machine->transitions[state_i], state_probability_t, states_number);
 		ASSIGN_MALLOC_ARRAY(
-			machine->cdf_transitions[state_i], cdf_item_t, states_number);
+			machine->cdf_transitions[state_i], cdf_item_t, states_number, RETURN_NULL_ON_ERR);
 
 		if (
 			machine->transitions[state_i] == NULL ||

@@ -33,8 +33,9 @@
     _DESTINATION = malloc(sizeof(_TYPE));                                      \
     _CHECK_NULL_DESTINATION(_DESTINATION, _EXIT_CODE);
 
-#define ASSIGN_MALLOC_ARRAY(_DESTINATION, _TYPE, _SIZE)                        \
-    _DESTINATION = malloc(sizeof(_TYPE) * _SIZE);
+#define ASSIGN_MALLOC_ARRAY(_DESTINATION, _TYPE, _SIZE, _EXIT_CODE)            \
+    _DESTINATION = malloc(sizeof(_TYPE) * _SIZE);                              \
+    _CHECK_NULL_DESTINATION(_DESTINATION, _EXIT_CODE);
 
 #define ASSIGN_MALLOC_LINKS_ARRAY(_DESTINATION, _TYPE, _SIZE)                  \
     _DESTINATION = malloc(sizeof(_TYPE *) * _SIZE);

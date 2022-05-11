@@ -17,7 +17,7 @@ of trials from the equation:
 
 */
 #define TRIALS_TO_MAKE_PROBABILITY(_COLLECTION_SIZE, _PROBABILITY) \
-    LOG_ARBITRARY_BASE(1 - (1 / _COLLECTION_SIZE), -_PROBABILITY + 1)
+    LOG_ARBITRARY_BASE(1 - (1 / (float)_COLLECTION_SIZE), -_PROBABILITY + 1)
 
 /*
 
@@ -25,22 +25,26 @@ Flip every bit in given bytes sequention with probability `probability`.
 
 */
 void flip_bits_with_probability(
-    gene_byte_t * const bytes, uint64_t bytes_number,
+    gene_byte_t * const bytes, uint64_t bits_number,
     mutation_probability_t probability
 ) {
+
+    if (probability < 0 || probability >= 1)
+        ERR_AND_RETURN(ERR_WRONG_PARAMS, RETURN_VOID);
+
     for (
         uint64_t trial = 0;
-        trial < TRIALS_TO_MAKE_PROBABILITY(bytes_number * 8, probability);
+        trial < TRIALS_TO_MAKE_PROBABILITY(bits_number, probability);
         trial++
     ) {
         #if   MUTATIONS_RANDOMNESS_MODE == MUTATIONS_XORSHIFT_FOR_RANDOM64
-        uint64_t position = next_urandom64_in_range(0, bytes_number * 8);
+        uint64_t position = next_urandom64_in_range(0, bits_number);
         #elif MUTATIONS_RANDOMNESS_MODE == MUTATIONS_MERSENNE_FOR_RANDOM64
-        uint64_t position = next_mersenne_random64_in_range(0, bytes_number * 8);
+        uint64_t position = next_mersenne_random64_in_range(0, bits_number);
         #endif
-        uint64_t byte     = position / 8;
-        uint8_t  bit      = position % 8;
-        ((uint8_t * const)bytes)[byte] ^= 1 << bit;
+        uint64_t byte_i     = position / 8;
+        uint8_t  bit_i      = position % 8;
+        ((uint8_t * const)bytes)[byte_i] ^= 1 << (8 - bit_i);
     }
 }
 
@@ -56,7 +60,7 @@ void flip_bits_in_genome_with_probability(
 
 void change_genes_with_probability(
     gene_byte_t * const genes,
-    pool_gene_byte_size_t gene_byte_size, genome_length_t genes_number,
+    pool_gene_byte_size_t gene_bytes_size, genome_length_t genes_number,
     gene_mutation_mode_t mode, mutation_probability_t probability
 ) {
 
@@ -89,8 +93,8 @@ void change_genes_with_probability(
 
             case RANDOMIZE_GENES:
                 fill_bytes_with_randomness(
-                    genes + position * gene_byte_size,
-                    gene_byte_size);
+                    genes + position * gene_bytes_size,
+                    gene_bytes_size);
                 break;
 
             case REPEAT_NEIGHBOR_GENES:
@@ -104,14 +108,14 @@ void change_genes_with_probability(
                     neighbor_gene = ((uint8_t)next_fast_random() % 1) * 2 - 1;
 
                 memcpy(
-                    genes + position * gene_byte_size,
-                    genes + (position * gene_byte_size) + (gene_byte_size * neighbor_gene),
-                    gene_byte_size);
+                    genes + position * gene_bytes_size,
+                    genes + (position * gene_bytes_size) + (gene_bytes_size * neighbor_gene),
+                    gene_bytes_size);
             break;
 
             default:
             case ZERO_GENES:
-                memset(genes + position * gene_byte_size, 0, gene_byte_size);
+                memset(genes + position * gene_bytes_size, 0, gene_bytes_size);
             break;
 
         }
@@ -132,7 +136,7 @@ void change_genes_in_genome_with_probability(
 
 void crossover_genomes(
     const genome_t *child, const genome_t * const * const parents,
-    const pool_gene_byte_size_t gene_byte_size,
+    const pool_gene_byte_size_t gene_bytes_size,
     state_machine_t * const blender
 ) {
 
@@ -146,10 +150,10 @@ void crossover_genomes(
 
         memcpy(
             writer_position,
-            parent->genes + gene_byte_size * gene_i,
-            gene_byte_size);
+            parent->genes + gene_bytes_size * gene_i,
+            gene_bytes_size);
 
-        writer_position += gene_byte_size * gene_i;
+        writer_position += gene_bytes_size * gene_i;
         machine_next_state(blender);
 
     }
@@ -177,10 +181,10 @@ bool combination_has_duplicates(
 
 void crossover_genomes_combinations(
     pool_organisms_num_t parents_number, pool_organisms_num_t children_number,
-    uint8_t combination_length, double blend_coefficient,
+    replication_type_t combination_length, double blend_coefficient,
     const genome_t * const * const genomes_parents,
     genome_t * const * const genomes_children,
-    const pool_gene_byte_size_t gene_byte_size
+    const pool_gene_byte_size_t gene_bytes_size
 ) {
 
     if (blend_coefficient <= 0 || blend_coefficient >= 1) {
@@ -215,7 +219,7 @@ void crossover_genomes_combinations(
         combination_counter++
     ) {
 
-        do for (uint8_t i = 0; i < combination_length; i++) 
+        do for (replication_type_t i = 0; i < combination_length; i++) 
             #if   MUTATIONS_RANDOMNESS_MODE == MUTATIONS_XORSHIFT_FOR_RANDOM64
             combination[i] = next_urandom64_in_range(0, parents_number);
             #elif MUTATIONS_RANDOMNESS_MODE == MUTATIONS_MERSENNE_FOR_RANDOM64
@@ -223,12 +227,12 @@ void crossover_genomes_combinations(
             #endif
         while (combination_has_duplicates(combination, combination_length));
 
-        for (uint8_t i = 0; i < combination_length; i++)
+        for (replication_type_t i = 0; i < combination_length; i++)
             genomes_combination[i] = genomes_parents[combination[i]];
 
         crossover_genomes(
             genomes_children[combination_counter], genomes_combination,
-            gene_byte_size, blender);
+            gene_bytes_size, blender);
 
     }
 
@@ -267,14 +271,17 @@ void pairing_season(
     const mutation_probability_t flip_bits_prob,
     const genome_t * const * const genomes_parents,
     genome_t * const * const genomes_children,
-    const pool_gene_byte_size_t gene_byte_size
+    const pool_gene_byte_size_t gene_bytes_size
 ) {
 
-    const genome_t ** bottleneck_source;
+    const genome_t ** bottleneck_source = NULL;
 
-    if (parents_number != children_number)
+    if (parents_number != children_number) {
+        ASSIGN_MALLOC_ARRAY(
+            bottleneck_source, genome_t, children_number, RETURN_VOID_ON_ERR);
         bottleneck_population(
             parents_number, children_number, genomes_parents, bottleneck_source);
+    }
 
     crossover_genomes_combinations(
         parents_number, children_number,
@@ -282,7 +289,11 @@ void pairing_season(
         (parents_number == children_number)
             ? genomes_parents : bottleneck_source,
         genomes_children,
-        gene_byte_size);
+        gene_bytes_size);
+
+    FREE_NOT_NULL(bottleneck_source);
+
+    if (!change_genes_prob && !flip_bits_prob) return;
 
     for (
         pool_organisms_num_t genome_i = 0;
@@ -290,15 +301,17 @@ void pairing_season(
         genome_i++
     ) {
 
-        change_genes_with_probability(
-            genomes_children[genome_i]->genes,
-            gene_byte_size, genomes_children[genome_i]->length,
-            mutation_mode, change_genes_prob);
+        if (change_genes_prob)
+            change_genes_with_probability(
+                genomes_children[genome_i]->genes,
+                gene_bytes_size, genomes_children[genome_i]->length,
+                mutation_mode, change_genes_prob);
 
-        flip_bits_with_probability(
-            genomes_children[genome_i]->genes,
-            gene_byte_size * genomes_children[genome_i]->length,
-            flip_bits_prob);
+        if (flip_bits_prob)
+            flip_bits_with_probability(
+                genomes_children[genome_i]->genes,
+                gene_bytes_size * genomes_children[genome_i]->length,
+                flip_bits_prob);
 
     }
 

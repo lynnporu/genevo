@@ -31,15 +31,11 @@ uint32_t xorshift128p32() __attribute__((pure));
     (((_X) - (_A1)) * ((_B2) - (_A2)) / ((_B1) - (_A1)) + (_A2))
 
 #define next_urandom64_in_range(_A, _B) ({                                     \
-    double _A_ = (_A);                                                         \
-    double _B_ = (_B);                                                         \
     double _R  = next_urandom32();                                             \
     (uint64_t)roundl(MAP_RANGE_TO_RANGE(_R, 0, (double)MAX_FOR_32, _A, _B));   \
 })
 
 #define next_double_urandom64_in_range(_A, _B) ({                              \
-    double _A_ = (_A);                                                         \
-    double _B_ = (_B);                                                         \
     double _R  = next_urandom32();                                             \
     MAP_RANGE_TO_RANGE(_R, 0, (double)MAX_FOR_32, _A, _B);                     \
 })
@@ -57,15 +53,11 @@ uint32_t lcg_rand() __attribute__((pure));
 #define next_fast_random lcg_rand
 
 #define next_fast_random_in_range(_A, _B) ({                                   \
-    double _A_ = (_A);                                                         \
-    double _B_ = (_B);                                                         \
     double _R  = next_fast_random();                                           \
     (uint32_t)roundl(MAP_RANGE_TO_RANGE(_R, 0, (double)MAX_FOR_32, _A, _B));   \
 })
 
 #define next_double_fast_random_in_range(_A, _B) ({                            \
-    double _A_ = (_A);                                                         \
-    double _B_ = (_B);                                                         \
     double _R  = next_fast_random();                                           \
     MAP_RANGE_TO_RANGE(_R, 0, (double)MAX_FOR_32, _A, _B);                     \
 })
@@ -77,15 +69,11 @@ uint32_t lcg_rand() __attribute__((pure));
 extern bool mersenne_seed_initialized;
 
 #define next_mersenne_random64_in_range(_A, _B) ({                             \
-    double _A_ = (_A);                                                         \
-    double _B_ = (_B);                                                         \
     double _R = mersenne_genrand64_int64() % MAX_FOR_32;                       \
     (uint64_t)roundl(MAP_RANGE_TO_RANGE(_R, 0, (double)MAX_FOR_32, _A, _B));   \
 })
 
 #define next_double_mersenne_random64_in_range(_A, _B) ({                      \
-    double _A_ = (_A);                                                         \
-    double _B_ = (_B);                                                         \
     double _R = mersenne_genrand64_int64() % MAX_FOR_32;                       \
     MAP_RANGE_TO_RANGE(_R, 0, (double)MAX_FOR_32, _A, _B);                     \
 })

@@ -4,6 +4,7 @@
 #include <math.h>
 #include <stdbool.h>
 
+#include "error.h"
 #include "demiurge.h"
 #include "pool.h"
 #include "rand.h"
