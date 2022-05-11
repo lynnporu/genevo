@@ -232,25 +232,24 @@ rbtree_node_t *rbtree_insert(
 
 }
 
-struct rbtree_node_s* rbtree_find_in_subtree(
-	rbtree_node_id_t id, struct rbtree_node_s* subtree
-) {
+struct rbtree_node_s *rbtree_find(rbtree_t *tree, rbtree_node_id_t id) {
 
-	    if (id == subtree->id)
-	    	return subtree;
-	else
-		if (!(subtree->left) && !(subtree->right))
-			return NULL;
-	else
-		if (id  < subtree->id)
-			return rbtree_find_in_subtree(id, subtree->left);
-	else
-		if (id  > subtree->id)
-			return rbtree_find_in_subtree(id, subtree->right);
+	rbtree_node_t *y = NULL,
+	              *x = tree->head;
+
+	while (x) {
+
+		y = x;
+
+			if (id < x->id)
+				x = x->left;
+		else
+			if (id > x->id)
+				x = x->right;
+		else // node->id == x->id
+			return x;
+
+	}
 
 	return NULL;
-}
-
-struct rbtree_node_s *rbtree_find(rbtree_t *tree, rbtree_node_id_t id) {
-	return rbtree_find_in_subtree(id, tree->head);
 }

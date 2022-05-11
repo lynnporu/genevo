@@ -75,16 +75,23 @@ int main(int argc, char *argv[]) {
         printf("\n");
     }
 
+    int not_found_times = 0;
     volatile struct rbtree_node_s *found;
     srand(time(NULL));
     start_time = clock();
-    for (int i = 0; i < indexing_number; ++i)
+    for (int i = 0; i < indexing_number; ++i) {
         found = rbtree_find(tree, (unsigned int)(rand() % nodes_number));
+        if (!found) not_found_times++;
+    }
+
     elapsed_time = (double)(clock() - start_time) / CLOCKS_PER_SEC;
     printf(
         "tree was indexed %d times, it took %.10f sec.\n",
         indexing_number, elapsed_time);
-
+    if (!not_found_times)
+        printf("binary search works fine.\n");
+    else
+        printf("binary search failed %d times.\n", not_found_times);
 
     start_time = clock();
     destroy_rbtree(tree);
