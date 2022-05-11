@@ -60,9 +60,9 @@ static inline bool rbtree_uncle_is_red(rbtree_node_t *z) {
 		: y->left;
 
 	if (y && y->color == RBTREE_NODE_RED) {
-		y->color = RBTREE_NODE_BLACK;
-		z->parent->color = RBTREE_NODE_BLACK;
 		z->parent->parent->color = RBTREE_NODE_RED;
+		z        ->parent->color = RBTREE_NODE_BLACK;
+		y                ->color = RBTREE_NODE_BLACK;
 		z = z->parent->parent;
 		return true;
 	}
@@ -116,44 +116,39 @@ void rbtree_right_rotate(rbtree_node_t **head, rbtree_node_t *y) {
 
 }
 
+#define SWAP_COLORS(_C1, C2) {                                                 \
+	enum rbtree_color_e tmp;                                                   \
+	tmp = _C1; _C1 = C2; C2 = tmp;                                             \
+}
+
 static inline void rbtree_case_left(rbtree_node_t **head, rbtree_node_t *z) {
 
-	enum rbtree_color_e tmp_color;
-
 	if (z == z->parent->left) {
-		tmp_color = z->parent->color;
-		z->parent->color = z->parent->parent->color;
-		z->parent->parent->color = tmp_color;
+		SWAP_COLORS(z->parent->color, z->parent->parent->color);
 		rbtree_right_rotate(head, z->parent->parent);
 	}
 	else {
-		tmp_color = z->color ;
-		z->color = z->parent->parent->color;
-		z->parent->parent->color = tmp_color;
+		SWAP_COLORS(z->color, z->parent->parent->color);
 		rbtree_left_rotate (head, z->parent);
 		rbtree_right_rotate(head, z->parent->parent);
 	}
 
 }
 
-static inline void	rbtree_case_right(rbtree_node_t **head, rbtree_node_t *z) {
-
-	enum rbtree_color_e tmp_color;
+static inline void rbtree_case_right(rbtree_node_t **head, rbtree_node_t *z) {
 
 	if (z == z->parent->right) {
-		tmp_color = z->parent->color ;
-		z->parent->color = z->parent->parent->color;
-		z->parent->parent->color = tmp_color;
+		SWAP_COLORS(z->parent->color, z->parent->parent->color);
 		rbtree_left_rotate(head, z->parent->parent);
 	}
 	else {
-		tmp_color = z->color;
-		z->color = z->parent->parent->color;
-		z->parent->parent->color = tmp_color;
+		SWAP_COLORS(z->color, z->parent->parent->color);
 		rbtree_right_rotate(head, z->parent);
 		rbtree_left_rotate (head, z->parent->parent);
 	}
 }
+
+#undef SWAP_COLORS
 
 void rbtree_fixup(rbtree_node_t **head, rbtree_node_t *z) {
 
